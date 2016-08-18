@@ -153,7 +153,7 @@ def jobPullAndLoad(job):
         cache, loadingError = LoadMetaData(jobModel, job, docker_client,
                                            pullList, loadList, notExistSet)
 
-        imageModel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+        imageModel = ModelImporter.model('docker_image_model', 'slicer_cli')
 
         imageModel.saveAllImgs(cache)
         if errorState is False and loadingError is False:

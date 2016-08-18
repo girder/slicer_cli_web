@@ -34,7 +34,7 @@ from ..models import DockerImage, DockerImageError, \
 # from StringIO import StringIO
 
 
-class Dockerimagemodel(AccessControlledModel):
+class DockerImageModel(AccessControlledModel):
     """
     Singleton class to manage access to cached docker image data. Data is
     retrieved as instances of either DockerImage or DockerCache objects
@@ -43,7 +43,7 @@ class Dockerimagemodel(AccessControlledModel):
     imageHash = DockerImage.imageHash
 
     def initialize(self):
-        self.name = 'dockerimagemodel'
+        self.name = 'docker_image_model'
         # use the DockerImage.gethash as the id
         self.ensureIndices([self.imageHash])
         self.exposeFields(AccessType.ADMIN, (DockerImage.imageHash,))
@@ -135,7 +135,7 @@ class Dockerimagemodel(AccessControlledModel):
         """
         try:
             # rely on the parent model class to add a '_id' field
-            super(Dockerimagemodel, self).save(document=img.getRawData(),
+            super(DockerImageModel, self).save(document=img.getRawData(),
                                                triggerEvents=True)
         except Exception as err:
             raise DockerImageError(
@@ -150,7 +150,7 @@ class Dockerimagemodel(AccessControlledModel):
          :type imgHash:string
         :returns:  The DockerImage instance was represented by the hash
         """
-        results = super(Dockerimagemodel, self).findOne(
+        results = super(DockerImageModel, self).findOne(
             {DockerImage.imageHash: imgHash})
         if results is None:
             raise DockerImageNotFoundError('The docker image with the hash'
@@ -165,7 +165,7 @@ class Dockerimagemodel(AccessControlledModel):
         girder-mongo database
         :returns: a list of DockerImage objects
         """
-        results = super(Dockerimagemodel, self).find()
+        results = super(DockerImageModel, self).find()
         img_list = []
 
         for img in results:
@@ -244,7 +244,7 @@ class Dockerimagemodel(AccessControlledModel):
             for img in imgList:
                 hash = DockerImage.getHashKey(img)
                 imageData = self._load(hash)
-                super(Dockerimagemodel, self).remove(imageData.getRawData())
+                super(DockerImageModel, self).remove(imageData.getRawData())
         except Exception as err:
             if isinstance(err, DockerImageNotFoundError):
                 raise DockerImageNotFoundError(

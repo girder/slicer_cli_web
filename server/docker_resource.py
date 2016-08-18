@@ -172,7 +172,7 @@ class DockerResource(Resource):
         docker rmi -f <image> )
         """
 
-        dockermodel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+        dockermodel = ModelImporter.model('docker_image_model', 'slicer_cli')
 
         try:
 
@@ -203,9 +203,8 @@ class DockerResource(Resource):
         name = params['name']
 
         name = json.loads(name)
-        dockerimagemodel = ModelImporter.model('dockerimagemodel',
-
-                                               'slicer_cli')
+        docker_image_model = ModelImporter.model('docker_image_model',
+                                                 'slicer_cli')
 
         if isinstance(name, list):
             for img in name:
@@ -221,7 +220,7 @@ class DockerResource(Resource):
         else:
             raise RestException('a valid string or a list of '
                                 'strings was not passed in')
-        dockerimagemodel.putDockerImage(name, self.jobType, True)
+        docker_image_model.putDockerImage(name, self.jobType, True)
 
     def storeEndpoints(self, imgName, cli, operation, argList):
         """
@@ -292,8 +291,7 @@ class DockerResource(Resource):
                 == JobStatus.SUCCESS:
 
                 # remove all previous endpoints
-                dockermodel = ModelImporter.model('dockerimagemodel',
-
+                dockermodel = ModelImporter.model('docker_image_model',
                                                   'slicer_cli')
 
                 cache = dockermodel.loadAllImages()
