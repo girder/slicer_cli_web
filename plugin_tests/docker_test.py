@@ -34,7 +34,7 @@ TIMEOUT = 180
 
 
 def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
+    base.enabledPlugins.append('slicer_cli')
     base.startServer()
     global JobStatus
     from girder.plugins.jobs.constants import JobStatus
