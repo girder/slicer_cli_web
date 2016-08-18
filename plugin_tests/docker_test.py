@@ -24,16 +24,16 @@ import json
 
 from tests import base
 from girder import events
-from girder.plugins.jobs.constants import JobStatus
 
 # boiler plate to start and stop the server
 TIMEOUT = 180
 
 
 def setUpModule():
-
     base.enabledPlugins.append('slicer_cli')
     base.startServer()
+    from girder.plugins.jobs.constants import JobStatus
+    global JobStatus
 
 
 def tearDownModule():
