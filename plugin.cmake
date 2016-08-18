@@ -26,6 +26,8 @@ add_python_style_test(
 
 
 # API tests
-# add_python_test(docker PLUGIN slicer_cli)
+add_python_test(example PLUGIN slicer_cli)
+
+add_python_test(docker PLUGIN slicer_cli)
 
 

@@ -35,7 +35,7 @@ def load(info):
     resource = DockerResource('slicer_cli')
     info['apiRoot'].slicer_cli = resource
 
-    dockerImageModel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+    dockerImageModel = ModelImporter.model('docker_image_model', 'slicer_cli')
     dockerCache = dockerImageModel.loadAllImages()
 
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
