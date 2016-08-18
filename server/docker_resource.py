@@ -65,7 +65,9 @@ class DockerResource(Resource):
             'Failed to set system setting.', 500)
     )
     def getDockerImages(self, params):
-        dockermodel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
+
+        dockermodel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+
         dockerCache = dockermodel.loadAllImages()
         cache = dockerCache.getImages()
         data = {}
@@ -170,7 +172,8 @@ class DockerResource(Resource):
         docker rmi -f <image> )
         """
 
-        dockermodel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
+        dockermodel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+
         try:
 
             dockermodel.removeImages(names)
@@ -201,7 +204,8 @@ class DockerResource(Resource):
 
         name = json.loads(name)
         dockerimagemodel = ModelImporter.model('dockerimagemodel',
-                                               'HistomicsTK')
+
+                                               'slicer_cli')
 
         if isinstance(name, list):
             for img in name:
@@ -289,7 +293,9 @@ class DockerResource(Resource):
 
                 # remove all previous endpoints
                 dockermodel = ModelImporter.model('dockerimagemodel',
-                                                  'HistomicsTK')
+
+                                                  'slicer_cli')
+
                 cache = dockermodel.loadAllImages()
 
                 self.deleteImageEndpoints()

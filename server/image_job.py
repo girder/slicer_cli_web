@@ -153,7 +153,7 @@ def jobPullAndLoad(job):
         cache, loadingError = LoadMetaData(jobModel, job, docker_client,
                                            pullList, loadList, notExistSet)
 
-        imageModel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
+        imageModel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
 
         imageModel.saveAllImgs(cache)
         if errorState is False and loadingError is False:

@@ -91,7 +91,9 @@ class Dockerimagemodel(AccessControlledModel):
                     pullList.append(name)
 
         job = jobModel.createLocalJob(
-            module='girder.plugins.HistomicsTK.image_job',
+
+            module='girder.plugins.slicer_cli.image_job',
+
             function='jobPullAndLoad',
             kwargs={
 
@@ -215,7 +217,9 @@ class Dockerimagemodel(AccessControlledModel):
         jobModel = ModelImporter.model('job', 'jobs')
 
         job = jobModel.createLocalJob(
-            module='girder.plugins.HistomicsTK.image_job',
+
+            module='girder.plugins.slicer_cli.image_job',
+
             function='deleteImage',
             kwargs={
                 'deleteList': name
