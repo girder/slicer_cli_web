@@ -19,7 +19,6 @@
 
 # This is to serve as an example for how to create a server-side test in a
 # girder plugin, it is not meant to be useful.
-
 from tests import base
 from girder import events
 
@@ -27,7 +26,6 @@ import threading
 import six
 import types
 import json
-
 
 # boiler plate to start and stop the server
 TIMEOUT = 180
@@ -38,7 +36,7 @@ def setUpModule():
     base.enabledPlugins.append('slicer_cli')
     base.startServer()
     global JobStatus
-    #  from girder.plugins.jobs.constants import JobStatus
+    from girder.plugins.jobs.constants import JobStatus
 
 
 def tearDownModule():
@@ -46,6 +44,7 @@ def tearDownModule():
 
 
 class SlicerCLITest(base.TestCase):
+
     def setUp(self):
 
         # adding and removing docker images and using generated rest endpoints
@@ -127,6 +126,7 @@ class SlicerCLITest(base.TestCase):
 
     def testXmlEndpoint(self):
         # loads an image and attempts to run an arbitrary xml endpoint
+
         img_name = "dsarchive/histomicstk:v0.1.3"
         self.testDockerAdd()
 
@@ -145,6 +145,7 @@ class SlicerCLITest(base.TestCase):
                     self.assertNotEqual(xmlString, '')
 
     def testEndpointDeletion(self):
+
         img_name = "dsarchive/histomicstk:v0.1.3"
         self.testXmlEndpoint()
         data = self.getEndpoint()
@@ -191,6 +192,7 @@ class SlicerCLITest(base.TestCase):
             self.assertHasKeys(imgVersions, [tag])
 
     def getEndpoint(self):
+
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin)
         self.assertStatus(resp, 200)
@@ -207,6 +209,7 @@ class SlicerCLITest(base.TestCase):
         delete docker image data and test whether a docker
         image can be deleted off the local machine
         """
+
         if deleteDockerImage:
             event = threading.Event()
 
