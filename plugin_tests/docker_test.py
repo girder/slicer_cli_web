@@ -17,15 +17,14 @@
 #  limitations under the License.
 ###############################################################################
 
-# This is to serve as an example for how to create a server-side test in a
-# girder plugin, it is not meant to be useful.
-from tests import base
-from girder import events
-
 import threading
 import six
 import types
 import json
+
+from tests import base
+from girder import events
+from girder.plugins.jobs.constants import JobStatus
 
 # boiler plate to start and stop the server
 TIMEOUT = 180
@@ -35,8 +34,6 @@ def setUpModule():
 
     base.enabledPlugins.append('slicer_cli')
     base.startServer()
-    global JobStatus
-    from girder.plugins.jobs.constants import JobStatus
 
 
 def tearDownModule():
