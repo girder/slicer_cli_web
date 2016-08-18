@@ -17,16 +17,11 @@
 #  limitations under the License.
 ###############################################################################
 
-
 from girder import events
-
+from girder.models.model_base import ModelImporter
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
-
-
 from .docker_resource import DockerResource
-
-from girder.models.model_base import ModelImporter
 
 
 def load(info):
