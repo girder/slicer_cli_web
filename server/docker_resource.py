@@ -66,7 +66,7 @@ class DockerResource(Resource):
     )
     def getDockerImages(self, params):
 
-        dockermodel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+        dockermodel = ModelImporter.model('docker_image_model', 'slicer_cli')
 
         dockerCache = dockermodel.loadAllImages()
         cache = dockerCache.getImages()

@@ -170,6 +170,7 @@ class DockerImageModel(AccessControlledModel):
 
         for img in results:
             img_list.append(DockerImage(img))
+
         return img_list
 
     def saveAllImgs(self, dockerCache):
@@ -197,6 +198,7 @@ class DockerImageModel(AccessControlledModel):
         dockerCache = DockerCache()
         for img in img_list:
             try:
+
                 self._ImageExistsLocally(img.name)
                 dockerCache.addImage(img)
             except DockerImageNotFoundError:
