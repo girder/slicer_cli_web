@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #  Copyright Kitware Inc.
 #
@@ -17,28 +14,18 @@
 #  limitations under the License.
 ###############################################################################
 
+# style tests
+add_python_style_test(
+  python_static_analysis_slicer_cli_plugins
+  "${PROJECT_SOURCE_DIR}/plugins/slicer_cli/server"
+)
 
-from girder import events
+add_python_style_test(
+  python_static_analysis_slicer_cli_tests
+  "${PROJECT_SOURCE_DIR}/plugins/slicer_cli/plugin_tests"
+)
 
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
+# API tests
+add_python_test(docker PLUGIN slicer_cli)
 
-
-from .docker_resource import DockerResource
-
-from girder.models.model_base import ModelImporter
-
-
-def load(info):
-
-    # passed in resource name must match the attribute added to info[apiroot]
-    resource = DockerResource('slicer_cli')
-    info['apiRoot'].slicer_cli = resource
-
-    dockerImageModel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
-    dockerCache = dockerImageModel.loadAllImages()
-
-    genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
-
-    events.bind('model.job.save.after', resource.resourceName,
-                resource.AddRestEndpoints)
