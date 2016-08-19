@@ -40,7 +40,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class SlicerCLITest(base.TestCase):
+class DockerImageManagementTest(base.TestCase):
 
     def setUp(self):
 
