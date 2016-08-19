@@ -33,7 +33,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class HistomicsTKExampleTest(base.TestCase):
+class ExampleTest(base.TestCase):
 
     def testExample(self):
         resp = self.request(path='/user/me')

@@ -22,5 +22,12 @@ add_python_style_test(
 
 add_python_style_test(
   python_static_analysis_slicer_cli_tests
-  "${PROJECT_SOURCE_DIR}/plugins/slicer_cli/plugin_tests"
-)
+  "${PROJECT_SOURCE_DIR}/plugins/slicer_cli/plugin_tests")
+
+
+# API tests
+add_python_test(example PLUGIN slicer_cli)
+
+add_python_test(docker PLUGIN slicer_cli)
+
+
