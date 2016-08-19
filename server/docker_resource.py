@@ -40,13 +40,13 @@ class DockerResource(Resource):
     """
 
     resourceName = ''
-    jobType = 'DockerImageDataJob'
+    jobType = 'slicer_cli_job'
 
     def __init__(self, name):
         super(DockerResource, self).__init__()
         self.currentEndpoints = {}
         self.resourceName = name
-        self.jobType = name+'_job'
+        self.jobType = 'slicer_cli_job'
         DockerResource.resourceName = name
         self.route('PUT', (DockerResource.resourceName, 'docker_image'),
                    self.setImages)

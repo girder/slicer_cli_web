@@ -26,14 +26,14 @@ from tests import base
 from girder import events
 
 # boiler plate to start and stop the server
-TIMEOUT = 180
+TIMEOUT = 30
 
 
 def setUpModule():
     base.enabledPlugins.append('slicer_cli')
     base.startServer()
-    from girder.plugins.jobs.constants import JobStatus
     global JobStatus
+    from girder.plugins.jobs.constants import JobStatus
 
 
 def tearDownModule():
@@ -190,7 +190,7 @@ class SlicerCLITest(base.TestCase):
 
     def getEndpoint(self):
 
-        resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
+        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
                             user=self.admin)
         self.assertStatus(resp, 200)
         return json.loads(self.getBody(resp))
@@ -206,30 +206,27 @@ class SlicerCLITest(base.TestCase):
         delete docker image data and test whether a docker
         image can be deleted off the local machine
         """
-
+        job_status = [JobStatus.SUCCESS]
         if deleteDockerImage:
             event = threading.Event()
 
             def tempListener(self, girderEvent):
                 job = girderEvent.info
 
-                if job['type'] == 'HistomicsTK_job' and \
+                if job['type'] == 'slicer_cli_job' and \
                         (job['status'] == JobStatus.SUCCESS or
                          job['status'] == JobStatus.ERROR):
 
-                    self.assertEqual(job['status'], status,
-                                     "The status of the job should "
-                                     "match")
-                    events.unbind('model.job.save.after', 'HistomicsTK_del')
-                    # del self.delHandler
+                    events.unbind('model.job.save.after', 'slicer_cli_del')
+                    job_status[0] = job['status']
                     event.set()
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('model.job.save.after', 'HistomicsTK_del',
+            events.bind('model.job.save.after', 'slicer_cli_del',
                         self.delHandler)
 
-        resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
+        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
                             user=self.admin, method='DELETE',
                             params={"name": json.dumps(name),
                                     "delete_from_local_repo":
@@ -246,43 +243,51 @@ class SlicerCLITest(base.TestCase):
                     pass
         if deleteDockerImage:
             if not event.wait(TIMEOUT):
+                del self.delHandler
                 self.fail('deleting the docker image is taking '
                           'longer than %d seconds' % TIMEOUT)
-
-            del self.delHandler
+            else:
+                del self.delHandler
+                self.assertEqual(job_status[0], status,
+                                 "The status of the job should "
+                                 "match ")
 
     def addImage(self, name, status):
         """test the put endpoint, name can be a string or a list of strings"""
 
         event = threading.Event()
+        job_status = [JobStatus.SUCCESS]
 
         def tempListener(self, girderEvent):
 
             job = girderEvent.info
 
-            if job['type'] == 'HistomicsTK_job' and \
+            if (job['type'] == 'slicer_cli_job') and \
                     (job['status'] == JobStatus.SUCCESS or
                      job['status'] == JobStatus.ERROR):
 
-                self.assertEqual(job['status'], status,
-                                 "The status of the job should "
-                                 "match ")
+                job_status[0] = job['status']
 
-                events.unbind('model.job.save.after', 'HistomicsTK_add')
+                events.unbind('model.job.save.after', 'slicer_cli_add')
 
                 event.set()
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('model.job.save.after', 'HistomicsTK_add', self.addHandler)
+        events.bind('model.job.save.after', 'slicer_cli_add', self.addHandler)
 
-        resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
+        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
                             user=self.admin, method='PUT',
                             params={"name": json.dumps(name)}, isJson=False)
 
         self.assertStatus(resp, 200)
 
         if not event.wait(TIMEOUT):
+            del self.addHandler
             self.fail('adding the docker image is taking '
                       'longer than %d seconds' % TIMEOUT)
-        del self.addHandler
+        else:
+            del self.addHandler
+            self.assertEqual(job_status[0], status,
+                             "The status of the job should "
+                             "match ")

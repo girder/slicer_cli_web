@@ -25,7 +25,7 @@ from docker.errors import DockerException
 from girder.models.model_base import ModelImporter
 from girder.plugins.jobs.constants import JobStatus
 import json
-from server.models import DockerImage, DockerImageError, \
+from .models import DockerImage, DockerImageError, \
     DockerImageNotFoundError, DockerCache
 from six import iteritems
 
@@ -112,6 +112,7 @@ def jobPullAndLoad(job):
     Event listeners check the jobtype to determine if a job is Dockerimage
     related
     """
+
     try:
         jobModel = ModelImporter.model('job', 'jobs')
         pullList = job['kwargs']['pullList']
