@@ -274,7 +274,8 @@ class DockerImageManagementTest(base.TestCase):
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('model.job.save.after', 'slicer_cli_web_add', self.addHandler)
+        events.bind('model.job.save.after',
+                    'slicer_cli_web_add', self.addHandler)
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='PUT',
