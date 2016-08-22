@@ -40,13 +40,13 @@ class DockerResource(Resource):
     """
 
     resourceName = ''
-    jobType = 'slicer_cli_job'
+    jobType = 'slicer_cli_web_job'
 
     def __init__(self, name):
         super(DockerResource, self).__init__()
         self.currentEndpoints = {}
         self.resourceName = name
-        self.jobType = 'slicer_cli_job'
+        self.jobType = 'slicer_cli_web_job'
         DockerResource.resourceName = name
         self.route('PUT', (DockerResource.resourceName, 'docker_image'),
                    self.setImages)
@@ -66,7 +66,8 @@ class DockerResource(Resource):
     )
     def getDockerImages(self, params):
 
-        dockermodel = ModelImporter.model('docker_image_model', 'slicer_cli')
+        dockermodel = ModelImporter.model('docker_image_model',
+                                          'slicer_cli_web')
 
         dockerCache = dockermodel.loadAllImages()
         cache = dockerCache.getImages()
@@ -172,7 +173,8 @@ class DockerResource(Resource):
         docker rmi -f <image> )
         """
 
-        dockermodel = ModelImporter.model('docker_image_model', 'slicer_cli')
+        dockermodel = ModelImporter.model('docker_image_model',
+                                          'slicer_cli_web')
 
         try:
 
@@ -204,7 +206,7 @@ class DockerResource(Resource):
 
         name = json.loads(name)
         docker_image_model = ModelImporter.model('docker_image_model',
-                                                 'slicer_cli')
+                                                 'slicer_cli_web')
 
         if isinstance(name, list):
             for img in name:
@@ -292,7 +294,7 @@ class DockerResource(Resource):
 
                 # remove all previous endpoints
                 dockermodel = ModelImporter.model('docker_image_model',
-                                                  'slicer_cli')
+                                                  'slicer_cli_web')
 
                 cache = dockermodel.loadAllImages()
 

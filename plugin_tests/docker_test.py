@@ -30,7 +30,7 @@ TIMEOUT = 180
 
 
 def setUpModule():
-    base.enabledPlugins.append('slicer_cli')
+    base.enabledPlugins.append('slicer_cli_web')
     base.startServer()
     global JobStatus
     from girder.plugins.jobs.constants import JobStatus
@@ -190,7 +190,7 @@ class DockerImageManagementTest(base.TestCase):
 
     def getEndpoint(self):
 
-        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
+        resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin)
         self.assertStatus(resp, 200)
         return json.loads(self.getBody(resp))
@@ -213,20 +213,20 @@ class DockerImageManagementTest(base.TestCase):
             def tempListener(self, girderEvent):
                 job = girderEvent.info
 
-                if job['type'] == 'slicer_cli_job' and \
+                if job['type'] == 'slicer_cli_web_job' and \
                         (job['status'] == JobStatus.SUCCESS or
                          job['status'] == JobStatus.ERROR):
 
-                    events.unbind('model.job.save.after', 'slicer_cli_del')
+                    events.unbind('model.job.save.after', 'slicer_cli_web_del')
                     job_status[0] = job['status']
                     event.set()
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('model.job.save.after', 'slicer_cli_del',
+            events.bind('model.job.save.after', 'slicer_cli_web_del',
                         self.delHandler)
 
-        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
+        resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='DELETE',
                             params={"name": json.dumps(name),
                                     "delete_from_local_repo":
@@ -262,21 +262,22 @@ class DockerImageManagementTest(base.TestCase):
 
             job = girderEvent.info
 
-            if (job['type'] == 'slicer_cli_job') and \
+            if (job['type'] == 'slicer_cli_web_job') and \
                     (job['status'] == JobStatus.SUCCESS or
                      job['status'] == JobStatus.ERROR):
 
                 job_status[0] = job['status']
 
-                events.unbind('model.job.save.after', 'slicer_cli_add')
+                events.unbind('model.job.save.after', 'slicer_cli_web_add')
 
                 event.set()
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('model.job.save.after', 'slicer_cli_add', self.addHandler)
+        events.bind('model.job.save.after',
+                    'slicer_cli_web_add', self.addHandler)
 
-        resp = self.request(path='/slicer_cli/slicer_cli/docker_image',
+        resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='PUT',
                             params={"name": json.dumps(name)}, isJson=False)
 
