@@ -67,7 +67,7 @@ script:
     - cd $build_path/girder_testing_build
     - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DPYTHON_COVERAGE_CONFIG="$main_path/plugin_tests/pycoverage.cfg" -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DBUILD_JAVASCRIPT_TESTS:BOOL="OFF" -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="slicer_cli_web" $girder_path
     - make
-    - JASMINE_TIMEOUT=15000 ctest -VV -R '(coverage_reset|coverage_combine|slicer_cli_web|slicer_cli_web|coverage$|coverage_xml)'
+    - JASMINE_TIMEOUT=15000 ctest -VV
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
