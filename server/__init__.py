@@ -27,10 +27,11 @@ from .docker_resource import DockerResource
 def load(info):
 
     # passed in resource name must match the attribute added to info[apiroot]
-    resource = DockerResource('slicer_cli')
-    info['apiRoot'].slicer_cli = resource
+    resource = DockerResource('slicer_cli_web')
+    info['apiRoot'].slicer_cli_web = resource
 
-    dockerImageModel = ModelImporter.model('docker_image_model', 'slicer_cli')
+    dockerImageModel = ModelImporter.model('docker_image_model',
+                                           'slicer_cli_web')
     dockerCache = dockerImageModel.loadAllImages()
 
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)

@@ -25,7 +25,7 @@ from tests import base
 
 # boiler plate to start and stop the server
 def setUpModule():
-    base.enabledPlugins.append('slicer_cli')
+    base.enabledPlugins.append('slicer_cli_web')
     base.startServer()
 
 
