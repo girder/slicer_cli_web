@@ -35,3 +35,16 @@ class ImportPackageTest(base.TestCase):
 
     def test_slicer_cli_web(self):
         from girder.plugins import slicer_cli_web  # noqa
+
+    def test_rest_slicer_cli(self):
+        from girder.plugins.slicer_cli_web import rest_slicer_cli
+
+    def test_docker_image_model(self):
+        dockerImageModel = ModelImporter.model('docker_image_model',
+                                               'slicer_cli_web')  # noqa
+
+    def test_docker_resource(self):
+        from girder.plugins.slicer_cli_web import docker_resource  # noqa
+
+    def test_cli_list_entrypoint(self):
+        from girder.plugins.slicer_cli_web import cli_list_entrypoint  # noqa
