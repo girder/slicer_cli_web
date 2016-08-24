@@ -17,7 +17,6 @@
 #  limitations under the License.
 ###############################################################################
 
-import sys
 from tests import base
 
 
