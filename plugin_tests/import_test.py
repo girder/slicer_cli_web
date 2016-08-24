@@ -37,11 +37,11 @@ class ImportPackageTest(base.TestCase):
         from girder.plugins import slicer_cli_web  # noqa
 
     def test_rest_slicer_cli(self):
-        from girder.plugins.slicer_cli_web import rest_slicer_cli
+        from girder.plugins.slicer_cli_web import rest_slicer_cli  # noqa
 
     def test_docker_image_model(self):
         from girder.models.model_base import ModelImporter
-        
+
         dockerImageModel = ModelImporter.model('docker_image_model',
                                                'slicer_cli_web')  # noqa
 
