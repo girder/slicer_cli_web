@@ -17,6 +17,7 @@
 #  limitations under the License.
 ###############################################################################
 
+import sys
 from tests import base
 
 
@@ -42,8 +43,14 @@ class ImportPackageTest(base.TestCase):
     def test_docker_image_model(self):
         from girder.models.model_base import ModelImporter
 
-        dockerImageModel = ModelImporter.model('docker_image_model',
-                                               'slicer_cli_web')  # noqa
+        raised = False
+        try:
+            ModelImporter.model('docker_image_model', 'slicer_cli_web')  # noqa
+        except Exception as e:
+            raised = True
+            print str(e)
+
+        self.assertFalse(raised, 'docker_image_model import failed')
 
     def test_docker_resource(self):
         from girder.plugins.slicer_cli_web import docker_resource  # noqa
