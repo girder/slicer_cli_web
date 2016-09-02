@@ -16,7 +16,7 @@ compiler:
 
 before_install:
     
-    - GIRDER_VERSION=d910e905c4196e3046a129d0edb84e5c7e301596
+    - GIRDER_VERSION=492acc9a011a6cc784a9295e466946da13198587
     - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - main_path=$PWD
     - build_path=$PWD/build

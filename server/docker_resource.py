@@ -286,17 +286,13 @@ class DockerResource(Resource):
         and endpoints fro all cached docker images are regenerated
         :param event: An event dictionary
         """
+        job = event.info['job']
 
-        job = event.info
+        if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
+            # remove all previous endpoints
+            dockermodel = ModelImporter.model('docker_image_model',
+                                              'slicer_cli_web')
+            cache = dockermodel.loadAllImages()
 
-        if job['type'] == self.jobType and job['status']\
-                == JobStatus.SUCCESS:
-
-                # remove all previous endpoints
-                dockermodel = ModelImporter.model('docker_image_model',
-                                                  'slicer_cli_web')
-
-                cache = dockermodel.loadAllImages()
-
-                self.deleteImageEndpoints()
-                genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
+            self.deleteImageEndpoints()
+            genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
