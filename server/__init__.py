@@ -36,5 +36,5 @@ def load(info):
 
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
 
-    events.bind('model.job.save.after', resource.resourceName,
+    events.bind('jobs.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)

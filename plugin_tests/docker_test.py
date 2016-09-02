@@ -211,19 +211,19 @@ class DockerImageManagementTest(base.TestCase):
             event = threading.Event()
 
             def tempListener(self, girderEvent):
-                job = girderEvent.info
+                job = girderEvent.info['job']
 
-                if job['type'] == 'slicer_cli_web_job' and \
-                        (job['status'] == JobStatus.SUCCESS or
-                         job['status'] == JobStatus.ERROR):
-
-                    events.unbind('model.job.save.after', 'slicer_cli_web_del')
+                if (job['type'] == 'slicer_cli_web_job' and
+                        job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                    self.assertEqual(job['status'], status,
+                                     'The status of the job should match')
+                    events.unbind('jobs.job.update.after', 'slicer_cli_web_del')
                     job_status[0] = job['status']
                     event.set()
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('model.job.save.after', 'slicer_cli_web_del',
+            events.bind('jobs.job.update.after', 'slicer_cli_web_del',
                         self.delHandler)
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
@@ -259,22 +259,21 @@ class DockerImageManagementTest(base.TestCase):
         job_status = [JobStatus.SUCCESS]
 
         def tempListener(self, girderEvent):
+            job = girderEvent.info['job']
 
-            job = girderEvent.info
-
-            if (job['type'] == 'slicer_cli_web_job') and \
-                    (job['status'] == JobStatus.SUCCESS or
-                     job['status'] == JobStatus.ERROR):
-
+            if (job['type'] == 'slicer_cli_web_job' and
+                    job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                self.assertEqual(job['status'], status,
+                                 'The status of the job should match')
                 job_status[0] = job['status']
 
-                events.unbind('model.job.save.after', 'slicer_cli_web_add')
+                events.unbind('jobs.job.update.after', 'slicer_cli_web_add')
 
                 event.set()
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('model.job.save.after',
+        events.bind('jobs.job.update.after',
                     'slicer_cli_web_add', self.addHandler)
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
