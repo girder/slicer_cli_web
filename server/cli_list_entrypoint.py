@@ -90,7 +90,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         script_file = os.path.join('.', args.cli, os.path.basename(args.cli))
 
         # ./<cli-rel-path>/<cli-name> [<args>]
-        subprocess.call(script_file + sys.argv[2:])
+        subprocess.call([script_file] + sys.argv[2:])
 
     else:
         raise Exception(
