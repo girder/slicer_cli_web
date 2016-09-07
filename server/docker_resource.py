@@ -22,6 +22,7 @@ import six
 import json
 
 from girder.api.v1.resource import Resource, RestException
+from girder import logger
 
 from girder.utility.model_importer import ModelImporter
 
@@ -274,8 +275,8 @@ class DockerResource(Resource):
                             self.removeRoute(endpoint[0], endpoint[1],
                                              getattr(self, endpoint[2]))
                             delattr(self, endpoint[2])
-                        except Exception as err:
-                            print err
+                        except Exception:
+                            logger.exception('Failed to remove route')
             del self.currentEndpoints[imageName]
 
     def AddRestEndpoints(self, event):

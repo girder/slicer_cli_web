@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import subprocess
+import tempfile
 
 from ctk_cli import CLIModule
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -11,6 +12,7 @@ from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 from girder.utility.model_importer import ModelImporter
 from girder.plugins.worker import constants
+from girder import logger
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -479,12 +481,12 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
             try:
                 curValue = _getParamCommandLineValue(
                     param, hargs['params'][param.name])
-            except Exception as e:
-                print 'Error: Parameter value is not in json.dumps format'
-                print '  Parameter name =', param.name
-                print '  Parameter type =', param.typ
-                print '  Value passed =', hargs['params'][param.name]
-                print e
+            except Exception:
+                logger.exception(
+                    'Error: Parameter value is not in json.dumps format\n'
+                    '  Parameter name = %r\n  Parameter type = %r\n'
+                    '  Value passed = %r', param.name, param.typ,
+                    hargs['params'][param.name])
                 raise
         else:
             continue
@@ -597,12 +599,10 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     str_xml = cliXML
 
     # parse cli xml spec
-    xmlFile = 'temp.xml'
-    with open(xmlFile, 'w') as f:
+    with tempfile.NamedTemporaryFile(suffix='.xml') as f:
         f.write(str_xml)
-
-    clim = CLIModule(xmlFile)
-    os.remove(xmlFile)
+        f.flush()
+        clim = CLIModule(f.name)
 
     # create CLI description string
     str_description = ['Description: <br/><br/>' + clim.description]
@@ -874,8 +874,6 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         # get CLI list
         cliListSpec = getDockerImageCLIList(dimg)
 
-        # pprint.pprint(cliListSpec)
-
         cliListSpec = json.loads(cliListSpec)
 
         # Add REST end-point for each CLI
@@ -884,15 +882,13 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
             # create a POST REST route that runs the CLI
             try:
 
-                # print cliXML
                 cliRunHandler = genHandlerToRunDockerCLI(dimg,
                                                          cliRelPath,
                                                          cliXML,
                                                          restResource)
-            except Exception as e:
-                print ("Failed to create REST endpoints for %s: %s" % (
-                    cliRelPath, e))
-
+            except Exception:
+                logger.execption('Failed to create REST endpoints for %s',
+                                 cliRelPath)
                 continue
 
             cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
@@ -908,12 +904,12 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
                 cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
                     cliRelPath, cliXML, restResource)
 
-            except Exception as e:
-                print "Failed to create REST endpoints for %s: %s" % (
-                    cliRelPath, e)
+            except Exception:
+                logger.exception('Failed to create REST endpoints for %s',
+                                 cliRelPath)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
+                logger.error('%r' % [exc_type, fname, exc_tb.tb_lineno])
                 continue
 
             cliGetXMLSpecHandlerName = 'get_xml_' + cliSuffix
@@ -985,8 +981,6 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
         # get CLI list
         cliListSpec = docker_image.getCLIListSpec()
 
-        # pprint.pprint(cliListSpec)
-
         # Add REST end-point for each CLI
         for cliRelPath in cliListSpec.keys():
             restPath = dimg.replace(
@@ -1000,10 +994,9 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                                                          cliXML,
                                                          restResource)
 
-            except Exception as e:
-                print('Failed to create REST endpoints for %s: %s' % (
-                    cliRelPath, e))
-
+            except Exception:
+                logger.exception('Failed to create REST endpoints for %r',
+                                 cliRelPath)
                 continue
 
             cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
@@ -1024,13 +1017,12 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                 cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
                     cliRelPath, cliXML,
                     restResource)
-
-            except Exception as e:
-                print "Failed to create REST endpoints for %s: %s" % (
-                    cliRelPath, e)
+            except Exception:
+                logger.exception('Failed to create REST endpoints for %s',
+                                 cliRelPath)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
+                logger.error('%r', [exc_type, fname, exc_tb.tb_lineno])
                 continue
 
             cliGetXMLSpecHandlerName = restPath+'_get_xml_' + cliSuffix
@@ -1045,6 +1037,7 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                 dimg, cliRelPath, 'xmlspec',
                 ['GET', (restPath, cliRelPath, 'xmlspec'),
                  cliGetXMLSpecHandlerName])
+            logger.debug('Created REST endpoints for %s', cliRelPath)
 
     return restResource
 
