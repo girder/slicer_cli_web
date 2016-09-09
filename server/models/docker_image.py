@@ -22,6 +22,8 @@ from six import iteritems, string_types
 import hashlib
 import jsonschema
 
+from girder import logger
+
 
 class DockerImageError(Exception):
     def __init__(self, message, image_name='None'):
@@ -94,8 +96,9 @@ class DockerImage():
                                        ' could not add the image',
                                        'bad init val')
         except Exception as err:
-                raise DockerImageError('Could not initialize instance'
-                                       ' of Docker Image \n'+str(err))
+            logger.exception('Could not initialize docker image %r', name)
+            raise DockerImageError(
+                'Could not initialize instance of Docker Image \n' + str(err))
 
     def addCLI(self, cli_name, cli_data):
         """
@@ -184,8 +187,9 @@ class DockerCache:
                 raise DockerImageError('Tried to add a non '
                                        'docker image object to cache')
         except Exception as err:
-            raise DockerImageError('Failed to add the '
-                                   'docker image to the cache' + str(err))
+            logger.exception('Failed to add docker image %r', img)
+            raise DockerImageError(
+                'Failed to add the docker image to the cache' + str(err))
 
     def getImageNames(self):
         """

@@ -19,6 +19,7 @@
 
 from docker import Client
 from docker.errors import DockerException
+from girder import logger
 from girder.constants import AccessType
 from girder.api.rest import getCurrentUser
 from girder.models.model_base import ModelImporter, AccessControlledModel
@@ -51,9 +52,9 @@ class DockerImageModel(AccessControlledModel):
         try:
             self.client = Client(base_url='unix://var/run/docker.sock')
         except DockerException as err:
-
-            raise DockerImageError('could not create the docker '
-                                   'client '+str(err))
+            logger.exception('Could not create the docker client')
+            raise DockerImageError('could not create the docker client ' + str(
+                                   err))
 
     # TODO image_name:tag and image_name@digest are treated seperate images
 
@@ -121,9 +122,9 @@ class DockerImageModel(AccessControlledModel):
         try:
             data = self.client.inspect_image(name)
         except Exception as err:
-
-            raise DockerImageNotFoundError('could not find'
-                                           ' the image \n'+str(err), name)
+            logger.exception('Could not find docker image %s', name)
+            raise DockerImageNotFoundError(
+                'could not find the image \n' + str(err), name)
         return data['Id']
 
     def save(self, img):
@@ -138,6 +139,7 @@ class DockerImageModel(AccessControlledModel):
             super(DockerImageModel, self).save(document=img.getRawData(),
                                                triggerEvents=True)
         except Exception as err:
+            logger.exception('Could not save image %s metadata', img.name)
             raise DockerImageError(
                 'Could not save image %s metadata '
                 'to database ' % img.name + str(err), img.name)
@@ -249,14 +251,15 @@ class DockerImageModel(AccessControlledModel):
                 super(DockerImageModel, self).remove(imageData.getRawData())
         except Exception as err:
             if isinstance(err, DockerImageNotFoundError):
+                logger.exception('Image %r does not exist', img)
                 raise DockerImageNotFoundError(
                     'The image %s with hash %s does not exist '
                     'in the database' % (img, hash), img)
             else:
-                raise DockerImageError('Could not delete the image '
-                                       'data from the database invalid '
-                                       'image :'+img+' ' +
-                                       str(err), img)
+                logger.exception('Could not remove image %r', img)
+                raise DockerImageError(
+                    'Could not delete the image data from the database '
+                    'invalid image: ' + img + ' ' + str(err), img)
 
     # TODO validate the xml of each cli
     def validate(self, doc):
@@ -280,5 +283,5 @@ class DockerImageModel(AccessControlledModel):
             #
             return doc
         except Exception as err:
-
-            raise DockerImageError('Image meta data is invalid ' + str(err))
+            logger.exception('Image metadata failed to validate %r', doc)
+            raise DockerImageError('Image metadata is invalid ' + str(err))

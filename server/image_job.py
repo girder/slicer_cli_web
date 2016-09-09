@@ -21,7 +21,7 @@
 from docker import Client
 from docker.errors import DockerException
 
-
+from girder import logger
 from girder.models.model_base import ModelImporter
 from girder.plugins.jobs.constants import JobStatus
 import json
@@ -54,6 +54,7 @@ def deleteImage(job):
             docker_client = Client(base_url='unix://var/run/docker.sock')
 
         except DockerException as err:
+            logger.exception('Could not create the docker client')
             jobModel.updateJob(
                 job,
                 log='Failed to create the Docker '
@@ -67,10 +68,10 @@ def deleteImage(job):
                 docker_client.remove_image(name, force=True)
 
             except Exception as err:
+                logger.exception('Failed to remove image')
                 jobModel.updateJob(
                     job,
-                    log='Failed to remove  image \n' +
-                        str(err) + '\n',
+                    log='Failed to remove image \n' + str(err) + '\n',
                     status=JobStatus.RUNNING,
                 )
                 error = True
@@ -92,10 +93,10 @@ def deleteImage(job):
                 progressMessage='Removed all images'
             )
     except Exception as err:
+        logger.exception('Error with job')
         jobModel.updateJob(
             job,
-            log='Error with job'
-                ' \n ' + str(err) + '\n',
+            log='Error with job \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
 
         )
@@ -130,9 +131,10 @@ def jobPullAndLoad(job):
             docker_client = Client(base_url='unix://var/run/docker.sock')
 
         except DockerException as err:
+            logger.exception('Could not create the docker client')
             jobModel.updateJob(
                 job,
-                log='Failed to create the Docker Client\n' + str(err)+'\n',
+                log='Failed to create the Docker Client\n' + str(err) + '\n',
 
             )
             raise DockerImageError('Could not create the docker client')
@@ -170,10 +172,10 @@ def jobPullAndLoad(job):
             progressMessage='Completed caching docker images'
         )
     except Exception as err:
+        logger.exception('Error with job')
         jobModel.updateJob(
             job,
-            log='Error with job'
-                ' \n ' + str(err)+'\n',
+            log='Error with job \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
 
         )
@@ -265,9 +267,11 @@ def getDockerOutput(imgName, command, client):
                            stdout=True, stderr=False, stream=True)
         ret_code = client.wait(container=cont.get('Id'))
     except Exception as err:
+        logger.exception(
+            'Attempt to docker run %s %s failed', imgName, command)
         raise DockerImageError(
-            'Attempt to docker run %s %s failed'
-            ' ' % (imgName, command) + str(err), imgName)
+            'Attempt to docker run %s %s failed ' % (
+                imgName, command) + str(err), imgName)
     if ret_code != 0:
         raise DockerImageError(
             'Attempt to docker run %s %s failed' % (imgName, command), imgName)
@@ -302,10 +306,10 @@ def getCliData(name, client, img, jobModel, job):
                 img.addCLI(key, cli_dict[key])
         return cli_dict
     except Exception as err:
-
-        raise DockerImageError('Error getting %s cli '
-                               'data from image %s'
-                               ' ' % (name, img)+str(err))
+        logger.exception(
+            'Error getting %s cli data from image %s', name, img)
+        raise DockerImageError(
+            'Error getting %s cli data from image %s ' % (name, img) + str(err))
 
 
 def pullDockerImage(client, names):
