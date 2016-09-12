@@ -32,4 +32,23 @@ add_python_test(import PLUGIN slicer_cli_web)
 
 add_python_test(docker PLUGIN slicer_cli_web)
 
+# front-end tests
+add_web_client_test(
+    slicer_cli_web_schema "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client/parser.js"
+    ENABLEDPLUGINS "slicer_cli_web")
 
+add_web_client_test(
+    slicer_cli_web_widget "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client/widget.js"
+    ENABLEDPLUGINS "slicer_cli_web")
+
+add_eslint_test(
+  js_static_analysis_slicer_cli_web "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/web_client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/.eslintignore"
+)
+
+add_eslint_test(
+  js_static_analysis_slicer_cli_web_tests "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/.eslintignore"
+)
