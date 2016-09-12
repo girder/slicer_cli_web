@@ -1,5 +1,4 @@
 _.each([
-    '/plugins/slicer_cli_web/web_client/js/ext/backbone.localStorage.js',
     '/plugins/slicer_cli_web/web_client/js/ext/bootstrap-colorpicker.js',
     '/plugins/slicer_cli_web/web_client/js/ext/bootstrap-slider.js',
     '/plugins/slicer_cli_web/web_client/js/ext/tinycolor.js'
@@ -580,7 +579,7 @@ describe('control widget view', function () {
         w.render();
         checkWidgetCommon(w);
 
-        w.$('.h-select-file-button').click();
+        w.$('.s-select-file-button').click();
         expect(arg.parentModel).toBe(slicer.rootPath);
         arg.onItemClick(item);
         expect(w.model.value().name()).toBe('b');
@@ -621,25 +620,26 @@ describe('control widget view', function () {
         w.render();
         checkWidgetCommon(w);
 
-        w.$('.h-select-file-button').click();
+        slicer.rootPath = {};
+        w.$('.s-select-file-button').click();
         expect(arg.parentModel).toBe(slicer.rootPath);
 
         // selecting without a file name entered should error
-        $modal.find('.h-select-button').click();
+        $modal.find('.s-select-button').click();
         expect($modal.find('.form-group').hasClass('has-error')).toBe(true);
-        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(false);
+        expect($modal.find('.s-modal-error').hasClass('hidden')).toBe(false);
 
         // selecting with a file name in a collection should error
-        $modal.find('#h-new-file-name').val('my file');
-        $modal.find('.h-select-button').click();
+        $modal.find('#s-new-file-name').val('my file');
+        $modal.find('.s-select-button').click();
         expect($modal.find('.form-group').hasClass('has-error')).toBe(false);
-        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(false);
+        expect($modal.find('.s-modal-error').hasClass('hidden')).toBe(false);
 
         // selecting a file in a folder should succeed
         arg.parentModel.resourceName = 'folder';
-        $modal.find('.h-select-button').click();
+        $modal.find('.s-select-button').click();
         expect($modal.find('.form-group').hasClass('has-error')).toBe(false);
-        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(true);
+        expect($modal.find('.s-modal-error').hasClass('hidden')).toBe(true);
         expect(w.model.get('path')).toEqual(['a']);
         expect(w.model.get('value').get('name')).toBe('my file');
 

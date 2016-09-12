@@ -1,7 +1,7 @@
 $(function () {
     window.slicer = {};
     girderTest.addCoveredScripts([
-        '/plugins/slicer/web_client/js/parser.js'
+        '/plugins/slicer_cli_web/web_client/js/parser.js'
     ]);
 });
 
