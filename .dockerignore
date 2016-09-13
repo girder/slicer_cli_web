@@ -1,4 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
+
 ### Vim template
 # swap
 [._]*.s[a-w][a-z]
@@ -8,9 +9,11 @@ Session.vim
 # temporary
 .netrwhist
 *~
+
 # auto-generated tag files
 tags
-### C++ template
+
+### Cpp template
 # Compiled Object files
 *.slo
 *.lo
@@ -40,6 +43,7 @@ tags
 *.exe
 *.out
 *.app
+
 ### CMake template
 CMakeCache.txt
 CMakeFiles
@@ -48,6 +52,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
+
 ### Emacs template
 # -*- mode: gitignore; -*-
 *~
@@ -103,6 +108,7 @@ flycheck_*.el
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+
 ### Linux template
 *~
 
@@ -114,6 +120,7 @@ pip-selfcheck.json
 
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
+
 ### C template
 # Object files
 *.o
@@ -148,6 +155,7 @@ pip-selfcheck.json
 # Debug files
 *.dSYM/
 *.su
+
 ### Windows template
 # Windows image file caches
 Thumbs.db
@@ -167,9 +175,11 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
 ### KDevelop4 template
 *.kdev4
 .kdev4/
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
