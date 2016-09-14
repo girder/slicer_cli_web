@@ -5,8 +5,6 @@ import argparse
 import subprocess
 import textwrap as _textwrap
 
-from girder import logger
-
 
 class _MultilineHelpFormatter(argparse.HelpFormatter):
     def _fill_text(self, text, width, indent):
@@ -95,8 +93,6 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         subprocess.call([script_file] + sys.argv[2:])
 
     else:
-        logger.exception('CLIs of type %s are not supported',
-                         cli_list_spec[args.cli]['type'])
         raise Exception(
             'CLIs of type %s are not supported',
             cli_list_spec[args.cli]['type']
