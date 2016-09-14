@@ -93,7 +93,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         subprocess.call([script_file] + sys.argv[2:])
 
     else:
-       raise Exception(
+        raise Exception(
             'CLIs of type %s are not supported',
             cli_list_spec[args.cli]['type']
         )
