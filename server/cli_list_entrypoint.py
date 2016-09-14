@@ -6,9 +6,9 @@ import subprocess
 import textwrap as _textwrap
 
 try:
-   from girder import logger
+    from girder import logger
 except ImportError:
-   import logging as logger
+    import logging as logger
 
 
 class _MultilineHelpFormatter(argparse.HelpFormatter):
