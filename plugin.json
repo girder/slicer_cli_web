@@ -2,5 +2,8 @@
     "name": "slicer_cli_web",
     "description": "A girder plugin for exposing slicer CLIs over the web",
     "version": "0.1.0",
-    "dependencies": ["worker"]
+    "dependencies": ["worker"],
+    "grunt": {
+        "file": "Gruntfile.js"
+    }
 }
