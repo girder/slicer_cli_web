@@ -34,7 +34,7 @@ add_python_test(docker PLUGIN slicer_cli_web)
 
 # front-end tests
 add_web_client_test(
-    slicer_cli_web_schema "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client/parser.js"
+    slicer_cli_web_parser "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/plugin_tests/client/parser.js"
     ENABLEDPLUGINS "slicer_cli_web")
 
 add_web_client_test(
@@ -53,7 +53,7 @@ add_eslint_test(
   ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/.eslintignore"
 )
 
-add_puglint_test(
-  slicer_cli_web
-  "${CMAKE_CURRENT_LIST_DIR}/web_client/templates"
-)
+#add_puglint_test(
+#  slicer_cli_web
+#  "${CMAKE_CURRENT_LIST_DIR}/web_client/templates"
+#)
