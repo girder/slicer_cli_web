@@ -6,7 +6,7 @@ import tempfile
 
 from ctk_cli import CLIModule
 from girder.api.rest import Resource, loadmodel, boundHandler, \
-     setResponseHeader, setRawResponse
+    setResponseHeader, setRawResponse
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
