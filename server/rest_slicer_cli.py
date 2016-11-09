@@ -5,7 +5,8 @@ import subprocess
 import tempfile
 
 from ctk_cli import CLIModule
-from girder.api.rest import Resource, loadmodel, boundHandler
+from girder.api.rest import Resource, loadmodel, boundHandler, \
+    setResponseHeader, setRawResponse
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
@@ -804,6 +805,8 @@ def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
         Description('Get XML spec of %s CLI' % cliRelPath)
     )
     def getXMLSpecHandler(self, *args, **kwargs):
+        setResponseHeader('Content-Type', 'application/xml')
+        setRawResponse()
         return str_xml
 
     return getXMLSpecHandler
