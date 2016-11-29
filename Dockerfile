@@ -62,8 +62,8 @@ RUN cd $BUILD_PATH && git clone --depth 1 -b ${ITK_GIT_TAG} git://itk.org/ITK.gi
         -DModule_ITKIOXML:BOOL=ON \
         -DModule_ITKExpat:BOOL=ON \
         ../ITK && \
-    ninja install && \
-    rm -rf ITK ITK-build
+    ninja install
+RUN cd $BUILD_PATH && rm -rf ITK ITK-build
 
 # Download/configure/build SlicerExecutionModel (needed only for C++ CLIs)
 ENV SEM_GIT_TAG 7525fc777a064529aff55e41aef6d91a85074553
