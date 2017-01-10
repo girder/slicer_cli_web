@@ -53,7 +53,7 @@ add_eslint_test(
   ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/.eslintignore"
 )
 
-#add_puglint_test(
-#  slicer_cli_web
-#  "${CMAKE_CURRENT_LIST_DIR}/web_client/templates"
-#)
+add_puglint_test(
+  slicer_cli_web
+  "${CMAKE_CURRENT_LIST_DIR}/web_client/templates"
+)
