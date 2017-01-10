@@ -4,7 +4,7 @@ girderTest.addCoveredScripts([
     '/clients/web/static/built/plugins/slicer_cli_web/plugin.min.js'
 ]);
 
-$(function () {
+girderTest.promise.then(function () {
     var parser = girder.plugins.slicer_cli_web.parser;
     describe('XML Schema parser', function () {
         describe('type conversion', function () {

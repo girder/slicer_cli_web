@@ -4,7 +4,7 @@ girderTest.addCoveredScripts([
     '/clients/web/static/built/plugins/slicer_cli_web/plugin.min.js'
 ]);
 
-$(function () {
+girderTest.promise.then(function () {
     var slicer = girder.plugins.slicer_cli_web;
 
     describe('widget model', function () {
