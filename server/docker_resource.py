@@ -209,20 +209,17 @@ class DockerResource(Resource):
         docker_image_model = ModelImporter.model('docker_image_model',
                                                  'slicer_cli_web')
 
-        if isinstance(name, list):
-            for img in name:
-
-                if not isinstance(img, six.string_types):
-                    raise RestException('%s was not a valid string.' % img)
-                if ':' not in img or '@' not in img:
-                    raise RestException('Image %s does not have a tag or '
-                                        'digest' % img)
-
-        elif isinstance(name, six.string_types):
-                name = [name]
-        else:
+        if isinstance(name, six.string_types):
+            name = [name]
+        if not isinstance(name, list):
             raise RestException('a valid string or a list of '
                                 'strings was not passed in')
+        for img in name:
+            if not isinstance(img, six.string_types):
+                raise RestException('%s was not a valid string.' % img)
+            if ':' not in img and '@' not in img:
+                raise RestException('Image %s does not have a tag or digest' % img)
+
         docker_image_model.putDockerImage(name, self.jobType, True)
 
     def storeEndpoints(self, imgName, cli, operation, argList):

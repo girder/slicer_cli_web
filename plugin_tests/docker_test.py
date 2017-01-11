@@ -73,15 +73,29 @@ class DockerImageManagementTest(base.TestCase):
 
     def testDockerAdd(self):
         # try to cache a good image to the mongo database
-        img_name = "dsarchive/histomicstk:v0.1.3"
+        img_name = 'dsarchive/histomicstk:v0.1.3'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
 
+    def testDockerAddList(self):
+        # try to cache a good image to the mongo database
+        img_name = 'dsarchive/histomicstk:v0.1.3'
+        self.assertNoImages()
+        self.addImage([img_name], JobStatus.SUCCESS)
+        self.imageIsLoaded(img_name, True)
+
+    def testDockerAddWithoutVersion(self):
+        # all images need a version or hash
+        img_name = 'dsarchive/histomicstk'
+        self.assertNoImages()
+        self.addImage(img_name, JobStatus.ERROR)
+        self.assertNoImages()
+
     def testDockerDelete(self):
         # just delete the meta data in the mongo database
         # dont attempt to delete the docker image
-        img_name = "dsarchive/histomicstk:v0.1.3"
+        img_name = 'dsarchive/histomicstk:v0.1.3'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -92,7 +106,7 @@ class DockerImageManagementTest(base.TestCase):
     def testDockerDeleteFull(self):
         # attempt to delete docker image metadata and the image off the local
         # machine
-        img_name = "dsarchive/histomicstk:v0.1.3"
+        img_name = 'dsarchive/histomicstk:v0.1.3'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -124,7 +138,7 @@ class DockerImageManagementTest(base.TestCase):
     def testXmlEndpoint(self):
         # loads an image and attempts to run an arbitrary xml endpoint
 
-        img_name = "dsarchive/histomicstk:v0.1.3"
+        img_name = 'dsarchive/histomicstk:v0.1.3'
         self.testDockerAdd()
 
         name, tag = self.splitName(img_name)
@@ -144,7 +158,7 @@ class DockerImageManagementTest(base.TestCase):
 
     def testEndpointDeletion(self):
 
-        img_name = "dsarchive/histomicstk:v0.1.3"
+        img_name = 'dsarchive/histomicstk:v0.1.3'
         self.testXmlEndpoint()
         data = self.getEndpoint()
         self.deleteImage(img_name, True)
@@ -200,7 +214,7 @@ class DockerImageManagementTest(base.TestCase):
     def assertNoImages(self):
         data = self.getEndpoint()
         self.assertEqual({}, data,
-                         " There should be no pre existing docker images ")
+                         ' There should be no pre existing docker images ')
 
     def deleteImage(self, name,  responseCodeOK, deleteDockerImage=False,
                     status=4):
@@ -230,8 +244,8 @@ class DockerImageManagementTest(base.TestCase):
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='DELETE',
-                            params={"name": json.dumps(name),
-                                    "delete_from_local_repo":
+                            params={'name': json.dumps(name),
+                                    'delete_from_local_repo':
                                         deleteDockerImage
                                     }, isJson=False)
         if responseCodeOK:
@@ -251,8 +265,7 @@ class DockerImageManagementTest(base.TestCase):
             else:
                 del self.delHandler
                 self.assertEqual(job_status[0], status,
-                                 "The status of the job should "
-                                 "match ")
+                                 'The status of the job should match ')
 
     def addImage(self, name, status):
         """test the put endpoint, name can be a string or a list of strings"""
@@ -280,7 +293,7 @@ class DockerImageManagementTest(base.TestCase):
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='PUT',
-                            params={"name": json.dumps(name)}, isJson=False)
+                            params={'name': json.dumps(name)}, isJson=False)
 
         self.assertStatus(resp, 200)
 
@@ -291,5 +304,4 @@ class DockerImageManagementTest(base.TestCase):
         else:
             del self.addHandler
             self.assertEqual(job_status[0], status,
-                             "The status of the job should "
-                             "match ")
+                             'The status of the job should match ')
