@@ -89,7 +89,7 @@ class DockerImageManagementTest(base.TestCase):
         # all images need a version or hash
         img_name = 'dsarchive/histomicstk'
         self.assertNoImages()
-        self.addImage(img_name, JobStatus.ERROR)
+        self.addImage(img_name, None, 400)
         self.assertNoImages()
 
     def testDockerDelete(self):
@@ -216,7 +216,7 @@ class DockerImageManagementTest(base.TestCase):
         self.assertEqual({}, data,
                          ' There should be no pre existing docker images ')
 
-    def deleteImage(self, name,  responseCodeOK, deleteDockerImage=False,
+    def deleteImage(self, name, responseCodeOK, deleteDockerImage=False,
                     status=4):
         """
         delete docker image data and test whether a docker
@@ -267,9 +267,15 @@ class DockerImageManagementTest(base.TestCase):
                 self.assertEqual(job_status[0], status,
                                  'The status of the job should match ')
 
-    def addImage(self, name, status):
-        """test the put endpoint, name can be a string or a list of strings"""
+    def addImage(self, name, status, initialStatus=200):
+        """
+        Test the put endpoint.
 
+        :param name: a string or a list of strings
+        :param status: either JobStatus.SUCCESS or JobStatus.ERROR.
+        :param initialStatus: 200 if the job should run, otherwise a HTTP error
+            code expected if the job will fail.
+        """
         event = threading.Event()
         job_status = [JobStatus.SUCCESS]
 
@@ -286,16 +292,19 @@ class DockerImageManagementTest(base.TestCase):
 
                 event.set()
 
-        self.addHandler = types.MethodType(tempListener, self)
+        if initialStatus == 200:
+            self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('jobs.job.update.after',
-                    'slicer_cli_web_add', self.addHandler)
+            events.bind('jobs.job.update.after',
+                        'slicer_cli_web_add', self.addHandler)
 
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin, method='PUT',
                             params={'name': json.dumps(name)}, isJson=False)
 
-        self.assertStatus(resp, 200)
+        self.assertStatus(resp, initialStatus)
+        if initialStatus != 200:
+            return
 
         if not event.wait(TIMEOUT):
             del self.addHandler
