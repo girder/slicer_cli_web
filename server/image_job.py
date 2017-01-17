@@ -222,8 +222,7 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
             except DockerImageError as err:
                 jobModel.updateJob(
                     job,
-                    log='Error with recently'
-                        ' pulled image %s' % name + str(err) + '\n',
+                    log='Error with recently pulled image %s\n%s\n' % (name, err),
                     status=JobStatus.ERROR
                 )
                 errorState = True
@@ -236,14 +235,12 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
             cache.addImage(dockerImg)
             jobModel.updateJob(
                 job,
-                log='Loaded meta data from pre-existing local'
-                    'image %s\n' % name
+                log='Loaded meta data from pre-existing local image %s\n' % name
             )
         except DockerImageError as err:
             jobModel.updateJob(
                 job,
-                log='Error with recently loading pre-existing image'
-                    'image %s \n ' % name + str(err) + '\n',
+                log='Error with recently loading pre-existing image %s\n%s\n' % (name, err),
                 status=JobStatus.ERROR
             )
             errorState = True
