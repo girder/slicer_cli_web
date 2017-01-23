@@ -73,29 +73,29 @@ class DockerImageManagementTest(base.TestCase):
 
     def testDockerAdd(self):
         # try to cache a good image to the mongo database
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
 
     def testDockerAddList(self):
         # try to cache a good image to the mongo database
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
         self.addImage([img_name], JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
 
     def testDockerAddWithoutVersion(self):
         # all images need a version or hash
-        img_name = 'dsarchive/histomicstk'
+        img_name = 'girder/slicer_cli_web'
         self.assertNoImages()
         self.addImage(img_name, None, 400)
         self.assertNoImages()
 
     def testDockerDelete(self):
         # just delete the meta data in the mongo database
-        # dont attempt to delete the docker image
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        # don't delete the docker image
+        img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -106,7 +106,7 @@ class DockerImageManagementTest(base.TestCase):
     def testDockerDeleteFull(self):
         # attempt to delete docker image metadata and the image off the local
         # machine
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -138,7 +138,7 @@ class DockerImageManagementTest(base.TestCase):
     def testXmlEndpoint(self):
         # loads an image and attempts to run an arbitrary xml endpoint
 
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        img_name = 'girder/slicer_cli_web:small'
         self.testDockerAdd()
 
         name, tag = self.splitName(img_name)
@@ -158,7 +158,7 @@ class DockerImageManagementTest(base.TestCase):
 
     def testEndpointDeletion(self):
 
-        img_name = 'dsarchive/histomicstk:v0.1.3'
+        img_name = 'girder/slicer_cli_web:small'
         self.testXmlEndpoint()
         data = self.getEndpoint()
         self.deleteImage(img_name, True)
