@@ -35,10 +35,9 @@ class DockerImageError(Exception):
 
     def __str__(self):
         if isinstance(self.imageName, list):
-            return self.message + ' (image names ' \
-                                  '[' + ','.join(self.imageName)+']'
+            return self.message + ' (image names [' + ','.join(self.imageName) + '])'
         elif isinstance(self.imageName, string_types):
-            return self.message + ' (image name: ' + self.imageName+' )'
+            return self.message + ' (image name: ' + self.imageName + ' )'
         else:
             return self.message
 
