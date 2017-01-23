@@ -1,10 +1,22 @@
+import _ from 'underscore';
+import Backbone from 'backbone';
+import tinycolor from 'tinycolor2';
+
 /**
  * A backbone model controlling the behavior and rendering of widgets.
  */
-slicer.models.Widget = Backbone.Model.extend({
+var WidgetModel = Backbone.Model.extend({
+    /**
+     * Sets initial model attributes with normalization.
+     */
+    initialize: function (model) {
+        this.set(_.defaults(model || {}, this.defaults));
+    },
+
     defaults: {
         type: '',          // The specific widget type
         title: '',         // The label to display with the widget
+        description: '',   // The description to display with the widget
         value: '',         // The current value of the widget
 
         values: []         // A list of possible values for enum types
@@ -17,13 +29,6 @@ slicer.models.Widget = Backbone.Model.extend({
         max: undefined,    // A maximum value
         step: 1            // Discrete value intervals
         */
-    },
-
-    /**
-     * Sets initial model attributes with normalization.
-     */
-    initialize: function (model) {
-        this.set(_.defaults(model || {}, this.defaults));
     },
 
     /**
@@ -87,6 +92,8 @@ slicer.models.Widget = Backbone.Model.extend({
     _normalizeValue: function (value) {
         if (this.isNumeric()) {
             value = parseFloat(value);
+        } else if (this.isInteger()) {
+            value = parseInt(value);
         } else if (this.isBoolean()) {
             value = !!value;
         } else if (this.isColor()) {
@@ -124,6 +131,8 @@ slicer.models.Widget = Backbone.Model.extend({
         var out;
         if (this.isNumeric()) {
             out = this._validateNumeric(value);
+        } else if (this.isInteger()) {
+            out = this._validateInteger(value);
         }
         if (this.isEnumeration() && !_.contains(this.get('values'), this.normalize(value))) {
             out = 'Invalid value choice';
@@ -184,6 +193,34 @@ slicer.models.Widget = Backbone.Model.extend({
     },
 
     /**
+     * Validate an integral value.
+     * @param {*} value The value to validate
+     * @returns {undefined|string} An error message or undefined
+     */
+    _validateInteger: function (value) {
+        var min = parseInt(this.get('min'));
+        var max = parseInt(this.get('max'));
+        var step = parseInt(this.get('step'));
+
+        // make sure it is a valid number
+        if (!isFinite(value)) {
+            return `Invalid integer "${value}"`;
+        }
+
+        // make sure it is in valid range
+        if (value < min || value > max) {
+            return `Value out of range [${min}, ${max}]]`;
+        }
+
+        // make sure value is approximately an integer number
+        // of "steps" larger than "min"
+        min = min || 0;
+        if ((value - min) % step) {
+            return `Value does not satisfy step "${step}"`;
+        }
+    },
+
+    /**
      * Validate a widget that selects a girder model.
      * @note This method is synchronous, so it cannot validate
      * the model on the server.
@@ -213,6 +250,13 @@ slicer.models.Widget = Backbone.Model.extend({
             ['range', 'number', 'number-vector', 'number-enumeration'],
             this.get('type')
         );
+    },
+
+    /**
+     * True if the value should be coerced as an integer.
+     */
+    isInteger: function () {
+        return this.get('type') === 'integer';
     },
 
     /**
@@ -283,6 +327,7 @@ slicer.models.Widget = Backbone.Model.extend({
         'number',
         'boolean',
         'string',
+        'integer',
         'number-vector',
         'string-vector',
         'number-enumeration',
@@ -294,33 +339,4 @@ slicer.models.Widget = Backbone.Model.extend({
     ]
 });
 
-slicer.collections.Widget = Backbone.Collection.extend({
-    model: slicer.models.Widget,
-
-    /**
-     * Get an object containing all of the current parameter values as
-     *   modelId -> value
-     */
-    values: function () {
-        var params = {};
-        this.each(function (m) {
-            // apply special handling for certain parameter types
-            // https://github.com/DigitalSlideArchive/slicer/blob/9e5112ab3444ad8c699d70452a5fe4a74ebbc778/server/__init__.py#L44-L46
-            switch (m.get('type')) {
-                case 'file':
-                    params[m.id + '_girderItemId'] = m.value().id;
-                    break;
-                case 'new-file':
-                    params[m.id + '_girderFolderId'] = m.value().get('folderId');
-                    params[m.id + '_name'] = m.value().get('name');
-                    break;
-                case 'image':
-                    params[m.id + '_girderFileId'] = m.value().id;
-                    break;
-                default:
-                    params[m.id] = JSON.stringify(m.value());
-            }
-        });
-        return params;
-    }
-});
+export default WidgetModel;

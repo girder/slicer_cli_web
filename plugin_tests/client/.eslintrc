@@ -4,7 +4,10 @@
   },
   "globals": {
     "girderTest": true,
-    "sinon": true
+    "sinon": true,
+    "girder": true,
+    "_": true,
+    "Backbone": true
   },
   "env": {
     "jasmine": true
