@@ -4,7 +4,7 @@ import { getCurrentUser } from 'girder/auth';
 import JobListWidget from 'girder_plugins/jobs/views/JobListWidget';
 
 import events from '../events';
-import Panel from './Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 var JobsPanel = Panel.extend({
     events: _.extend(Panel.prototype.events, {

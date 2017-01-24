@@ -6,10 +6,10 @@ import { restRequest } from 'girder/rest';
 import { confirm } from 'girder/dialog';
 
 import parse from '../parser';
-import WidgetCollection from '../collections/WidgetCollection';
+import WidgetCollection from 'girder_plugins/item_tasks/collections/WidgetCollection';
 import events from '../events';
 import JobsPanel from './JobsPanel';
-import ControlsPanel from './ControlsPanel';
+import ControlsPanel from 'girder_plugins/item_tasks/views/ControlsPanel';
 
 import panelGroup from '../templates/panelGroup.pug';
 import '../stylesheets/panelGroup.styl';

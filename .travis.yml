@@ -15,8 +15,8 @@ compiler:
     - gcc
 
 before_install:
-    
-    - GIRDER_VERSION=5a4cfc14973b85b4f2aa16e0f35214bc14be14d0
+
+    - GIRDER_VERSION=9caa002b41739a494a4f6ab849e94ea236eab451
     - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - main_path=$PWD
     - build_path=$PWD/build
@@ -62,7 +62,7 @@ install:
     - cd $girder_path
     - pip install -U -e . -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt setuptools==19.4
     - npm-install-retry
-    - BABEL_ENV=cover girder-install web --plugins=slicer_cli_web,worker,jobs --dev
+    - BABEL_ENV=cover girder-install web --plugins=item_tasks,slicer_cli_web,worker,jobs --dev
 
 script:
     - mkdir -p $build_path/girder_testing_build
