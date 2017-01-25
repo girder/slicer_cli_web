@@ -2,6 +2,9 @@
 FROM python:2.7-alpine
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
+# Ensure that we have bash, as girder_worker expects it
+RUN apk add --update bash && rm -rf /var/cache/apk/*
+
 # Since we are using a BusyBox varient, we need to use addgroup and adduser,
 # rather than let girder_worker use groupadd and useradd.  Those will fail,
 # which is allowed if the worker user and group exist.
