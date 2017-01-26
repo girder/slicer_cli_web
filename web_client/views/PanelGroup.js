@@ -5,7 +5,7 @@ import girderEvents from 'girder/events';
 import { restRequest } from 'girder/rest';
 import { confirm } from 'girder/dialog';
 
-import parse from '../parser';
+import { parse } from '../parser';
 import WidgetCollection from '../collections/WidgetCollection';
 import events from '../events';
 import JobsPanel from './JobsPanel';
@@ -32,7 +32,7 @@ var PanelGroup = View.extend({
             }
         });
 
-        this.listenTo(events, 'query:analysis', this.schema);
+        this.listenTo(events, 'query:analysis', this.setAnalysis);
     },
     render: function () {
         this.$el.html(panelGroup({
@@ -211,7 +211,6 @@ var PanelGroup = View.extend({
      */
     _schema: function (xml) {
         var fail = false;
-
         // clear the view on null
         if (xml === null) {
             return this.reset();
