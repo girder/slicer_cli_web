@@ -42,7 +42,7 @@ var JobsPanel = Panel.extend({
                     );
                 });
             }
-            this._jobsListWidget.setElement(this.$('.h-panel-content')).render();
+            this._jobsListWidget.setElement(this.$('.s-panel-content')).render();
         }
     }
 });
