@@ -14,6 +14,7 @@ var Panel = View.extend({
     },
     render: function () {
         this.$el.html(panel(this.spec));
+        this.$('.s-panel-content').collapse({toggle: false});
     },
     expand: function () {
         this.$('.icon-down-open').attr('class', 'icon-up-open');
@@ -23,7 +24,7 @@ var Panel = View.extend({
     },
     _handleTitleClick: function (e) {
         if (!$(e.target).hasClass('s-remove-panel')) {
-            e.stopPropagation();
+            e.stopImmediatePropagation();
             this.$('.s-panel-content').collapse('toggle');
         }
     }
