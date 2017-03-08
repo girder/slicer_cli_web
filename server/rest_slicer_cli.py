@@ -29,11 +29,9 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'float-enumeration': 'number',
     'double-enumeration': 'number',
     'string-enumeration': 'string',
-    'region': 'number_list',
     'file': 'string',
     'directory': 'string',
-    'image': 'string'
-}
+    'image': 'string'}
 
 _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'image': 'file',
