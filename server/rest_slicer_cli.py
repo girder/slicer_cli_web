@@ -168,6 +168,8 @@ def _getParamDefaultVal(param):
         return param.default
     elif param.typ == 'boolean':
         return False
+    elif param.isVector():
+        return None
     elif param.isExternalType():
         return ""
     else:
