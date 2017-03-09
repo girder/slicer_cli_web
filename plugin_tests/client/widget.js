@@ -382,9 +382,6 @@ girderTest.promise.then(function () {
             w.$('input').val('4').trigger('change');
             expect(w.model.value()).toBe(4);
 
-            w.$('input').val('not a number').trigger('change');
-            expect(w.$('.form-group').hasClass('has-error')).toBe(true);
-
             w.$('input').val('4').trigger('change');
             expect(w.$('.form-group').hasClass('has-error')).toBe(false);
         });
