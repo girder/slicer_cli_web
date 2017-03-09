@@ -79,7 +79,7 @@ RUN cd $BUILD_PATH && \
     ninja
 
 # Install ctk-cli
-RUN conda install --yes -c cdeepakroy ctk-cli=1.3.1
+RUN conda install --yes -c cdeepakroy ctk-cli=1.4.1
 
 # copy slicer_cli_web files
 ENV slicer_cli_web_path=$BUILD_PATH/slicer_cli_web
