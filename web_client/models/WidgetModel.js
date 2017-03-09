@@ -247,7 +247,7 @@ var WidgetModel = Backbone.Model.extend({
      */
     isNumeric: function () {
         return _.contains(
-            ['range', 'number', 'number-vector', 'number-enumeration'],
+            ['range', 'number', 'number-vector', 'number-enumeration', 'region'],
             this.get('type')
         );
     },
@@ -271,7 +271,7 @@ var WidgetModel = Backbone.Model.extend({
      */
     isVector: function () {
         return _.contains(
-            ['number-vector', 'string-vector'],
+            ['number-vector', 'string-vector', 'region'],
             this.get('type')
         );
     },
@@ -335,7 +335,8 @@ var WidgetModel = Backbone.Model.extend({
         'file',
         'directory',
         'new-file',
-        'image'
+        'image',
+        'region'
     ]
 });
 

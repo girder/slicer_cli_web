@@ -1,0 +1,8 @@
+extends ./widget.pug
+
+block input
+  .input-group
+    +input(title, type, id, value.join(','))
+    span.input-group-btn
+      button.btn.btn-default.s-select-region-button(type='button')
+        i.icon-pencil
