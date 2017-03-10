@@ -1,6 +1,7 @@
 import _ from 'underscore';
 
 import View from 'girder/views/View';
+import events from 'girder/events';
 
 import ItemSelectorWidget from './ItemSelectorWidget';
 
@@ -25,9 +26,12 @@ var ControlWidget = View.extend({
     },
 
     initialize: function () {
-        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'change', this.change);
         this.listenTo(this.model, 'destroy', this.remove);
         this.listenTo(this.model, 'invalid', this.invalid);
+        this.listenTo(events, 's:widgetSet:' + this.model.id, (value) => {
+            this.model.set('value', value);
+        });
     },
 
     render: function (_, options) {
@@ -42,7 +46,15 @@ var ControlWidget = View.extend({
         return this;
     },
 
+    change: function () {
+        events.trigger('s:widgetChanged:' + this.model.get('type'), this.model);
+        events.trigger('s:widgetChanged', this.model);
+        this.render.apply(this, arguments);
+    },
+
     remove: function () {
+        events.trigger('s:widgetRemoved:' + this.model.get('type'), this.model);
+        events.trigger('s:widgetRemoved', this.model);
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker('destroy');
         this.$('.s-control-item[data-type="range"] input').slider('destroy');
         this.$el.empty();
@@ -53,6 +65,8 @@ var ControlWidget = View.extend({
      * is invalid.  This is automatically triggered by the model's "invalid" event.
      */
     invalid: function () {
+        events.trigger('s:widgetInvalid:' + this.model.get('type'), this.model);
+        events.trigger('s:widgetInvalid', this.model);
         this.$('.form-group').addClass('has-error');
     },
 
