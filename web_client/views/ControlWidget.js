@@ -45,6 +45,7 @@ var ControlWidget = View.extend({
         this.$el.html(this.template()(this.model.attributes));
         this.$('.s-control-item[data-type="range"] input').slider();
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
+        this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },
 
