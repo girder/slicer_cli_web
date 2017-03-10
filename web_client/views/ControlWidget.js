@@ -51,7 +51,7 @@ var ControlWidget = View.extend({
     change: function () {
         events.trigger('s:widgetChanged:' + this.model.get('type'), this.model);
         events.trigger('s:widgetChanged', this.model);
-        this.render();
+        this.render.apply(this, arguments);
     },
 
     remove: function () {
