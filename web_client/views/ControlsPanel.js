@@ -20,6 +20,7 @@ var ControlsPanel = Panel.extend({
             id: this.$el.attr('id')
         }));
         this.addAll();
+        this.$('.s-panel-content').collapse({toggle: false});
     },
 
     addOne: function (model) {

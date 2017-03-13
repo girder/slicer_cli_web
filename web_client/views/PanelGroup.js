@@ -196,6 +196,10 @@ var PanelGroup = View.extend({
      * and cause submissions to post to `path + '/run'`.
      */
     setAnalysis: function (path) {
+        if (!path) {
+            this.reset();
+            return $.when();
+        }
         return restRequest({
             path: path + '/xmlspec',
             dataType: 'xml'

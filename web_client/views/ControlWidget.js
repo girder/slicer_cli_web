@@ -10,6 +10,7 @@ import colorWidget from '../templates/colorWidget.pug';
 import enumerationWidget from '../templates/enumerationWidget.pug';
 import fileWidget from '../templates/fileWidget.pug';
 import rangeWidget from '../templates/rangeWidget.pug';
+import regionWidget from '../templates/regionWidget.pug';
 import widget from '../templates/widget.pug';
 
 import '../stylesheets/controlWidget.styl';
@@ -22,7 +23,8 @@ var ControlWidget = View.extend({
     events: {
         'change input,select': '_input',
         'changeColor': '_input',
-        'click .s-select-file-button': '_selectFile'
+        'click .s-select-file-button': '_selectFile',
+        'click .s-select-region-button': '_selectRegion'
     },
 
     initialize: function () {
@@ -43,6 +45,7 @@ var ControlWidget = View.extend({
         this.$el.html(this.template()(this.model.attributes));
         this.$('.s-control-item[data-type="range"] input').slider();
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
+        this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },
 
@@ -117,6 +120,9 @@ var ControlWidget = View.extend({
         },
         'new-file': {
             template: fileWidget
+        },
+        region: {
+            template: regionWidget
         }
     },
 
@@ -164,6 +170,14 @@ var ControlWidget = View.extend({
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
         }).render();
+    },
+
+    /**
+     * Trigger a global event to initiate rectangle drawing mode to whoever
+     * might be listening.
+     */
+    _selectRegion: function () {
+        events.trigger('s:widgetDrawRegion', this.model);
     }
 });
 

@@ -18,6 +18,7 @@ function widget(param) {
         'float-enumeration': 'number-enumeration',
         'double-enumeration': 'number-enumeration',
         'string-enumeration': 'string-enumeration',
+        region: 'region',
         image: 'image',
         file: 'file',
         directory: 'directory'
