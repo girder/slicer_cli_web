@@ -56,14 +56,11 @@ class DockerResource(Resource):
         self.route('GET', (DockerResource.resourceName, 'docker_image'),
                    self.getDockerImages)
 
-    @access.admin
+    @access.user
     @describeRoute(
         Description('list docker images and their clis ')
-        .notes("""Must be a system administrator to call this. """)
         .errorResponse(
-            'You are not a system administrator.', 403)
-        .errorResponse(
-            'Failed to set system setting.', 500)
+            'You are not logged in.', 403)
     )
     def getDockerImages(self, params):
 
