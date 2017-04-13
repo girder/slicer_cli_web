@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import six
 import subprocess
 import tempfile
 
@@ -801,6 +802,8 @@ def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
     """
 
     str_xml = cliXML
+    if isinstance(str_xml, six.text_type):
+        str_xml = str_xml.encode('utf8')
 
     # define the handler that returns the CLI's xml spec
     @boundHandler(restResource)
