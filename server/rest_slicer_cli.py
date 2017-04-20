@@ -1053,7 +1053,9 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
 
 def getDockerImage(imageName, pullIfNotExist=False):
-    """checks the local docker cache for the image
+    """
+    Checks the local docker cache for the image
+
     :param imageName: the docker image name in the form of repo/name:tag
     if the tag is not given docker defaults to using the :latest tag
     :type imageName: string
@@ -1095,7 +1097,7 @@ def getDockerImageCLIList(imageName):
         # docker inspect returns non zero if the image is not available
         # locally
         data = subprocess.check_output(
-            ['docker', 'run', imageName, '--list_cli'])
+            ['docker', 'run', '--rm', imageName, '--list_cli'])
         return data
     except subprocess.CalledProcessError:
         # the image does not exist locally, try to pull from dockerhub
@@ -1110,7 +1112,7 @@ def getDockerImageCLIXMLSpec(img, cli):
 
     """
     try:
-        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
+        data = subprocess.check_output(['docker', 'run', '--rm', img, cli, '--xml'])
         return data
     except subprocess.CalledProcessError:
         # the image does not exist locally, try to pull from dockerhub
