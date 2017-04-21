@@ -224,10 +224,7 @@ class DockerImageManagementTest(base.TestCase):
         for cli in absent:
             self.assertHasKeys(data, [userAndRepo])
             self.assertHasKeys(data[userAndRepo], [tag])
-            self.assertHasKeys(data[userAndRepo][tag], [cli])
-            path = data[userAndRepo][tag][cli]['xmlspec']
-            resp = self.request(path=path, user=self.admin)
-            self.assertStatus(resp, 404)
+            self.assertNotHasKeys(data[userAndRepo][tag], [cli])
 
     def getEndpoint(self):
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
