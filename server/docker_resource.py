@@ -33,14 +33,12 @@ from girder.plugins.jobs.constants import JobStatus
 from models import DockerImageNotFoundError, DockerImage
 
 
-# TODO add restpoint information in the get endpoint
 class DockerResource(Resource):
     """
     Resource object that handles runtime generation and deletion of rest
     endpoints
     """
 
-    resourceName = ''
     jobType = 'slicer_cli_web_job'
 
     def __init__(self, name):
@@ -48,19 +46,14 @@ class DockerResource(Resource):
         self.currentEndpoints = {}
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
-        DockerResource.resourceName = name
-        self.route('PUT', (DockerResource.resourceName, 'docker_image'),
-                   self.setImages)
-        self.route('DELETE', (DockerResource.resourceName, 'docker_image'),
-                   self.deleteImage)
-        self.route('GET', (DockerResource.resourceName, 'docker_image'),
-                   self.getDockerImages)
+        self.route('PUT', (name, 'docker_image'), self.setImages)
+        self.route('DELETE', (name, 'docker_image'), self.deleteImage)
+        self.route('GET', (name, 'docker_image'), self.getDockerImages)
 
     @access.user
     @describeRoute(
-        Description('list docker images and their clis ')
-        .errorResponse(
-            'You are not logged in.', 403)
+        Description('List docker images and their CLIs')
+        .errorResponse('You are not logged in.', 403)
     )
     def getDockerImages(self, params):
 
@@ -83,9 +76,8 @@ class DockerResource(Resource):
 
         :param dockerImage: DockerImage object
 
-        Returns: structured dictionary documentin clis and rest
-        endpoints for this image version
-
+        :returns: structured dictionary documenting clis and rest
+            endpoints for this image version
         """
 
         name = dockerImage.name
@@ -102,6 +94,9 @@ class DockerResource(Resource):
         cli_dict = dockerImage.getCLIListSpec()
 
         for (cli, val) in six.iteritems(cli_dict):
+            if cli not in endpointData:
+                logger.warning('"%s" not present in endpoint data.' % cli)
+                continue
             data[cli] = {}
 
             data[cli][DockerImage.type] = val
@@ -110,29 +105,26 @@ class DockerResource(Resource):
             for (operation, endpointRoute) in six.iteritems(cli_endpoints):
                 cli_list = endpointRoute[1]
                 if cli in cli_list:
-
-                    data[cli][operation] = '/'+self.resourceName + \
+                    data[cli][operation] = '/' + self.resourceName + \
                                            '/' + '/'.join(cli_list)
         return userAndRepo, tag, data
 
     @access.admin
     @describeRoute(
-        Description('Remove a docker image ')
-        .notes(
-            """Must be a system administrator to call this. """)
-        .param('name', 'The name or a list of names  of the '
-                       'docker images to be removed', required=True)
+        Description('Remove a docker image')
+        .notes('Must be a system administrator to call this.')
+        .param('name', 'The name or a list of names of the docker images to be '
+               'removed', required=True)
         .param('delete_from_local_repo',
-               'Boolean True or False, if True the image is deleted from the'
-               ' local repo, requiring it to be pulled from a repository the '
-               'next time it is used. If False the meta data on the docker '
-               'image is deleted but the docker image remains. This parameter '
-               'is False by default', required=False)
+               'If True the image is deleted from the local repo, requiring '
+               'it to be pulled from a remote repository the next time it is '
+               'used.  If False the metadata regarding the image is deleted, '
+               'but the docker image remains.', required=False,
+               dataType='boolean', default=False)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
     def deleteImage(self, params):
-
         self.requireParams(('name',), params)
         name = params['name']
         if 'delete_from_local_repo' in params:
@@ -164,38 +156,37 @@ class DockerResource(Resource):
     def _deleteImage(self, names, deleteImage):
         """
         Removes the docker images and there respective clis endpoints
+
         :param name: The name of the docker image (user/rep:tag)
         :type name: string
         :param deleteImage: Boolean indicating whether to delete the docker
-        image from the local machine.(if True this is equivalent to
-        docker rmi -f <image> )
+            image from the local machine.(if True this is equivalent to
+            docker rmi -f <image> )
         """
 
         dockermodel = ModelImporter.model('docker_image_model',
                                           'slicer_cli_web')
-
         try:
-
             dockermodel.removeImages(names)
 
             self.deleteImageEndpoints(names)
             if deleteImage:
-
                 dockermodel.delete_docker_image_from_repo(names, self.jobType)
         except DockerImageNotFoundError as err:
-            raise RestException('Invalid docker image name. '+str(err))
+            raise RestException('Invalid docker image name. ' + str(err))
 
     @access.admin
     @describeRoute(
-        Description('Add a to the list of images to be loaded ').notes(
-            """Must be a system administrator to call this.""").param(
-            'name', 'The name or a list of names  of the '
-                    'docker images to be loaded ', required=True)
-            .errorResponse('You are not a system administrator.', 403)
-            .errorResponse('Failed to set system setting.', 500)
+        Description('Add one or a list of images')
+        .notes('Must be a system administrator to call this.')
+        .param('name', 'A name or a list of names of the docker images to be '
+               'loaded', required=True)
+        .errorResponse('You are not a system administrator.', 403)
+        .errorResponse('Failed to set system setting.', 500)
     )
     def setImages(self, params):
-        """Validates the new images to be added (if they exist or not) and then
+        """
+        Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to
         update the girder collection containing the cached docker image data
         """
@@ -221,28 +212,27 @@ class DockerResource(Resource):
 
     def storeEndpoints(self, imgName, cli, operation, argList):
         """
-        information on each rest endpoint is saved so they can be
-        deleted when docker images are removed or loaded
+        Information on each rest endpoint is saved so they can be
+        deleted when docker images are removed or loaded.
+
         :param imgName: The full name of the docker image with the tag.
-        This name must match exactly with the name the command
-        docker images displays in the console
+            This name must match exactly with the name the command
+            docker images displays in the console
         :type imgName: string
         :param cli: The name of the cli whose rest endpoint is being stored. The
-        cli must match exactly with what teh docker image returns when
-        running <docker image> --list_cli
+            cli must match exactly with what teh docker image returns when
+            running <docker image> --list_cli
         :type cli: string
         :param operation: The action the rest endpoint will execute run or
-        xmlspec
+            xmlspec
         :type operation: string
         :argList:list of details for a specific endpoint. The arglist should
-        contain [method,route_tuple,endpoint_method_handler_name].The route
-        tuple should consist of the docker image name, the cli name and the
-        operation. Since this tuple forms the rest route, the exact docker
-        image name may not be used due to ':' used in
-        docker image names. As a result the docker name and cli name used
-        in the rest route do not have to match the actual docker name and cli
-        name
-
+            contain [method,route_tuple,endpoint_method_handler_name].  The
+            route tuple should consist of the docker image name, the cli name
+            and the operation. Since this tuple forms the rest route, the exact
+            docker image name may not be used due to ':' used in docker image
+            names. As a result the docker name and cli name used in the rest
+            route do not have to match the actual docker name and cli name
         """
         if imgName in self.currentEndpoints:
             if cli in self.currentEndpoints[imgName]:
@@ -276,9 +266,10 @@ class DockerResource(Resource):
     def AddRestEndpoints(self, event):
         """
         Determines if the job event being triggered is due to the caching of
-        new docker images or deleting a docker image off the local machine
-        .If a new image is being loaded all old rest endpoints are deleted
-        and endpoints fro all cached docker images are regenerated
+        new docker images or deleting a docker image off the local machine.  If
+        a new image is being loaded all old rest endpoints are deleted and
+        endpoints fro all cached docker images are regenerated.
+
         :param event: An event dictionary
         """
         job = event.info['job']

@@ -4,5 +4,8 @@
   },
   "Example2": {
     "type": "python"
+  },
+  "Example3": {
+    "type": "python"
   }
 }

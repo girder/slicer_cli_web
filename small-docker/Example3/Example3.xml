@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>Example</category>
+  <title>Example with missing default</title>
+  <description>This will fail to create a REST endpoint, but it still will report that it exists as a CLI.</description>
+  <version>0.1.0</version>
+  <license>Apache 2.0</license>
+  <contributor>David Manthey (Kitware)</contributor>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <float>
+      <name>x</name>
+      <label>Coordinate</label>
+      <flag>x</flag>
+      <description>A floating point number between 0 and 1</description>
+      <channel>input</channel>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+      </constraints>
+    </float>
+  </parameters>
+</executable>

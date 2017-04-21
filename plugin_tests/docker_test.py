@@ -77,6 +77,7 @@ class DockerImageManagementTest(base.TestCase):
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
+        self.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
 
     def testDockerAddList(self):
         # try to cache a good image to the mongo database
@@ -157,7 +158,6 @@ class DockerImageManagementTest(base.TestCase):
                     self.assertNotEqual(xmlString, '')
 
     def testEndpointDeletion(self):
-
         img_name = 'girder/slicer_cli_web:small'
         self.testXmlEndpoint()
         data = self.getEndpoint()
@@ -190,7 +190,6 @@ class DockerImageManagementTest(base.TestCase):
         return imageAndTag[0], imageAndTag[1]
 
     def imageIsLoaded(self, name, exists):
-
         userAndRepo, tag = self.splitName(name)
 
         data = self.getEndpoint()
@@ -204,8 +203,30 @@ class DockerImageManagementTest(base.TestCase):
             imgVersions = data[userAndRepo]
             self.assertHasKeys(imgVersions, [tag])
 
-    def getEndpoint(self):
+    def endpointsExist(self, name, present=[], absent=[]):
+        """
+        Test if endpoints for particular image exist.
 
+        :param name: name of the image used to determine endpoint location.
+        :param present: a list of endpoints within the image that must exist.
+        :param absent: a list of endpoints that should be in the image but not
+            have endpoints.
+        """
+        userAndRepo, tag = self.splitName(name)
+        data = self.getEndpoint()
+        for cli in present:
+            self.assertHasKeys(data, [userAndRepo])
+            self.assertHasKeys(data[userAndRepo], [tag])
+            self.assertHasKeys(data[userAndRepo][tag], [cli])
+            path = data[userAndRepo][tag][cli]['xmlspec']
+            resp = self.request(path=path, user=self.admin, isJson=False)
+            self.assertStatusOk(resp)
+        for cli in absent:
+            self.assertHasKeys(data, [userAndRepo])
+            self.assertHasKeys(data[userAndRepo], [tag])
+            self.assertNotHasKeys(data[userAndRepo][tag], [cli])
+
+    def getEndpoint(self):
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                             user=self.admin)
         self.assertStatus(resp, 200)
@@ -214,12 +235,12 @@ class DockerImageManagementTest(base.TestCase):
     def assertNoImages(self):
         data = self.getEndpoint()
         self.assertEqual({}, data,
-                         ' There should be no pre existing docker images ')
+                         'There should be no pre existing docker images')
 
     def deleteImage(self, name, responseCodeOK, deleteDockerImage=False,
                     status=4):
         """
-        delete docker image data and test whether a docker
+        Delete docker image data and test whether a docker
         image can be deleted off the local machine
         """
         job_status = [JobStatus.SUCCESS]
