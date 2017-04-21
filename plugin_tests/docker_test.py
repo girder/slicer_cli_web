@@ -209,7 +209,8 @@ class DockerImageManagementTest(base.TestCase):
 
         :param name: name of the image used to determine endpoint location.
         :param present: a list of endpoints within the image that must exist.
-        :param absent: a list of endpoints that should not be in the image.
+        :param absent: a list of endpoints that should be in the image but not
+            have endpoints.
         """
         userAndRepo, tag = self.splitName(name)
         data = self.getEndpoint()
@@ -221,10 +222,12 @@ class DockerImageManagementTest(base.TestCase):
             resp = self.request(path=path, user=self.admin, isJson=False)
             self.assertStatusOk(resp)
         for cli in absent:
-            if userAndRepo in data and tag in data[userAndRepo] and cli in data[userAndRepo][tag]:
-                path = data[userAndRepo][tag][cli]['xmlspec']
-                resp = self.request(path=path, user=self.admin)
-                self.assertStatus(resp, 404)
+            self.assertHasKeys(data, [userAndRepo])
+            self.assertHasKeys(data[userAndRepo], [tag])
+            self.assertHasKeys(data[userAndRepo][tag], [cli])
+            path = data[userAndRepo][tag][cli]['xmlspec']
+            resp = self.request(path=path, user=self.admin)
+            self.assertStatus(resp, 404)
 
     def getEndpoint(self):
         resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
