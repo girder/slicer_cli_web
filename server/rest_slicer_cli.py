@@ -97,7 +97,7 @@ def _createIndexedParamTaskSpec(param):
     """
 
     curTaskSpec = dict()
-    curTaskSpec['id'] = param.name
+    curTaskSpec['id'] = param.identifier()
     curTaskSpec['name'] = param.label
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
@@ -114,12 +114,12 @@ def _addIndexedInputParamsToHandler(index_input_params, handlerDesc):
 
         # add to route description
         if param.isExternalType():
-            handlerDesc.param(param.name + _girderInputFileSuffix,
+            handlerDesc.param(param.identifier() + _girderInputFileSuffix,
                               'Girder ID of input %s - %s: %s'
-                              % (param.typ, param.name, param.description),
+                              % (param.typ, param.identifier(), param.description),
                               dataType='string', required=True)
         else:
-            handlerDesc.param(param.name, param.description,
+            handlerDesc.param(param.identifier(), param.description,
                               dataType='string', required=True)
 
 
@@ -137,16 +137,16 @@ def _addIndexedOutputParamsToHandler(index_output_params, handlerDesc):
     for param in index_output_params:
 
         # add param for parent folder to route description
-        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+        handlerDesc.param(param.identifier() + _girderOutputFolderSuffix,
                           'Girder ID of parent folder '
                           'for output %s - %s: %s'
                           % (param.typ, param.typ, param.description),
                           dataType='string', required=True)
 
         # add param for name of current output to route description
-        handlerDesc.param(param.name + _girderOutputNameSuffix,
+        handlerDesc.param(param.identifier() + _girderOutputNameSuffix,
                           'Name of output %s - %s: %s'
-                          % (param.typ, param.name, param.description),
+                          % (param.typ, param.identifier(), param.description),
                           dataType='string', required=True)
 
 
@@ -158,7 +158,7 @@ def _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, hargs):
         curTaskSpec = _createIndexedParamTaskSpec(param)
 
         curTaskSpec['path'] =\
-            hargs['params'][param.name + _girderOutputNameSuffix]
+            hargs['params'][param.identifier() + _girderOutputNameSuffix]
 
         taskSpec['outputs'].append(curTaskSpec)
 
@@ -190,7 +190,7 @@ def _createOptionalParamTaskSpec(param):
     """
 
     curTaskSpec = dict()
-    curTaskSpec['id'] = param.name
+    curTaskSpec['id'] = param.identifier()
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
@@ -215,13 +215,13 @@ def _addOptionalInputParamsToHandler(opt_input_params, handlerDesc):
         defaultVal = _getParamDefaultVal(param)
 
         if param.isExternalType():
-            handlerDesc.param(param.name + _girderInputFileSuffix,
+            handlerDesc.param(param.identifier() + _girderInputFileSuffix,
                               'Girder ID of input %s - %s: %s'
-                              % (param.typ, param.name, param.description),
+                              % (param.typ, param.identifier(), param.description),
                               dataType='string',
                               required=False)
         else:
-            handlerDesc.param(param.name, param.description,
+            handlerDesc.param(param.identifier(), param.description,
                               dataType='string',
                               default=json.dumps(defaultVal),
                               required=False)
@@ -244,17 +244,17 @@ def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
             continue
 
         # add param for parent folder to route description
-        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+        handlerDesc.param(param.identifier() + _girderOutputFolderSuffix,
                           'Girder ID of parent folder '
                           'for output %s - %s: %s'
-                          % (param.typ, param.name, param.description),
+                          % (param.typ, param.identifier(), param.description),
                           dataType='string',
                           required=False)
 
         # add param for name of current output to route description
-        handlerDesc.param(param.name + _girderOutputNameSuffix,
+        handlerDesc.param(param.identifier() + _girderOutputNameSuffix,
                           'Name of output %s - %s: %s'
-                          % (param.typ, param.name, param.description),
+                          % (param.typ, param.identifier(), param.description),
                           dataType='string', required=False)
 
 
@@ -266,15 +266,15 @@ def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, hargs):
             continue
 
         # set path if it was requested in the REST request
-        if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
-                param.name + _girderOutputNameSuffix not in hargs['params']):
+        if (param.identifier() + _girderOutputFolderSuffix not in hargs['params'] or
+                param.identifier() + _girderOutputNameSuffix not in hargs['params']):
             continue
 
         # add to task spec
         curTaskSpec = _createOptionalParamTaskSpec(param)
 
         curTaskSpec['path'] =\
-            hargs['params'][param.name + _girderOutputNameSuffix]
+            hargs['params'][param.identifier() + _girderOutputNameSuffix]
 
         taskSpec['outputs'].append(curTaskSpec)
 
@@ -327,7 +327,7 @@ def _createInputParamBindingSpec(param, hargs, token):
     curBindingSpec = dict()
     if _is_on_girder(param):
         curBindingSpec = wutils.girderInputSpec(
-            hargs[param.name],
+            hargs[param.identifier()],
             resourceType=_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ],
             dataType='string', dataFormat='string',
             token=token, fetchParent=True)
@@ -337,7 +337,7 @@ def _createInputParamBindingSpec(param, hargs, token):
         curBindingSpec['mode'] = 'inline'
         curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
         curBindingSpec['format'] = 'json'
-        curBindingSpec['data'] = hargs['params'][param.name]
+        curBindingSpec['data'] = hargs['params'][param.identifier()]
 
     return curBindingSpec
 
@@ -345,9 +345,9 @@ def _createInputParamBindingSpec(param, hargs, token):
 def _createOutputParamBindingSpec(param, hargs, user, token):
 
     curBindingSpec = wutils.girderOutputSpec(
-        hargs[param.name],
+        hargs[param.identifier()],
         token,
-        name=hargs['params'][param.name + _girderOutputNameSuffix],
+        name=hargs['params'][param.identifier() + _girderOutputNameSuffix],
         dataType='string', dataFormat='string'
     )
 
@@ -357,7 +357,7 @@ def _createOutputParamBindingSpec(param, hargs, user, token):
             raise Exception(
                 'Error: The specified reference attribute value'
                 '%s for parameter %s is not a valid input' % (
-                    param.reference, param.name)
+                    param.reference, param.identifier())
             )
 
         curBindingSpec['reference'] = json.dumps(
@@ -373,14 +373,14 @@ def _createOutputParamBindingSpec(param, hargs, user, token):
 def _addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
 
     for param in index_input_params:
-        bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
+        bspec[param.identifier()] = _createInputParamBindingSpec(param, hargs, token)
 
 
 def _addIndexedOutputParamBindings(index_output_params,
                                    bspec, hargs, user, token):
 
     for param in index_output_params:
-        bspec[param.name] = _createOutputParamBindingSpec(
+        bspec[param.identifier()] = _createOutputParamBindingSpec(
             param, hargs, user, token)
 
 
@@ -389,18 +389,18 @@ def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
     for param in opt_input_params:
 
         if _is_on_girder(param):
-            if param.name + _girderInputFileSuffix not in hargs['params']:
+            if param.identifier() + _girderInputFileSuffix not in hargs['params']:
                 continue
 
             curModelName = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
             curModel = ModelImporter.model(curModelName)
-            curId = hargs['params'][param.name + _girderInputFileSuffix]
+            curId = hargs['params'][param.identifier() + _girderInputFileSuffix]
 
-            hargs[param.name] = curModel.load(id=curId,
-                                              level=AccessType.READ,
-                                              user=user)
+            hargs[param.identifier()] = curModel.load(id=curId,
+                                                      level=AccessType.READ,
+                                                      user=user)
 
-        bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
+        bspec[param.identifier()] = _createInputParamBindingSpec(param, hargs, token)
 
 
 def _addOptionalOutputParamBindings(opt_output_params,
@@ -412,19 +412,19 @@ def _addOptionalOutputParamBindings(opt_output_params,
             continue
 
         # check if it was requested in the REST request
-        if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
-                param.name + _girderOutputNameSuffix not in hargs['params']):
+        if (param.identifier() + _girderOutputFolderSuffix not in hargs['params'] or
+                param.identifier() + _girderOutputNameSuffix not in hargs['params']):
             continue
 
         curModel = ModelImporter.model('folder')
-        curId = hargs['params'][param.name + _girderOutputFolderSuffix]
+        curId = hargs['params'][param.identifier() + _girderOutputFolderSuffix]
 
-        hargs[param.name] = curModel.load(id=curId,
-                                          level=AccessType.WRITE,
-                                          user=user)
+        hargs[param.identifier()] = curModel.load(id=curId,
+                                                  level=AccessType.WRITE,
+                                                  user=user)
 
-        bspec[param.name] = _createOutputParamBindingSpec(param, hargs,
-                                                          user, token)
+        bspec[param.identifier()] = _createOutputParamBindingSpec(param, hargs,
+                                                                  user, token)
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token):
@@ -478,21 +478,21 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
         else:
             continue
 
-        if _is_on_girder(param) and param.name in hargs:
+        if _is_on_girder(param) and param.identifier() in hargs:
 
-            curValue = "$input{%s}" % param.name
+            curValue = "$input{%s}" % param.identifier()
 
-        elif param.name in hargs['params']:
+        elif param.identifier() in hargs['params']:
 
             try:
                 curValue = _getParamCommandLineValue(
-                    param, hargs['params'][param.name])
+                    param, hargs['params'][param.identifier()])
             except Exception:
                 logger.exception(
                     'Error: Parameter value is not in json.dumps format\n'
                     '  Parameter name = %r\n  Parameter type = %r\n'
-                    '  Value passed = %r', param.name, param.typ,
-                    hargs['params'][param.name])
+                    '  Value passed = %r', param.identifier(), param.typ,
+                    hargs['params'][param.identifier()])
                 raise
         else:
             continue
@@ -513,11 +513,11 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
         else:
             continue
 
-        if _is_on_girder(param) and param.name in kwargs['outputs']:
+        if _is_on_girder(param) and param.identifier() in kwargs['outputs']:
 
             curValue = os.path.join(
                 _worker_docker_data_dir,
-                hargs['params'][param.name + _girderOutputNameSuffix]
+                hargs['params'][param.identifier() + _girderOutputNameSuffix]
             )
 
             containerArgs.append(curFlag)
@@ -548,11 +548,11 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
         if param.channel == 'input':
 
             if _is_on_girder(param):
-                curValue = "$input{%s}" % param.name
+                curValue = "$input{%s}" % param.identifier()
             else:
                 curValue = _getParamCommandLineValue(
                     param,
-                    hargs['params'][param.name]
+                    hargs['params'][param.identifier()]
                 )
 
         elif param.channel == 'output':
@@ -568,7 +568,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
 
             curValue = os.path.join(
                 _worker_docker_data_dir,
-                hargs['params'][param.name + _girderOutputNameSuffix]
+                hargs['params'][param.identifier() + _girderOutputNameSuffix]
             )
 
         else:
@@ -757,7 +757,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     for param in index_input_params_on_girder:
 
         curModel = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
-        curMap = {param.name + _girderInputFileSuffix: param.name}
+        curMap = {param.identifier() + _girderInputFileSuffix: param.identifier()}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
@@ -769,7 +769,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     for param in index_output_params_on_girder:
 
         curModel = 'folder'
-        curMap = {param.name + _girderOutputFolderSuffix: param.name}
+        curMap = {param.identifier() + _girderOutputFolderSuffix: param.identifier()}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
