@@ -59,7 +59,7 @@ before_install:
 install:
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - cd $girder_path
-    - pip install -r requirements-dev.txt -e .[plugins] 
+    - pip install -r requirements-dev.txt -e .[worker] 
     - pip install -r $main_path/requirements.txt 
     - npm-install-retry
     - BABEL_ENV=cover girder-install web --plugins=slicer_cli_web,worker,jobs --dev
