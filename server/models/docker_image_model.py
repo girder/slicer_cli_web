@@ -62,14 +62,15 @@ class DockerImageModel(AccessControlledModel):
         """
         Attempts to cache metadata on the docker images listed in the names
         list.
-        If the pullIfNotLocal flag is true, the job will attempt to pull
-         the image if it does not exist.
-        :param names: A list of docker image names(can use with tags or digests)
-        :param jobType: defines the jobtype of the job that will be schedueled
-         ,used by event listeners to determine if a job succeeded or not
-         :param pullIfNotLocal: Boolean to determine whether a non existent
-         image
-         should be pulled,(attempts to pull from default docker hub registry)
+
+        :param names: A list of docker image names (can use with tags or
+            digests)
+        :param jobType: defines the jobtype of the job that will be schedueled.
+            This can be used by event listeners to determine if a job succeeds.
+        :param pullIfNotLocal: Boolean if True, the job will attempt to pull
+            the image from the default docker hub registry if it does not
+            exist.
+        :returns: the job that was created.
         """
         jobModel = ModelImporter.model('job', 'jobs')
         # list of images to pull and load
@@ -111,6 +112,7 @@ class DockerImageModel(AccessControlledModel):
         )
 
         jobModel.scheduleJob(job)
+        return job
 
     def _ImageExistsLocally(self, name):
         """

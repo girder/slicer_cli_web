@@ -79,6 +79,30 @@ class DockerImageManagementTest(base.TestCase):
         self.imageIsLoaded(img_name, True)
         self.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
 
+    def testDockerAddBadParam(self):
+        # test sending bad parameters to the PUT endpoint
+        kwargs = {
+            'path': '/slicer_cli_web/slicer_cli_web/docker_image',
+            'user': self.admin,
+            'method': 'PUT',
+            'params': {'name': json.dumps(6)}
+        }
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('A valid string', resp.json['message'])
+        kwargs['params']['name'] = json.dumps({'abc': 'def'})
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('A valid string', resp.json['message'])
+        kwargs['params']['name'] = json.dumps([6])
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('is not a valid string', resp.json['message'])
+        kwargs['params']['name'] = '"not json'
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('does not have a tag', resp.json['message'])
+
     def testDockerAddList(self):
         # try to cache a good image to the mongo database
         img_name = 'girder/slicer_cli_web:small'
@@ -319,13 +343,16 @@ class DockerImageManagementTest(base.TestCase):
             events.bind('jobs.job.update.after',
                         'slicer_cli_web_add', self.addHandler)
 
-        resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
-                            user=self.admin, method='PUT',
-                            params={'name': json.dumps(name)}, isJson=False)
+        resp = self.request(
+            path='/slicer_cli_web/slicer_cli_web/docker_image',
+            user=self.admin, method='PUT', params={'name': json.dumps(name)},
+            isJson=initialStatus == 200)
 
         self.assertStatus(resp, initialStatus)
         if initialStatus != 200:
             return
+        # We should have a job ID
+        self.assertIsNotNone(resp.json.get('_id'))
 
         if not event.wait(TIMEOUT):
             del self.addHandler

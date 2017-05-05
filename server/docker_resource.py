@@ -126,31 +126,13 @@ class DockerResource(Resource):
     )
     def deleteImage(self, params):
         self.requireParams(('name',), params)
-        name = params['name']
         if 'delete_from_local_repo' in params:
             deleteImage = params['delete_from_local_repo']
             if deleteImage is 'True':
                 deleteImage = True
         else:
             deleteImage = False
-
-        name = json.loads(name)
-        nameList = []
-        if isinstance(name, list):
-            for img in name:
-
-                if not isinstance(img, six.string_types):
-                    raise RestException('%s was not a valid string.' % img)
-            else:
-                nameList = name
-        elif isinstance(name, six.string_types):
-
-            nameList = [name]
-
-        else:
-
-            raise RestException('name was not a valid JSON list or string.')
-
+        nameList = self.parseImageNameList(params['name'])
         self._deleteImage(nameList, deleteImage)
 
     def _deleteImage(self, names, deleteImage):
@@ -175,6 +157,33 @@ class DockerResource(Resource):
         except DockerImageNotFoundError as err:
             raise RestException('Invalid docker image name. ' + str(err))
 
+    def parseImageNameList(self, param):
+        """
+        Parse a string to get a list of image names.  If the string is a JSON
+        list of strings or a JSON string (with quotes), it is processed as
+        JSON.  Otherwise, the input value is treated as a single image name.
+
+        :param param: a parameter with an image name, a JSON image name, or a
+            JSON list of image names.
+        :returns: a list of image names.
+        """
+        nameList = param
+        if isinstance(param, six.string_types):
+            try:
+                nameList = json.loads(param)
+            except ValueError:
+                pass
+        if isinstance(nameList, six.string_types):
+            nameList = [nameList]
+        if not isinstance(nameList, list):
+            raise RestException('A valid string or a list of strings is required.')
+        for img in nameList:
+            if not isinstance(img, six.string_types):
+                raise RestException('%r is not a valid string.' % img)
+            if ':' not in img and '@' not in img:
+                raise RestException('Image %s does not have a tag or digest' % img)
+        return nameList
+
     @access.admin
     @describeRoute(
         Description('Add one or a list of images')
@@ -191,24 +200,10 @@ class DockerResource(Resource):
         update the girder collection containing the cached docker image data
         """
         self.requireParams(('name',), params)
-        name = params['name']
-
-        name = json.loads(name)
+        nameList = self.parseImageNameList(params['name'])
         docker_image_model = ModelImporter.model('docker_image_model',
                                                  'slicer_cli_web')
-
-        if isinstance(name, six.string_types):
-            name = [name]
-        if not isinstance(name, list):
-            raise RestException('a valid string or a list of '
-                                'strings was not passed in')
-        for img in name:
-            if not isinstance(img, six.string_types):
-                raise RestException('%s was not a valid string.' % img)
-            if ':' not in img and '@' not in img:
-                raise RestException('Image %s does not have a tag or digest' % img)
-
-        docker_image_model.putDockerImage(name, self.jobType, True)
+        return docker_image_model.putDockerImage(nameList, self.jobType, True)
 
     def storeEndpoints(self, imgName, cli, operation, argList):
         """
