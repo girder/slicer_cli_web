@@ -17,10 +17,11 @@
 #  limitations under the License.
 ###############################################################################
 
-import threading
-import six
-import types
+import docker
 import json
+import six
+import threading
+import types
 
 from tests import base
 from girder import events
@@ -43,7 +44,6 @@ def tearDownModule():
 class DockerImageManagementTest(base.TestCase):
 
     def setUp(self):
-
         # adding and removing docker images and using generated rest endpoints
         # requires admin access
         base.TestCase.setUp(self)
@@ -56,13 +56,6 @@ class DockerImageManagementTest(base.TestCase):
             'admin': True
         }
         self.admin = self.model('user').createUser(**admin)
-
-        try:
-            from docker import Client
-            self.docker_client = Client(base_url='unix://var/run/docker.sock')
-
-        except Exception as err:
-            self.fail('could not create the docker client ' + str(err))
 
     def testAddNonExistentImage(self):
         # add a bad image
@@ -118,7 +111,7 @@ class DockerImageManagementTest(base.TestCase):
         self.assertNoImages()
 
     def testDockerDelete(self):
-        # just delete the meta data in the mongo database
+        # just delete the metadata in the mongo database
         # don't delete the docker image
         img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
@@ -138,9 +131,14 @@ class DockerImageManagementTest(base.TestCase):
         self.deleteImage(img_name, True, True, JobStatus.SUCCESS)
 
         try:
-            self.docker_client.inspect_image(img_name)
-            self.fail('If the image was deleted then an attempt to docker '
-                      'inspect it should raise a docker exception')
+            docker_client = docker.from_env(version='auto')
+        except Exception as err:
+            self.fail('could not create the docker client ' + str(err))
+
+        try:
+            docker_client.images.get(img_name)
+            self.fail('If the image was deleted then an attempt to get it '
+                      'should raise a docker exception')
         except Exception:
             pass
 
@@ -148,7 +146,6 @@ class DockerImageManagementTest(base.TestCase):
         self.assertNoImages()
 
     def testDockerPull(self):
-
         # test an instance when the image must be pulled
         # Forces the test image to be deleted
         self.testDockerDeleteFull()
