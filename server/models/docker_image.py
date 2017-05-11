@@ -59,7 +59,7 @@ class DockerImage():
     type = 'type'
     xml = 'xml'
     cli_dict = 'cli_list'
-    # structure of the dictionary to store meta data
+    # structure of the dictionary to store metadata
     # {
     # imagehash:<hash of docker image name>
     #     cli_list: {
@@ -118,7 +118,7 @@ class DockerImage():
     def getHashKey(imgName):
         """
         Generates a hash key (on the docker image name) used by the DockerImage
-         object to provide a means to uniquely find the image meta data
+         object to provide a means to uniquely find the image metadata
          in the girder-mongo database. This prevents user defined image name
          from causing issues with pymongo.Note this key is not the same as the
          docker image id that the docker engine generates
@@ -161,7 +161,7 @@ class DockerImage():
 
 class DockerCache:
     """
-    This class is used to hold and access meta data on existing images
+    This class is used to hold and access metadata on existing images
     """
     def __init__(self):
         """

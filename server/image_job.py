@@ -17,9 +17,7 @@
 #  limitations under the License.
 ###############################################################################
 
-
-from docker import Client
-from docker.errors import DockerException
+import docker
 
 from girder import logger
 from girder.models.model_base import ModelImporter
@@ -51,21 +49,20 @@ def deleteImage(job):
         error = False
 
         try:
-            docker_client = Client(base_url='unix://var/run/docker.sock')
+            docker_client = docker.from_env(version='auto')
 
-        except DockerException as err:
+        except docker.errors.DockerException as err:
             logger.exception('Could not create the docker client')
             jobModel.updateJob(
                 job,
-                log='Failed to create the Docker '
-                    'Client\n' + str(err) + '\n',
+                log='Failed to create the Docker Client\n' + str(err) + '\n',
                 status=JobStatus.ERROR,
             )
             raise DockerImageError('Could not create the docker client')
 
         for name in deleteList:
             try:
-                docker_client.remove_image(name, force=True)
+                docker_client.images.remove(name, force=True)
 
             except Exception as err:
                 logger.exception('Failed to remove image')
@@ -104,7 +101,7 @@ def deleteImage(job):
 
 def jobPullAndLoad(job):
     """
-    Attempts to cache meta data on images in the pull list and load list.
+    Attempts to cache metadata on images in the pull list and load list.
     Images in the pull list are pulled first, then images in both lists are
     queried for there clis and each cli's xml description. The clis and
     xml data is stored in the girder mongo database
@@ -113,7 +110,6 @@ def jobPullAndLoad(job):
     Event listeners check the jobtype to determine if a job is Dockerimage
     related
     """
-
     try:
         jobModel = ModelImporter.model('job', 'jobs')
         pullList = job['kwargs']['pullList']
@@ -128,21 +124,18 @@ def jobPullAndLoad(job):
             status=JobStatus.RUNNING,
         )
         try:
-            docker_client = Client(base_url='unix://var/run/docker.sock')
+            docker_client = docker.from_env(version='auto')
 
-        except DockerException as err:
+        except docker.errors.DockerException as err:
             logger.exception('Could not create the docker client')
             jobModel.updateJob(
                 job,
                 log='Failed to create the Docker Client\n' + str(err) + '\n',
-
             )
             raise DockerImageError('Could not create the docker client')
 
         try:
-
             pullDockerImage(docker_client, pullList)
-
         except DockerImageNotFoundError as err:
             errorState = True
             notExistSet = set(err.imageName)
@@ -152,10 +145,8 @@ def jobPullAndLoad(job):
                     'images\n'+'\n'.join(notExistSet)+'\n',
                 status=JobStatus.ERROR,
             )
-
-        cache, loadingError = LoadMetaData(jobModel, job, docker_client,
+        cache, loadingError = LoadMetadata(jobModel, job, docker_client,
                                            pullList, loadList, notExistSet)
-
         imageModel = ModelImporter.model('docker_image_model',
                                          'slicer_cli_web')
 
@@ -177,11 +168,10 @@ def jobPullAndLoad(job):
             job,
             log='Error with job \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
-
         )
 
 
-def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
+def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     """
     Attempt to query preexisting images and pulled images for cli data.
     Cli data for each image is stored and returned as a sing DockerCache Object
@@ -216,7 +206,7 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
                 cache.addImage(dockerImg)
                 jobModel.updateJob(
                     job,
-                    log='Got pulled image %s meta data \n' % name
+                    log='Got pulled image %s metadata \n' % name
 
                 )
             except DockerImageError as err:
@@ -235,7 +225,7 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
             cache.addImage(dockerImg)
             jobModel.updateJob(
                 job,
-                log='Loaded meta data from pre-existing local image %s\n' % name
+                log='Loaded metadata from pre-existing local image %s\n' % name
             )
         except DockerImageError as err:
             jobModel.updateJob(
@@ -256,14 +246,19 @@ def getDockerOutput(imgName, command, client):
     :param command: The commands/ arguments to be passed to the docker image
     :param client: The docker python client
     """
+    cont = None
     try:
-
-        cont = client.create_container(image=imgName, command=command)
-        client.start(container=cont.get('Id'))
-        logs = client.logs(container=cont.get('Id'),
-                           stdout=True, stderr=False, stream=True)
-        ret_code = client.wait(container=cont.get('Id'))
+        cont = client.containers.create(image=imgName, command=command)
+        cont.start()
+        ret_code = cont.wait()
+        logs = cont.logs(stdout=True, stderr=False, stream=False)
+        cont.remove()
     except Exception as err:
+        if cont:
+            try:
+                cont.remove()
+            except Exception:
+                pass
         logger.exception(
             'Attempt to docker run %s %s failed', imgName, command)
         raise DockerImageError(
@@ -272,13 +267,13 @@ def getDockerOutput(imgName, command, client):
     if ret_code != 0:
         raise DockerImageError(
             'Attempt to docker run %s %s failed' % (imgName, command), imgName)
-    return "".join(logs)
+    return logs
 
 
 def getCliData(name, client, img, jobModel, job):
     try:
 
-        if isinstance(client, Client) and isinstance(img, DockerImage):
+        if isinstance(client, docker.DockerClient) and isinstance(img, DockerImage):
 
             cli_dict = getDockerOutput(name, '--list_cli', client)
             # contains nested dict
@@ -296,8 +291,7 @@ def getCliData(name, client, img, jobModel, job):
                 cli_dict[key][DockerImage.xml] = cli_xml
                 jobModel.updateJob(
                     job,
-                    log='Got image %s,cli %s meta data'
-                        ' \n' % (name, key),
+                    log='Got image %s, cli %s metadata\n' % (name, key),
                     status=JobStatus.RUNNING,
                 )
                 img.addCLI(key, cli_dict[key])
@@ -314,25 +308,19 @@ def pullDockerImage(client, names):
     Attempt to pull the docker images listed in names. Failure results in a
     DockerImageNotFoundError being raised
 
-
     :params client: The docker python client
     :params names: A list of docker images to be pulled from the Dockerhub
-
-
     """
-
     imgNotExistList = []
     for name in names:
         try:
-
-            client.pull(name)
+            client.images.pull(name)
             # some invalid image names will not be pulled but the pull method
             # will not throw an exception so the only way to confirm if a pull
             # succeeded is to attempt a docker inspect on the image
-            client.inspect_image(name)
+            client.images.get(name)
         except Exception:
             imgNotExistList.append(name)
     if len(imgNotExistList) != 0:
-
         raise DockerImageNotFoundError('Could not find multiple images ',
                                        image_name=imgNotExistList)
