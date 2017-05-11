@@ -17,10 +17,11 @@
 #  limitations under the License.
 ###############################################################################
 
-import threading
-import six
-import types
+import docker
 import json
+import six
+import threading
+import types
 
 from tests import base
 from girder import events
@@ -43,7 +44,6 @@ def tearDownModule():
 class DockerImageManagementTest(base.TestCase):
 
     def setUp(self):
-
         # adding and removing docker images and using generated rest endpoints
         # requires admin access
         base.TestCase.setUp(self)
@@ -56,13 +56,6 @@ class DockerImageManagementTest(base.TestCase):
             'admin': True
         }
         self.admin = self.model('user').createUser(**admin)
-
-        try:
-            from docker import Client
-            self.docker_client = Client(base_url='unix://var/run/docker.sock')
-
-        except Exception as err:
-            self.fail('could not create the docker client ' + str(err))
 
     def testAddNonExistentImage(self):
         # add a bad image
@@ -79,6 +72,30 @@ class DockerImageManagementTest(base.TestCase):
         self.imageIsLoaded(img_name, True)
         self.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
 
+    def testDockerAddBadParam(self):
+        # test sending bad parameters to the PUT endpoint
+        kwargs = {
+            'path': '/slicer_cli_web/slicer_cli_web/docker_image',
+            'user': self.admin,
+            'method': 'PUT',
+            'params': {'name': json.dumps(6)}
+        }
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('A valid string', resp.json['message'])
+        kwargs['params']['name'] = json.dumps({'abc': 'def'})
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('A valid string', resp.json['message'])
+        kwargs['params']['name'] = json.dumps([6])
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('is not a valid string', resp.json['message'])
+        kwargs['params']['name'] = '"not json'
+        resp = self.request(**kwargs)
+        self.assertStatus(resp, 400)
+        self.assertIn('does not have a tag', resp.json['message'])
+
     def testDockerAddList(self):
         # try to cache a good image to the mongo database
         img_name = 'girder/slicer_cli_web:small'
@@ -94,7 +111,7 @@ class DockerImageManagementTest(base.TestCase):
         self.assertNoImages()
 
     def testDockerDelete(self):
-        # just delete the meta data in the mongo database
+        # just delete the metadata in the mongo database
         # don't delete the docker image
         img_name = 'girder/slicer_cli_web:small'
         self.assertNoImages()
@@ -114,9 +131,14 @@ class DockerImageManagementTest(base.TestCase):
         self.deleteImage(img_name, True, True, JobStatus.SUCCESS)
 
         try:
-            self.docker_client.inspect_image(img_name)
-            self.fail('If the image was deleted then an attempt to docker '
-                      'inspect it should raise a docker exception')
+            docker_client = docker.from_env(version='auto')
+        except Exception as err:
+            self.fail('could not create the docker client ' + str(err))
+
+        try:
+            docker_client.images.get(img_name)
+            self.fail('If the image was deleted then an attempt to get it '
+                      'should raise a docker exception')
         except Exception:
             pass
 
@@ -124,7 +146,6 @@ class DockerImageManagementTest(base.TestCase):
         self.assertNoImages()
 
     def testDockerPull(self):
-
         # test an instance when the image must be pulled
         # Forces the test image to be deleted
         self.testDockerDeleteFull()
@@ -319,13 +340,16 @@ class DockerImageManagementTest(base.TestCase):
             events.bind('jobs.job.update.after',
                         'slicer_cli_web_add', self.addHandler)
 
-        resp = self.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
-                            user=self.admin, method='PUT',
-                            params={'name': json.dumps(name)}, isJson=False)
+        resp = self.request(
+            path='/slicer_cli_web/slicer_cli_web/docker_image',
+            user=self.admin, method='PUT', params={'name': json.dumps(name)},
+            isJson=initialStatus == 200)
 
         self.assertStatus(resp, initialStatus)
         if initialStatus != 200:
             return
+        # We should have a job ID
+        self.assertIsNotNone(resp.json.get('_id'))
 
         if not event.wait(TIMEOUT):
             del self.addHandler

@@ -105,5 +105,6 @@ def CLIListEntrypoint(cli_list_spec_file=None):
             cli_list_spec[args.cli]['type']
         )
 
+
 if __name__ == "__main__":
     CLIListEntrypoint()

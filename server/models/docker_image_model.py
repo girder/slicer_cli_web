@@ -17,8 +17,7 @@
 #  limitations under the License.
 ###############################################################################
 
-from docker import Client
-from docker.errors import DockerException
+import docker
 from girder import logger
 from girder.constants import AccessType
 from girder.api.rest import getCurrentUser
@@ -50,8 +49,8 @@ class DockerImageModel(AccessControlledModel):
         self.exposeFields(AccessType.ADMIN, (DockerImage.imageHash,))
         self.versionId = None
         try:
-            self.client = Client(base_url='unix://var/run/docker.sock')
-        except DockerException as err:
+            self.client = docker.from_env(version='auto')
+        except docker.errors.DockerException as err:
             logger.exception('Could not create the docker client')
             raise DockerImageError('could not create the docker client ' + str(
                                    err))
@@ -62,14 +61,15 @@ class DockerImageModel(AccessControlledModel):
         """
         Attempts to cache metadata on the docker images listed in the names
         list.
-        If the pullIfNotLocal flag is true, the job will attempt to pull
-         the image if it does not exist.
-        :param names: A list of docker image names(can use with tags or digests)
-        :param jobType: defines the jobtype of the job that will be schedueled
-         ,used by event listeners to determine if a job succeeded or not
-         :param pullIfNotLocal: Boolean to determine whether a non existent
-         image
-         should be pulled,(attempts to pull from default docker hub registry)
+
+        :param names: A list of docker image names (can use with tags or
+            digests)
+        :param jobType: defines the jobtype of the job that will be schedueled.
+            This can be used by event listeners to determine if a job succeeds.
+        :param pullIfNotLocal: Boolean if True, the job will attempt to pull
+            the image from the default docker hub registry if it does not
+            exist.
+        :returns: the job that was created.
         """
         jobModel = ModelImporter.model('job', 'jobs')
         # list of images to pull and load
@@ -77,13 +77,9 @@ class DockerImageModel(AccessControlledModel):
         # list of images that exist locally and just need to be parsed and saved
         loadList = []
         for name in names:
-
             try:
-
                 self._ImageExistsLocally(name)
-
                 data = self.collection.find_one(DockerImage.getHashKey(name))
-
                 if data is None:
                     loadList.append(name)
             # exception can be dockerimage
@@ -92,25 +88,20 @@ class DockerImageModel(AccessControlledModel):
                     pullList.append(name)
 
         job = jobModel.createLocalJob(
-
             module='girder.plugins.slicer_cli_web.image_job',
-
             function='jobPullAndLoad',
             kwargs={
-
-
                 'pullList': pullList,
                 'loadList': loadList
             },
-
             title='Pulling and caching docker images ',
             type=jobType,
             user=getCurrentUser(),
             public=True,
             async=True
         )
-
         jobModel.scheduleJob(job)
+        return job
 
     def _ImageExistsLocally(self, name):
         """
@@ -120,12 +111,12 @@ class DockerImageModel(AccessControlledModel):
         :returns id: returns the docker image id
         """
         try:
-            data = self.client.inspect_image(name)
+            image = self.client.images.get(name)
         except Exception as err:
             logger.exception('Could not find docker image %s', name)
             raise DockerImageNotFoundError(
                 'could not find the image \n' + str(err), name)
-        return data['Id']
+        return image.id
 
     def save(self, img):
         """
@@ -189,9 +180,9 @@ class DockerImageModel(AccessControlledModel):
 
     def loadAllImages(self):
         """
-        Attempts to generate a DockerCache object with all image meta data
-        stored in girder.If DockerImage meta data is saved in girder but the
-        actual docker image was deleted off the local machine, the meta data
+        Attempts to generate a DockerCache object with all image metadata
+        stored in girder.If DockerImage metadata is saved in girder but the
+        actual docker image was deleted off the local machine, the metadata
         will be removed from the mongo database
         :returns: A DockerCache object populated with DockerImage objects
         """

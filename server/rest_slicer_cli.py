@@ -597,6 +597,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     -------
     function
         Returns a function that runs the CLI using girder_worker
+
     """
 
     cliName = os.path.normpath(cliRelPath).replace(os.sep, '.')
@@ -778,8 +779,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     return handlerFunc
 
 
-def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
-                                    restResource):
+def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML, restResource):
     """Generates a handler that returns the XML spec of the docker CLI
 
     Parameters
@@ -799,6 +799,7 @@ def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
     -------
     function
         Returns a function that returns the xml spec of the CLI
+
     """
 
     str_xml = cliXML
@@ -839,10 +840,6 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     restResource : str or girder.api.rest.Resource
         REST resource to which the end-points should be attached
     dockerImages : a list of docker image names
-
-
-    Returns
-    -------
 
     """
     dockerImages
@@ -968,14 +965,9 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
     Parameters
     ----------
-
     restResource : a dockerResource
         REST resource to which the end-points should be attached
     dockerCache : DockerCache object representing data stored in settings
-
-
-    Returns
-    -------
 
     """
 
