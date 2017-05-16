@@ -545,7 +545,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
 
     for param in index_params:
 
-        if param.channel == 'input':
+        if param.channel != 'output':
 
             if _is_on_girder(param):
                 curValue = "$input{%s}" % param.identifier()
@@ -555,7 +555,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
                     hargs['params'][param.identifier()]
                 )
 
-        elif param.channel == 'output':
+        else:
 
             if not _is_on_girder(param):
                 raise Exception(
@@ -570,9 +570,6 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
                 _worker_docker_data_dir,
                 hargs['params'][param.identifier() + _girderOutputNameSuffix]
             )
-
-        else:
-            continue
 
         containerArgs.append(curValue)
 
@@ -637,7 +634,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     index_params, opt_params, simple_out_params = _getCLIParameters(clim)
 
     # add indexed input parameters
-    index_input_params = filter(lambda p: p.channel == 'input', index_params)
+    index_input_params = filter(lambda p: p.channel != 'output', index_params)
 
     _addIndexedInputParamsToHandler(index_input_params, handlerDesc)
 
