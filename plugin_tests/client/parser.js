@@ -288,6 +288,19 @@ girderTest.promise.then(function () {
                     channel: 'output'
                 });
             });
+            it('ignored output', function () {
+                var xml = $.parseXML(
+                    '<integer>' +
+                        '<longflag>foo</longflag>' +
+                        '<channel>output</channel>' +
+                        '<label>arg1</label>' +
+                        '<description>An integer</description>' +
+                        '</integer>'
+                );
+                expect(parser.param(
+                    $(xml).find('integer').get(0)
+                )).toBe(null);
+            });
         });
 
         describe('default value', function () {
@@ -466,39 +479,11 @@ girderTest.promise.then(function () {
                 );
                 var parsed = parser.parse(xml);
                 expect(
-                    parsed.panels.length
-                ).toBe(1);
-
-                delete parsed.panels;
-                expect(
                     parsed
                 ).toEqual({
                     title: 'The title',
-                    description: 'A description'
-                });
-            });
-
-            it('multiple panels', function () {
-                var xml = $.parseXML(
-                    '<executable>' +
-                        '<title>The title</title>' +
-                        '<description>A description</description>' +
-                        '<parameters>params1</parameters>' +
-                        '<parameters>params2</parameters>' +
-                        '<parameters>params3</parameters>' +
-                        '</executable>'
-                );
-                var parsed = parser.parse(xml);
-                expect(
-                    parsed.panels.length
-                ).toBe(3);
-
-                delete parsed.panels;
-                expect(
-                    parsed
-                ).toEqual({
-                    title: 'The title',
-                    description: 'A description'
+                    description: 'A description',
+                    panels: []
                 });
             });
         });
@@ -547,6 +532,13 @@ girderTest.promise.then(function () {
                 '<step>0</step>',
                 '</constraints>',
                 '</double>',
+                '<double>',
+                '<label>Output parameter that should be ignored</label>',
+                '<name>outputVariable</name>',
+                '<flag>o</flag>',
+                '<longflag>double-output</longflag>',
+                '<channel>output</channel>',
+                '</double>',
                 '</parameters>',
                 '<parameters>',
                 '<label>Vector Parameters</label>',
@@ -581,11 +573,14 @@ girderTest.promise.then(function () {
                 '<element>foofoo</element>',
                 '</string-enumeration>',
                 '</parameters>',
+                '<parameters>',
+                '</parameters>',
                 '</executable>'
             ].join('');
 
+            var opts = {};
             expect(
-                parser.parse(spec)
+                parser.parse(spec, opts)
             ).toEqual(
                 {
                     'title': 'Execution Model Tour',
@@ -698,6 +693,7 @@ girderTest.promise.then(function () {
                     ]
                 }
             );
+            expect(opts.output).toBe(true);
         });
     });
 });
