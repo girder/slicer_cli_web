@@ -729,7 +729,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
         _addOptionalInputParamsToContainerArgs(opt_input_params,
                                                containerArgs, hargs)
 
-        _addOptionalOutputParamsToContainerArgs(opt_input_params,
+        _addOptionalOutputParamsToContainerArgs(opt_output_params,
                                                 containerArgs, kwargs, hargs)
 
         _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs)
