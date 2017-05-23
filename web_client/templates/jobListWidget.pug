@@ -1,0 +1,15 @@
+table.g-jobs-list-table
+  tbody
+    each job in jobs
+      - var status = job.status;
+      - var title = job.title.replace(/^HistomicsTK\./, '');
+      // The status is 823 sometimes... not sure why
+      // so just set to 1: QUEUED to avoid the icon disappearing
+      if status > 100
+        - status = 1;
+      tr(data-job-id=job._id)
+        td.g-status-icon-container(status=status)
+          i(class=JobStatus.icon(status))
+        td
+          a(href=`/#job/${job._id}`, target='_blank')= title
+        td Link
