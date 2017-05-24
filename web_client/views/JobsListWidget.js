@@ -54,6 +54,7 @@ const JobsListWidget = View.extend({
             jobs,
             JobStatus
         }));
+        this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
     },
 
     fetchAndRender() {
