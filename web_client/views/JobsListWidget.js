@@ -11,6 +11,8 @@ import 'girder_plugins/worker/JobStatus';
 import JobCollection from 'girder_plugins/jobs/collections/JobCollection';
 import JobStatus from 'girder_plugins/jobs/JobStatus';
 
+import OutputParameterDialog from './OutputParameterDialog';
+
 import jobListWidget from '../templates/jobListWidget.pug';
 // import '../stylesheets/jobListWidget.styl';
 
@@ -70,8 +72,13 @@ const JobsListWidget = View.extend({
         restRequest({
             path: `file/${fileId}/download`,
             dataType: 'text'
-        }).then((d) => {
-            console.log(d);
+        }).then((parameters) => {
+            const view = new OutputParameterDialog({
+                parentView: this,
+                el: '#g-dialog-container',
+                parameters
+            });
+            view.render();
         });
     }
 });
