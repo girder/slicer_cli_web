@@ -427,7 +427,7 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                                                   user, token)
 
 
-def _addReturnParameterFileBinding(bspec, hargs, user, token):
+def _addReturnParameterFileBinding(bspec, hargs, user, token, job):
 
     curName = _return_parameter_file_name
 
@@ -447,7 +447,11 @@ def _addReturnParameterFileBinding(bspec, hargs, user, token):
         hargs[curName],
         token,
         name=hargs['params'][curName + _girderOutputNameSuffix],
-        dataType='string', dataFormat='string'
+        dataType='string', dataFormat='string',
+        reference=json.dumps({
+            'type': 'slicer_cli.parameteroutput',
+            'jobId': str(job['_id'])
+        })
     )
 
     bspec[curName] = curBindingSpec
@@ -721,7 +725,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
 
         if len(simple_out_params) > 0:
             _addReturnParameterFileBinding(kwargs['outputs'],
-                                           hargs, user, token)
+                                           hargs, user, token, job)
 
         # construct container arguments
         containerArgs = [cliRelPath]
