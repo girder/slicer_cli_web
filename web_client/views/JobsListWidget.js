@@ -13,8 +13,7 @@ import JobStatus from 'girder_plugins/jobs/JobStatus';
 
 import OutputParameterDialog from './OutputParameterDialog';
 
-import jobListWidget from '../templates/jobListWidget.pug';
-// import '../stylesheets/jobListWidget.styl';
+import jobListWidget from '../templates/jobsListWidget.pug';
 
 // cache parameter file models
 const paramFiles = {};
