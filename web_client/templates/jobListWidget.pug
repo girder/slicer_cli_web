@@ -9,8 +9,8 @@ table.g-jobs-list-table
         td
           a(href=`/#job/${job._id}`, target='_blank', data-toggle='tooltip', title=created.toLocaleString())
             = title
-        if job.paramFile
+        if job.paramFile && job.paramFile._id
           td
             a.s-param-file(
-              data-file-id=job.paramFile, data-toggle='tooltip', title='Show outputs')
+              data-file-id=job.paramFile._id, data-toggle='tooltip', title='Show outputs')
               i.icon-link-ext-alt

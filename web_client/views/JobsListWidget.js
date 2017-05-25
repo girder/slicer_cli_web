@@ -16,6 +16,9 @@ import OutputParameterDialog from './OutputParameterDialog';
 import jobListWidget from '../templates/jobListWidget.pug';
 // import '../stylesheets/jobListWidget.styl';
 
+// cache parameter file models
+const paramFiles = {};
+
 const JobsListWidget = View.extend({
     events: {
         'click .s-param-file': '_clickParamFile'
@@ -45,9 +48,10 @@ const JobsListWidget = View.extend({
         const jobs = this.collection.filter((job, index) => {
             return index < 10 && job.get('title').match(/HistomicsTK\./);
         }).map((job) => {
-            return _.extend({
-                paramFile: this._paramFile(job)
-            }, job.attributes);
+            // make an async request to add output parameter information
+            // to the job model
+            this._paramFile(job);
+            return _.extend({paramFile: paramFiles[job.id]}, job.attributes);
         });
 
         this.$el.html(jobListWidget({
@@ -63,9 +67,28 @@ const JobsListWidget = View.extend({
     },
 
     _paramFile(job) {
+        // we already processed this job
+        if (_.has(paramFiles, job.id)) {
+            return;
+        }
+
         const bindings = job.get('slicerCLIBindings') || {};
         const outputs = bindings.outputs || {};
-        return outputs.parameters;
+        const id = outputs.parameters;
+
+        if (id) {
+            // avoid processing this job again
+            paramFiles[job.id] = {};
+
+            // check if the file still exists
+            restRequest({
+                path: `file/${id}`,
+                error: null
+            }).then((file) => {
+                paramFiles[job.id] = file;
+                this.render();
+            });
+        }
     },
 
     _clickParamFile(evt) {
