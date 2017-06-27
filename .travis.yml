@@ -15,6 +15,9 @@ compiler:
     - gcc
 
 before_install:
+    # Fix a travis/boto issue.  See
+    # https://github.com/travis-ci/travis-ci/issues/7940
+    - sudo rm -f /etc/boto.cfg
     
     - GIRDER_VERSION=master
     - GIRDER_WORKER_VERSION=master

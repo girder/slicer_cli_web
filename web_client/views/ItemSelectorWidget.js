@@ -34,7 +34,7 @@ var ItemSelectorWidget = View.extend({
         });
 
         this.$el.html(
-            itemSelectorWidget(this.model.attributes)
+            itemSelectorWidget(this.model.attributes)  // eslint-disable-line backbone/no-view-model-attributes
         ).girderModal(this);
 
         this._hierarchyView.setElement(this.$('.s-hierarchy-widget')).render();

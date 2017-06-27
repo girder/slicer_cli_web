@@ -57,6 +57,8 @@ var PanelGroup = View.extend({
 
             this._panelViews[panel.id].render();
         }, this));
+
+        return this;
     },
 
     /**
@@ -90,6 +92,7 @@ var PanelGroup = View.extend({
             data: params
         }).then(function (data) {
             events.trigger('h:submit', data);
+            return null;
         });
     },
 
