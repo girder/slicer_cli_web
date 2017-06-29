@@ -5,6 +5,7 @@ import HierarchyWidget from 'girder/views/widgets/HierarchyWidget';
 import View from 'girder/views/View';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
+import { restRequest } from 'girder/rest';
 
 import itemSelectorWidget from '../templates/itemSelectorWidget.pug';
 
@@ -58,32 +59,56 @@ var ItemSelectorWidget = View.extend({
     _selectItem: function (item) {
         var image, file;
 
-        if (this.model.get('type') === 'file') {
-            this.model.set({
-                path: this._path(),
-                value: item
-            });
-            this.trigger('g:saved');
-            this.$el.modal('hide');
-        } else if (this.model.get('type') === 'image') {
-            image = item.get('largeImage');
-
-            if (!image) {
-                this.$('.s-modal-error').removeClass('hidden')
-                    .text('Please select a "large_image" item.');
-                return;
-            }
-
-            // For now, use the original file id rather than the large image id
-            file = new FileModel({_id: image.originalId || image.fileId});
-            file.once('g:fetched', _.bind(function () {
+        switch (this.model.get('type')) {
+            case 'item':
                 this.model.set({
                     path: this._path(),
-                    value: file
+                    value: item
                 });
                 this.trigger('g:saved');
-            }, this)).fetch();
-            this.$el.modal('hide');
+                this.$el.modal('hide');
+                break;
+            case 'file':
+                restRequest({path: '/item/' + item.id + '/files', data: {limit: 1}}).done((resp) => {
+                    if (!resp.length) {
+                        this.$('.s-modal-error').removeClass('hidden')
+                            .text('Please select a item with at least one file.');
+                        return;
+                    }
+                    file = new FileModel({_id: resp[0]._id});
+                    file.once('g:fetched', _.bind(function () {
+                        this.model.set({
+                            path: this._path(),
+                            value: file
+                        });
+                        this.trigger('g:saved');
+                    }, this)).fetch();
+                    this.$el.modal('hide');
+                }).fail(() => {
+                    this.$('.s-modal-error').removeClass('hidden')
+                        .text('There was an error listing files for the selected item.');
+                });
+                break;
+            case 'image':
+                image = item.get('largeImage');
+
+                if (!image) {
+                    this.$('.s-modal-error').removeClass('hidden')
+                        .text('Please select a "large_image" item.');
+                    return;
+                }
+
+                // For now, use the original file id rather than the large image id
+                file = new FileModel({_id: image.originalId || image.fileId});
+                file.once('g:fetched', _.bind(function () {
+                    this.model.set({
+                        path: this._path(),
+                        value: file
+                    });
+                    this.trigger('g:saved');
+                }, this)).fetch();
+                this.$el.modal('hide');
+                break;
         }
     },
 

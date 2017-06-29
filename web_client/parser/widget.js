@@ -21,6 +21,7 @@ function widget(param) {
         region: 'region',
         image: 'image',
         file: 'file',
+        item: 'item',
         directory: 'directory'
     };
     return typeMap[param.tagName];
