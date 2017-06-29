@@ -41,10 +41,14 @@ _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'file': 'file',
     'directory': 'folder'
 }
+_SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP = {
+    'image': '_girderFileId',
+    'file': '_girderItemId',
+    'directory': '_girderFolderId',
+}
 
 _worker_docker_data_dir = constants.DOCKER_DATA_VOLUME
 
-_girderInputFileSuffix = '_girderFileId'
 _girderOutputFolderSuffix = '_girderFolderId'
 _girderOutputNameSuffix = '_name'
 
@@ -114,7 +118,8 @@ def _addIndexedInputParamsToHandler(index_input_params, handlerDesc):
 
         # add to route description
         if param.isExternalType():
-            handlerDesc.param(param.identifier() + _girderInputFileSuffix,
+            suffix = _SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP[param.typ]
+            handlerDesc.param(param.identifier() + suffix,
                               'Girder ID of input %s - %s: %s'
                               % (param.typ, param.identifier(), param.description),
                               dataType='string', required=True)
@@ -215,7 +220,8 @@ def _addOptionalInputParamsToHandler(opt_input_params, handlerDesc):
         defaultVal = _getParamDefaultVal(param)
 
         if param.isExternalType():
-            handlerDesc.param(param.identifier() + _girderInputFileSuffix,
+            suffix = _SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP[param.typ]
+            handlerDesc.param(param.identifier() + suffix,
                               'Girder ID of input %s - %s: %s'
                               % (param.typ, param.identifier(), param.description),
                               dataType='string',
@@ -389,12 +395,13 @@ def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
     for param in opt_input_params:
 
         if _is_on_girder(param):
-            if param.identifier() + _girderInputFileSuffix not in hargs['params']:
+            suffix = _SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP[param.typ]
+            if param.identifier() + suffix not in hargs['params']:
                 continue
 
             curModelName = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
             curModel = ModelImporter.model(curModelName)
-            curId = hargs['params'][param.identifier() + _girderInputFileSuffix]
+            curId = hargs['params'][param.identifier() + suffix]
 
             hargs[param.identifier()] = curModel.load(id=curId,
                                                       level=AccessType.READ,
@@ -755,7 +762,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     for param in index_input_params_on_girder:
 
         curModel = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
-        curMap = {param.identifier() + _girderInputFileSuffix: param.identifier()}
+        suffix = _SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP[param.typ]
+        curMap = {param.identifier() + suffix: param.identifier()}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
