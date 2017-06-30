@@ -368,12 +368,11 @@ def _createOutputParamBindingSpec(param, hargs, user, token):
                     param.reference, param.identifier())
             )
 
-        curBindingSpec['reference'] = json.dumps(
-            {
-                'itemId': str(hargs[param.reference]['_id']),
-                'userId': str(user['_id'])
-            }
-        )
+        curBindingSpec['reference'] = json.dumps({
+            'itemId': str(hargs[param.reference]['_id']),
+            'userId': str(user['_id']),
+            'identifier': param.identifier()
+        })
 
     return curBindingSpec
 
