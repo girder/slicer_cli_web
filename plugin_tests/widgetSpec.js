@@ -597,80 +597,91 @@ describe('control widget view', function () {
         expect(w.model.get('path')).toEqual([]);
     });
 
-    it('file', function (done) {
-        var arg, file = new girder.models.FileModel({id: 'model id', name: 'd'});
+    it('file', function () {
+        var arg, file, item, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
 
-        hProto.initialize = function (_arg) {
-            arg = _arg;
-            this.breadcrumbs = [];
-        };
-        hProto.render = function () {};
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget'
+                })
+            });
 
-        var w = new slicer.views.ControlWidget({
-            parentView: parentView,
-            el: $el.get(0),
-            model: new slicer.models.WidgetModel({
-                type: 'file',
-                title: 'Title',
-                id: 'file-widget'
-            })
+            w.render();
+            checkWidgetCommon(w);
+
+            girder.rest.mockRestRequest(function (opts) {
+                if (opts.path.substr(0, 5) === 'file/') {
+                    return $.Deferred().resolve(file.toJSON());
+                }
+                return $.Deferred().resolve([file.toJSON()]);
+            });
+            w.$('.s-select-file-button').click();
+            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            arg.onItemClick(item);
         });
-
-        w.render();
-        checkWidgetCommon(w);
-
-        girder.rest.mockRestRequest(function () {
-            return $.Deferred().resolve(JSON.stringify(file)).promise();
+        waitsFor(function () {
+            return w.model.value().name() === 'e';
         });
-        hProto.on('g:saved', function () {
-            console.log('here');
-            expect(w.model.value().name()).toBe('d');
-
+        runs(function () {
+            expect(w.model.value().name()).toBe('e');
             expect(w.model.get('path')).toEqual([]);
             girder.rest.unmockRestRequest();
-            done();
         });
-        w.$('.s-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
-        arg.onItemClick(file);
     });
 
     it('image', function (done) {
-        var arg, file = new girder.models.FileModel({id: 'model id', name: 'e'});
+        var arg, item, file, w;
+        runs(function () {
+            file = new girder.models.FileModel({_id: 'file id', name: 'g'});
+            item = new girder.models.ItemModel({
+                _id: 'item id', name: 'f', largeImage: {fileId: file.id}});
 
-        hProto.initialize = function (_arg) {
-            arg = _arg;
-            this.breadcrumbs = [];
-        };
-        hProto.render = function () {};
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
 
-        var w = new slicer.views.ControlWidget({
-            parentView: parentView,
-            el: $el.get(0),
-            model: new slicer.models.WidgetModel({
-                type: 'image',
-                title: 'Title',
-                id: 'image-widget'
-            })
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'image',
+                    title: 'Title',
+                    id: 'image-widget'
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+
+            girder.rest.mockRestRequest(function (opts) {
+                return $.Deferred().resolve(file.toJSON());
+            });
+            w.$('.s-select-file-button').click();
+            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            arg.onItemClick(item);
         });
-
-        w.render();
-        checkWidgetCommon(w);
-
-        girder.rest.mockRestRequest(function () {
-            return $.Deferred().resolve(JSON.stringify(file)).promise();
+        waitsFor(function () {
+            return w.model.value().name() === 'g';
         });
-        hProto.on('g:saved', function () {
-            console.log('here');
-            expect(w.model.value().name()).toBe('e');
-
+        runs(function () {
+            expect(w.model.value().name()).toBe('g');
             expect(w.model.get('path')).toEqual([]);
             girder.rest.unmockRestRequest();
-            done();
         });
-        w.$('.s-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
-        arg.onItemClick(file);
     });
 
     it('new-file', function () {
