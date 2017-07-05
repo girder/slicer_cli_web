@@ -39,11 +39,13 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
 _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'image': 'file',
     'file': 'file',
+    'item': 'item',
     'directory': 'folder'
 }
 _SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP = {
     'image': '_girderFileId',
-    'file': '_girderItemId',
+    'file': '_girderFileId',
+    'item': '_girderItemId',
     'directory': '_girderFolderId',
 }
 
@@ -366,12 +368,11 @@ def _createOutputParamBindingSpec(param, hargs, user, token):
                     param.reference, param.identifier())
             )
 
-        curBindingSpec['reference'] = json.dumps(
-            {
-                'itemId': str(hargs[param.reference]['_id']),
-                'userId': str(user['_id'])
-            }
-        )
+        curBindingSpec['reference'] = json.dumps({
+            'itemId': str(hargs[param.reference]['_id']),
+            'userId': str(user['_id']),
+            'identifier': param.identifier()
+        })
 
     return curBindingSpec
 

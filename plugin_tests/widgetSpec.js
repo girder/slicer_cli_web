@@ -21,6 +21,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', '0.5');
         expect(w.value()).toBe(0.5);
@@ -49,6 +50,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', '0.5');
         expect(w.value()).toBe(0.5);
@@ -90,6 +92,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         expect(w.value()).toBe(false);
         expect(w.isValid()).toBe(true);
@@ -110,6 +113,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         expect(w.value()).toBe('Default value');
         expect(w.isValid()).toBe(true);
@@ -129,6 +133,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(true);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', '#ffffff');
         expect(w.value()).toBe('#ffffff');
@@ -157,6 +162,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', 'a,b,c');
         expect(w.value()).toEqual(['a', 'b', 'c']);
@@ -177,6 +183,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', 'a,b,c');
         expect(w.isValid()).toBe(false);
@@ -208,6 +215,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(true);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', 'value 1');
         expect(w.isValid()).toBe(true);
@@ -234,6 +242,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(true);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         w.set('value', '11');
         expect(w.isValid()).toBe(true);
@@ -255,6 +264,20 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(true);
+        expect(w.isItem()).toBe(false);
+    });
+    it('item', function () {
+        var w = new slicer.models.WidgetModel({
+            type: 'item',
+            title: 'Item widget'
+        });
+        expect(w.isNumeric()).toBe(false);
+        expect(w.isBoolean()).toBe(false);
+        expect(w.isVector()).toBe(false);
+        expect(w.isColor()).toBe(false);
+        expect(w.isEnumeration()).toBe(false);
+        expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(true);
     });
     it('invalid', function () {
         var w = new slicer.models.WidgetModel({
@@ -267,6 +290,7 @@ describe('widget model', function () {
         expect(w.isColor()).toBe(false);
         expect(w.isEnumeration()).toBe(false);
         expect(w.isFile()).toBe(false);
+        expect(w.isItem()).toBe(false);
 
         expect(w.isValid()).toBe(false);
     });
@@ -285,7 +309,9 @@ describe('widget collection', function () {
             {type: 'string-enumeration', id: 'string-enumeration', values: ['a'], value: 'a'},
             {type: 'number-enumeration', id: 'number-enumeration', values: [1], value: '1'},
             {type: 'file', id: 'file', value: new Backbone.Model({id: 'a'})},
-            {type: 'new-file', id: 'new-file', value: new Backbone.Model({name: 'a', folderId: 'b'})}
+            {type: 'new-file', id: 'new-file', value: new Backbone.Model({name: 'a', folderId: 'b'})},
+            {type: 'item', id: 'item', value: new Backbone.Model({id: 'c'})},
+            {type: 'image', id: 'image', value: new Backbone.Model({id: 'd'})}
         ]);
 
         expect(c.values()).toEqual({
@@ -298,9 +324,11 @@ describe('widget collection', function () {
             'number-vector': '[1,2,3]',
             'string-enumeration': '"a"',
             'number-enumeration': '1',
-            'file_girderItemId': 'a',
+            'file_girderFileId': 'a',
             'new-file_girderFolderId': 'b',
-            'new-file_name': 'a'
+            'new-file_name': 'a',
+            'item_girderItemId': 'c',
+            'image_girderFileId': 'd'
         });
     });
 });
@@ -539,7 +567,7 @@ describe('control widget view', function () {
         expect(w.model.value()).toBe(300);
     });
 
-    it('file', function () {
+    it('item', function () {
         var arg, item = new girder.models.ItemModel({id: 'model id', name: 'b'});
 
         hProto.initialize = function (_arg) {
@@ -552,9 +580,9 @@ describe('control widget view', function () {
             parentView: parentView,
             el: $el.get(0),
             model: new slicer.models.WidgetModel({
-                type: 'file',
+                type: 'item',
                 title: 'Title',
-                id: 'file-widget'
+                id: 'item-widget'
             })
         });
 
@@ -567,6 +595,93 @@ describe('control widget view', function () {
         expect(w.model.value().name()).toBe('b');
 
         expect(w.model.get('path')).toEqual([]);
+    });
+
+    it('file', function () {
+        var arg, file, item, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget'
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+
+            girder.rest.mockRestRequest(function (opts) {
+                if (opts.path.substr(0, 5) === 'file/') {
+                    return $.Deferred().resolve(file.toJSON());
+                }
+                return $.Deferred().resolve([file.toJSON()]);
+            });
+            w.$('.s-select-file-button').click();
+            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            arg.onItemClick(item);
+        });
+        waitsFor(function () {
+            return w.model.value().name() === 'e';
+        });
+        runs(function () {
+            expect(w.model.value().name()).toBe('e');
+            expect(w.model.get('path')).toEqual([]);
+            girder.rest.unmockRestRequest();
+        });
+    });
+
+    it('image', function (done) {
+        var arg, item, file, w;
+        runs(function () {
+            file = new girder.models.FileModel({_id: 'file id', name: 'g'});
+            item = new girder.models.ItemModel({
+                _id: 'item id', name: 'f', largeImage: {fileId: file.id}});
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'image',
+                    title: 'Title',
+                    id: 'image-widget'
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+
+            girder.rest.mockRestRequest(function (opts) {
+                return $.Deferred().resolve(file.toJSON());
+            });
+            w.$('.s-select-file-button').click();
+            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            arg.onItemClick(item);
+        });
+        waitsFor(function () {
+            return w.model.value().name() === 'g';
+        });
+        runs(function () {
+            expect(w.model.value().name()).toBe('g');
+            expect(w.model.get('path')).toEqual([]);
+            girder.rest.unmockRestRequest();
+        });
     });
 
     it('new-file', function () {
