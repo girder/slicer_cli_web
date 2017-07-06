@@ -25,13 +25,6 @@ var WidgetModel = Backbone.Model.extend({
     },
 
     /**
-     * Sets initial model attributes with normalization.
-     */
-    initialize: function (model) {
-        this.set(_.defaults(model || {}, this.defaults));
-    },
-
-    /**
      * Override Model.set for widget specific bahavior.
      */
     set: function (hash, options) {
