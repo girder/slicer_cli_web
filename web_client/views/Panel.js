@@ -15,6 +15,7 @@ var Panel = View.extend({
     render: function () {
         this.$el.html(panel(this.spec));
         this.$('.s-panel-content').collapse({toggle: false});
+        return this;
     },
     expand: function () {
         this.$('.icon-down-open').attr('class', 'icon-up-open');

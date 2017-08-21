@@ -622,7 +622,7 @@ describe('control widget view', function () {
             checkWidgetCommon(w);
 
             girder.rest.mockRestRequest(function (opts) {
-                if (opts.path.substr(0, 5) === 'file/') {
+                if (opts.url.substr(0, 5) === 'file/') {
                     return $.Deferred().resolve(file.toJSON());
                 }
                 return $.Deferred().resolve([file.toJSON()]);
