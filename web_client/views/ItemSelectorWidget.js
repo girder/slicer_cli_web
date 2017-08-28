@@ -69,7 +69,7 @@ var ItemSelectorWidget = View.extend({
                 this.$el.modal('hide');
                 break;
             case 'file':
-                restRequest({path: '/item/' + item.id + '/files', data: {limit: 1}}).done((resp) => {
+                restRequest({url: '/item/' + item.id + '/files', data: {limit: 1}}).done((resp) => {
                     if (!resp.length) {
                         this.$('.s-modal-error').removeClass('hidden')
                             .text('Please select a item with at least one file.');
