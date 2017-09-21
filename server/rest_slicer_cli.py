@@ -338,7 +338,7 @@ def _createInputParamBindingSpec(param, hargs, token):
             hargs[param.identifier()],
             resourceType=_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ],
             dataType='string', dataFormat='string',
-            token=token, fetchParent=True)
+            token=token, fetchParent=False)
     else:
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
