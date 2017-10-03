@@ -2,7 +2,7 @@
     "name": "slicer_cli_web",
     "description": "A girder plugin for exposing slicer CLIs over the web",
     "version": "0.2.0",
-    "dependencies": ["worker"],
+    "dependencies": ["worker", "jobs"],
     "npm": {
         "dependencies": {
             "bootstrap-colorpicker": "2.3.6",
