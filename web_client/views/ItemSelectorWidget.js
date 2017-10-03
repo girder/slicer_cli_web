@@ -98,8 +98,8 @@ var ItemSelectorWidget = View.extend({
                     return;
                 }
 
-                // For now, use the original file id rather than the large image id
-                file = new FileModel({_id: image.originalId || image.fileId});
+                // Prefer the large_image fileId
+                file = new FileModel({_id: image.fileId || image.originalId});
                 file.once('g:fetched', _.bind(function () {
                     this.model.set({
                         path: this._path(),
