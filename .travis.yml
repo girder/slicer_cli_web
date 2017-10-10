@@ -18,8 +18,8 @@ before_install:
     # Fix a travis/boto issue.  See
     # https://github.com/travis-ci/travis-ci/issues/7940
     - sudo rm -f /etc/boto.cfg
-    
-    - GIRDER_VERSION=master
+
+    - GIRDER_VERSION=2.x-maintenance
     - GIRDER_WORKER_VERSION=master
     - main_path=$PWD
     - build_path=$PWD/build
@@ -34,7 +34,7 @@ before_install:
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install -U -r $girder_worker_path/requirements.txt 
+    - pip install -U -r $girder_worker_path/requirements.txt
     - pip install -U -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - export MONGO_VERSION=2.6.11
@@ -62,8 +62,8 @@ before_install:
 install:
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - cd $girder_path
-    - pip install -r requirements-dev.txt -e .[worker] 
-    - pip install -r $main_path/requirements.txt 
+    - pip install -r requirements-dev.txt -e .[worker]
+    - pip install -r $main_path/requirements.txt
     - npm-install-retry
     - BABEL_ENV=cover girder-install web --plugins=slicer_cli_web,worker,jobs --dev
 
