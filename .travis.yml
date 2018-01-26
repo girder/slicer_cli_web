@@ -34,8 +34,7 @@ before_install:
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install -U -r $girder_worker_path/requirements.txt
-    - pip install -U -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
+    - pip install -U $girder_worker_path
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -62,10 +61,10 @@ before_install:
 install:
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - cd $girder_path
-    - pip install -r requirements-dev.txt -e .[worker]
-    - pip install -r $main_path/requirements.txt
+    - pip install -U -r requirements-dev.txt -e .[worker]
+    - pip install -U -r $main_path/requirements.txt
     - npm-install-retry
-    - BABEL_ENV=cover girder-install web --plugins=slicer_cli_web,worker,jobs --dev
+    - girder-install web --plugins=slicer_cli_web,worker,jobs --dev
 
 script:
     - mkdir -p $build_path/girder_testing_build

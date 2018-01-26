@@ -335,8 +335,8 @@ describe('widget collection', function () {
 
 describe('control widget view', function () {
     var $el, hInit, hRender, hProto, parentView = {
-            registerChildView: function () {}
-        };
+        registerChildView: function () {}
+    };
 
     function checkWidgetCommon(widget) {
         var model = widget.model;
