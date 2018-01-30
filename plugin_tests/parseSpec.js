@@ -269,7 +269,7 @@ describe('XML Schema parser', function () {
         });
         it('output file', function () {
             var xml = $.parseXML(
-                '<file>' +
+                '<file fileExtensions=".txt">' +
                     '<longflag>foo</longflag>' +
                     '<channel>output</channel>' +
                     '<label>arg1</label>' +
@@ -284,7 +284,8 @@ describe('XML Schema parser', function () {
                 id: 'foo',
                 title: 'arg1',
                 description: 'A description',
-                channel: 'output'
+                channel: 'output',
+                extensions: '.txt'
             });
         });
     });
