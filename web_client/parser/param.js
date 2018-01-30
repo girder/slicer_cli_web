@@ -15,6 +15,7 @@ function param(paramTag) {
     var type = widget(paramTag);
     var values = {};
     var channel = $param.find('channel');
+    var extra = {};
 
     if (channel.length) {
         channel = channel.text();
@@ -24,6 +25,7 @@ function param(paramTag) {
 
     if ((type === 'file' || type === 'image') && channel === 'output') {
         type = 'new-file';
+        extra['extensions'] = $param.attr('fileExtensions');
     }
 
     if (!type) {
@@ -49,7 +51,8 @@ function param(paramTag) {
         },
         values,
         defaultValue(type, $param.find('default')),
-        constraints(type, $param.find('constraints').get(0))
+        constraints(type, $param.find('constraints').get(0)),
+        extra
     );
 }
 
