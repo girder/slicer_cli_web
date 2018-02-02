@@ -16,6 +16,7 @@ function param(paramTag, opts = {}) {
     var values = {};
     var channel = $param.find('channel');
     var id = $param.find('name').text() || $param.find('longflag').text();
+    var extra = {};
 
     if (channel.length) {
         channel = channel.text();
@@ -25,6 +26,7 @@ function param(paramTag, opts = {}) {
 
     if ((type === 'file' || type === 'image') && channel === 'output') {
         type = 'new-file';
+        extra['extensions'] = $param.attr('fileExtensions');
     } else if (channel === 'output') {
         opts.output = true;
         opts.params = _.extend(opts.params || {}, {
@@ -56,7 +58,8 @@ function param(paramTag, opts = {}) {
         },
         values,
         defaultValue(type, $param.find('default')),
-        constraints(type, $param.find('constraints').get(0))
+        constraints(type, $param.find('constraints').get(0)),
+        extra
     );
 }
 

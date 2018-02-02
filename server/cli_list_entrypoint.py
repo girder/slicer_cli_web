@@ -94,8 +94,15 @@ def CLIListEntrypoint(cli_list_spec_file=None):
 
         script_file = os.path.join('.', args.cli, os.path.basename(args.cli))
 
-        # ./<cli-rel-path>/<cli-name> [<args>]
-        subprocess.call([script_file] + sys.argv[2:])
+        if os.path.isfile(script_file):
+
+            # ./<cli-rel-path>/<cli-name> [<args>]
+            subprocess.call([script_file] + sys.argv[2:])
+
+        else:
+
+            # assumes parent dir of CLI executable is in ${PATH}
+            subprocess.call([os.path.basename(args.cli)] + sys.argv[2:])
 
     else:
         logger.exception('CLIs of type %s are not supported',

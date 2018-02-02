@@ -6,20 +6,13 @@ import tinycolor from 'tinycolor2';
  * A backbone model controlling the behavior and rendering of widgets.
  */
 var WidgetModel = Backbone.Model.extend({
-    /**
-     * Sets initial model attributes with normalization.
-     */
-    initialize: function (model) {
-        this.set(_.defaults(model || {}, this.defaults));
-    },
-
     defaults: {
-        type: '',          // The specific widget type
-        title: '',         // The label to display with the widget
-        description: '',   // The description to display with the widget
-        value: '',         // The current value of the widget
+        type: '', // The specific widget type
+        title: '', // The label to display with the widget
+        description: '', // The description to display with the widget
+        value: '', // The current value of the widget
 
-        values: []         // A list of possible values for enum types
+        values: [] // A list of possible values for enum types
 
         // optional attributes only used for certain widget types
         /*
@@ -29,6 +22,13 @@ var WidgetModel = Backbone.Model.extend({
         max: undefined,    // A maximum value
         step: 1            // Discrete value intervals
         */
+    },
+
+    /**
+     * Sets initial model attributes with normalization.
+     */
+    initialize: function (model) {
+        this.set(_.defaults(model || {}, this.defaults));
     },
 
     /**
@@ -299,7 +299,7 @@ var WidgetModel = Backbone.Model.extend({
      */
     isGirderModel: function () {
         return _.contains(
-            ['directory', 'file', 'new-file', 'image'],
+            ['directory', 'file', 'item', 'new-file', 'image'],
             this.get('type')
         );
     },
@@ -309,6 +309,13 @@ var WidgetModel = Backbone.Model.extend({
      */
     isFile: function () {
         return this.get('type') === 'file';
+    },
+
+    /**
+     * True if the value represents an item stored in girder.
+     */
+    isItem: function () {
+        return this.get('type') === 'item';
     },
 
     /**
@@ -333,6 +340,7 @@ var WidgetModel = Backbone.Model.extend({
         'number-enumeration',
         'string-enumeration',
         'file',
+        'item',
         'directory',
         'new-file',
         'image',

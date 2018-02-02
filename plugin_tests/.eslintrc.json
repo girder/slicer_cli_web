@@ -1,0 +1,15 @@
+{
+    "rules": {
+        "no-console": 0
+    },
+    "globals": {
+        "Backbone": true,
+        "_": true,
+        "girderTest": true,
+        "girder": true,
+        "moment": true
+    },
+    "env": {
+        "jasmine": true
+    }
+}

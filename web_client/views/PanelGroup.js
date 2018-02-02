@@ -57,6 +57,8 @@ var PanelGroup = View.extend({
 
             this._panelViews[panel.id].render();
         }, this));
+
+        return this;
     },
 
     /**
@@ -85,11 +87,12 @@ var PanelGroup = View.extend({
 
         // post the job to the server
         restRequest({
-            path: this._submit,
+            url: this._submit,
             type: 'POST',
             data: params
         }).then(function (data) {
             events.trigger('h:submit', data);
+            return null;
         });
     },
 
@@ -201,7 +204,7 @@ var PanelGroup = View.extend({
             return $.when();
         }
         return restRequest({
-            path: path + '/xmlspec',
+            url: path + '/xmlspec',
             dataType: 'xml'
         }).then(_.bind(function (xml) {
             this._submit = path + '/run';
