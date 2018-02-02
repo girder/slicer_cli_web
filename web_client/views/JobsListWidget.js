@@ -58,6 +58,7 @@ const JobsListWidget = View.extend({
             JobStatus
         }));
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+        return this;
     },
 
     fetchAndRender() {
@@ -83,7 +84,7 @@ const JobsListWidget = View.extend({
             restRequest({
                 path: `file/${id}`,
                 error: null
-            }).then((file) => {
+            }).done((file) => {
                 paramFiles[job.id] = file;
                 this.render();
             });
@@ -95,7 +96,7 @@ const JobsListWidget = View.extend({
         restRequest({
             path: `file/${fileId}/download`,
             dataType: 'text'
-        }).then((parameters) => {
+        }).done((parameters) => {
             const view = new OutputParameterDialog({
                 parentView: this,
                 el: '#g-dialog-container',

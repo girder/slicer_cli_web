@@ -14,6 +14,7 @@ const OutputParameterDialog = View.extend({
                 parameters: this.parameters
             })
         ).girderModal(this);
+        return this;
     }
 });
 
