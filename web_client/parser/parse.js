@@ -17,9 +17,11 @@ import panel from './panel';
  *       * parameters[] -- individual parameters
  *
  * @param {string|object} spec The slicer GUI spec content (accepts parsed or unparsed xml)
+ * @param {object} [opts] When provided this object will used to provide information about
+ *     the outputs of the spec.
  * @returns {object}
  */
-function parse(spec) {
+function parse(spec, opts = {}) {
     var gui, $spec;
 
     if (_.isString(spec)) {
@@ -45,7 +47,11 @@ function parse(spec) {
         }
     );
 
-    gui.panels = _.map($spec.find('executable > parameters'), panel);
+    gui.panels = _.filter(
+        _.map($spec.find('executable > parameters'), (p) => panel(p, opts)),
+        _.isObject
+    );
+
     return gui;
 }
 

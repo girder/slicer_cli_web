@@ -218,13 +218,17 @@ var PanelGroup = View.extend({
      */
     _schema: function (xml) {
         var fail = false;
+        var opts = {};
+        var json;
+
         // clear the view on null
         if (xml === null) {
             return this.reset();
         }
 
         try {
-            this._json(parse(xml));
+            json = parse(xml, opts);
+            this._json(json, opts.output);
         } catch (e) {
             fail = true;
         }
@@ -245,13 +249,35 @@ var PanelGroup = View.extend({
     /**
      * Generate panels from a json schema.
      */
-    _json: function (spec) {
+    _json: function (spec, outputs) {
         if (_.isString(spec)) {
             spec = JSON.parse(spec);
         }
         this._gui = spec;
+        if (outputs) {
+            this._addParamFileOutput();
+        }
         this.reload();
         return this;
+    },
+
+    /**
+     * Add an output file for storing parameter outputs.
+     */
+    _addParamFileOutput: function () {
+        this._gui.panels.splice(0, 0, {
+            groups: [{
+                label: 'Parameter outputs',
+                parameters: [{
+                    type: 'new-file',
+                    slicerType: 'file',
+                    id: 'returnparameterfile',
+                    title: 'Parameter output file',
+                    description: 'Output parameters returned by the analysis will be stored in this file.',
+                    channel: 'output'
+                }]
+            }]
+        });
     }
 });
 

@@ -10,11 +10,12 @@ import constraints from './constraints';
  * @param {XML} param The parameter spec
  * @returns {object}
  */
-function param(paramTag) {
+function param(paramTag, opts = {}) {
     var $param = $(paramTag);
     var type = widget(paramTag);
     var values = {};
     var channel = $param.find('channel');
+    var id = $param.find('name').text() || $param.find('longflag').text();
     var extra = {};
 
     if (channel.length) {
@@ -26,6 +27,12 @@ function param(paramTag) {
     if ((type === 'file' || type === 'image') && channel === 'output') {
         type = 'new-file';
         extra['extensions'] = $param.attr('fileExtensions');
+    } else if (channel === 'output') {
+        opts.output = true;
+        opts.params = _.extend(opts.params || {}, {
+            [id]: type
+        });
+        return null;
     }
 
     if (!type) {
@@ -44,10 +51,10 @@ function param(paramTag) {
         {
             type: type,
             slicerType: paramTag.tagName,
-            id: $param.find('name').text() || $param.find('longflag').text(),
             title: $param.find('label').text(),
             description: $param.find('description').text(),
-            channel: channel
+            channel,
+            id
         },
         values,
         defaultValue(type, $param.find('default')),

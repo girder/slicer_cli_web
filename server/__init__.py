@@ -17,15 +17,35 @@
 #  limitations under the License.
 ###############################################################################
 
+import json
+
 from girder import events
 from girder.models.model_base import ModelImporter
+from girder.constants import AccessType
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .docker_resource import DockerResource
 
 
-def load(info):
+def _onUpload(event):
+    try:
+        ref = json.loads(event.info.get('reference'))
+    except (ValueError, TypeError):
+        return
 
+    if isinstance(ref, dict) and ref.get('type') == 'slicer_cli.parameteroutput':
+        jobModel = ModelImporter.model('job', 'jobs')
+        job = jobModel.load(ref['jobId'], force=True, exc=True)
+
+        file = event.info['file']
+
+        # Add link to job model to the output item
+        jobModel.updateJob(job, otherFields={
+            'slicerCLIBindings.outputs.parameters': file['_id']
+        })
+
+
+def load(info):
     # passed in resource name must match the attribute added to info[apiroot]
     resource = DockerResource('slicer_cli_web')
     info['apiRoot'].slicer_cli_web = resource
@@ -36,5 +56,9 @@ def load(info):
 
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
 
+    ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
+        'slicerCLIBindings'})
+
     events.bind('jobs.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)
+    events.bind('data.process', info['name'], _onUpload)
