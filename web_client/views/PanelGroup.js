@@ -58,6 +58,7 @@ var PanelGroup = View.extend({
             this._panelViews[panel.id].render();
         }, this));
 
+        events.trigger('h:analysis:rendered', this);
         return this;
     },
 
