@@ -49,7 +49,7 @@ class DockerImageNotFoundError(DockerImageError):
         self.locations = locations
 
 
-class DockerImage():
+class DockerImage(object):
     """
     Represents docker image and contains metadata on a specific image
     """
@@ -159,7 +159,7 @@ class DockerImage():
         return self.data
 
 
-class DockerCache:
+class DockerCache(object):
     """
     This class is used to hold and access metadata on existing images
     """
@@ -252,7 +252,7 @@ class DockerCache:
 # TODO add regex for clis to enforce alpha-numeric name
 
 
-class DockerImageStructure:
+class DockerImageStructure(object):
     cli_schema = {
         'type': 'object',
         "properties": {
