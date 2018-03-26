@@ -66,7 +66,7 @@ install:
     - pip install -U -r requirements-dev.txt -e .[worker]
     - pip install -U -r $main_path/requirements.txt
     - npm-install-retry
-    - girder-install web --plugins=slicer_cli_web,worker,jobs --dev
+    - girder-install web --plugins=slicer_cli_web,worker,jobs --dev </dev/null
 
 script:
     - cd $girder_worker_path

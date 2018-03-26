@@ -407,8 +407,8 @@ def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
             hargs[param.identifier()] = curModel.load(id=curId,
                                                       level=AccessType.READ,
                                                       user=user)
-
-        bspec[param.identifier()] = _createInputParamBindingSpec(param, hargs, token)
+        if param.identifier() in hargs['params']:
+            bspec[param.identifier()] = _createInputParamBindingSpec(param, hargs, token)
 
 
 def _addOptionalOutputParamBindings(opt_output_params,
@@ -431,8 +431,8 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                                   level=AccessType.WRITE,
                                                   user=user)
 
-        bspec[param.identifier()] = _createOutputParamBindingSpec(param, hargs,
-                                                                  user, token)
+        if param.identifier() in hargs['params']:
+            bspec[param.identifier()] = _createOutputParamBindingSpec(param, hargs, user, token)
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token, job):
