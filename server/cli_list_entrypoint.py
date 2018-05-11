@@ -88,7 +88,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
                                    os.path.basename(args.cli) + '.py')
 
         # python <cli-rel-path>/<cli-name>.py [<args>]
-        subprocess.call([sys.executable, script_file] + sys.argv[2:])
+        output_code = subprocess.call([sys.executable, script_file] + sys.argv[2:])
 
     elif cli_list_spec[args.cli]['type'] == 'cxx':
 
@@ -97,12 +97,12 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         if os.path.isfile(script_file):
 
             # ./<cli-rel-path>/<cli-name> [<args>]
-            subprocess.call([script_file] + sys.argv[2:])
+            output_code = subprocess.call([script_file] + sys.argv[2:])
 
         else:
 
             # assumes parent dir of CLI executable is in ${PATH}
-            subprocess.call([os.path.basename(args.cli)] + sys.argv[2:])
+            output_code = subprocess.call([os.path.basename(args.cli)] + sys.argv[2:])
 
     else:
         logger.exception('CLIs of type %s are not supported',
@@ -112,6 +112,8 @@ def CLIListEntrypoint(cli_list_spec_file=None):
             cli_list_spec[args.cli]['type']
         )
 
+    return output_code
+
 
 if __name__ == "__main__":
-    CLIListEntrypoint()
+    sys.exit(CLIListEntrypoint())
