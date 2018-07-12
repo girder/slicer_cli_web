@@ -227,7 +227,10 @@ var WidgetModel = Backbone.Model.extend({
      */
     _validateGirderModel: function (model) {
         var parent;
-        if (!model.value) {
+        if (!model.value || !model.value.get('name')) {
+            if (this.get('type') === 'new-file' && !this.get('required')) {
+                return;
+            }
             return 'Empty value';
         }
 
