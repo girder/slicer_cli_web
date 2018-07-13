@@ -633,6 +633,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
 
     # get CLI parameters
     index_params, opt_params, simple_out_params = _getCLIParameters(clim)
+    sys.stderr.write('%r\n' % [index_params, opt_params, simple_out_params])  # ##DWM::
 
     # add indexed input parameters
     index_input_params = filter(lambda p: p.channel != 'output', index_params)

@@ -18,6 +18,13 @@
       <index>0</index>
       <description>Input image to be deconvolved</description>
     </image>
+    <image>
+      <name>secondImageFile</name>
+      <label>Second Input Image</label>
+      <channel>input</channel>
+      <longflag>image2</longflag>
+      <description>Another image</description>
+    </image>
     <double-vector>
       <name>stainColor_1</name>
       <label>Initial estimate of color of stain-1</label>
@@ -25,33 +32,19 @@
       <channel>input</channel>
       <index>1</index>
     </double-vector>
-    <double-vector>
-      <name>stainColor_2</name>
-      <label>Initial estimate of color of stain-2</label>
-      <description>RGB Color of stain-2</description>
-      <channel>input</channel>
-      <index>2</index>
-    </double-vector>
     <image>
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
       <description>Output Image of Stain 1</description>
       <channel>output</channel>
-      <index>3</index>
+      <index>2</index>
     </image>
     <image>
       <name>outputStainImageFile_2</name>
+      <longflag>outputStainImageFile_2</longflag>
       <label>Output Image of Stain 2</label>
-      <description>Output Image of Stain 2</description>
+      <description>Optional Output Image of Stain 2</description>
       <channel>output</channel>
-      <index>4</index>
-    </image>
-    <image>
-      <name>outputStainImageFile_3</name>
-      <label>Output Image of Stain 3</label>
-      <description>Output Image of Stain 3</description>
-      <channel>output</channel>
-      <index>5</index>
     </image>
     <double>
       <name>beta</name>
@@ -59,5 +52,27 @@
       <description>RGB Color of stain-3</description>
       <default>0.5</default>
     </double>
+    <double-vector>
+      <name>stainColor_2</name>
+      <flag>c</flag>
+      <label>Initial estimate of color of stain-2</label>
+      <description>RGB Color of stain-2</description>
+      <channel>input</channel>
+      <default>[1.0, 1.0, 1.0]</default>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_3</name>
+      <flag>d</flag>
+      <label>Initial estimate of color of stain-3</label>
+      <description>RGB Color of stain-3</description>
+      <channel>input</channel>
+      <default>[1.0, 1.0, 1.0]</default>
+    </double-vector>
+    <float>
+      <name>NumberWeakPositive</name>
+      <label>Number of Weak Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as weak positive</description>
+    </float>
   </parameters>
 </executable>
