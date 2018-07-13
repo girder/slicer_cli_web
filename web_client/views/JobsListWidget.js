@@ -82,7 +82,7 @@ const JobsListWidget = View.extend({
 
             // check if the file still exists
             restRequest({
-                path: `file/${id}`,
+                url: `file/${id}`,
                 error: null
             }).done((file) => {
                 paramFiles[job.id] = file;
@@ -94,7 +94,7 @@ const JobsListWidget = View.extend({
     _clickParamFile(evt) {
         const fileId = $(evt.currentTarget).data('file-id');
         restRequest({
-            path: `file/${fileId}/download`,
+            url: `file/${fileId}/download`,
             dataType: 'text'
         }).done((parameters) => {
             const view = new OutputParameterDialog({

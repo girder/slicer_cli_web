@@ -285,6 +285,29 @@ describe('XML Schema parser', function () {
                 title: 'arg1',
                 description: 'A description',
                 channel: 'output',
+                required: false,
+                extensions: '.txt'
+            });
+
+            xml = $.parseXML(
+                '<file fileExtensions=".txt">' +
+                    '<name>foo</name>' +
+                    '<index>0</index>' +
+                    '<channel>output</channel>' +
+                    '<label>arg1</label>' +
+                    '<description>A description</description>' +
+                    '</file>'
+            );
+            expect(parser.param(
+                $(xml).find('file').get(0)
+            )).toEqual({
+                type: 'new-file',
+                slicerType: 'file',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                channel: 'output',
+                required: true,
                 extensions: '.txt'
             });
         });

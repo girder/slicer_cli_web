@@ -6,8 +6,7 @@ import subprocess
 import tempfile
 
 from ctk_cli import CLIModule
-from girder.api.rest import Resource, loadmodel, boundHandler, \
-    setResponseHeader, setRawResponse
+from girder.api.rest import Resource, loadmodel, boundHandler, setResponseHeader, setRawResponse
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
@@ -164,8 +163,7 @@ def _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, hargs):
         # add to task spec
         curTaskSpec = _createIndexedParamTaskSpec(param)
 
-        curTaskSpec['path'] =\
-            hargs['params'][param.identifier() + _girderOutputNameSuffix]
+        curTaskSpec['path'] = hargs['params'][param.identifier() + _girderOutputNameSuffix]
 
         taskSpec['outputs'].append(curTaskSpec)
 
@@ -198,11 +196,13 @@ def _createOptionalParamTaskSpec(param):
 
     curTaskSpec = dict()
     curTaskSpec['id'] = param.identifier()
+    if getattr(param, 'label', None):
+        curTaskSpec['name'] = param.label
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
     if param.isExternalType():
-        curTaskSpec['target'] = 'filepath'  # check
+        curTaskSpec['target'] = 'filepath'
 
     if param.channel != 'output':
 
@@ -269,10 +269,6 @@ def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
 def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, hargs):
 
     for param in opt_output_params:
-
-        if not param.isExternalType():
-            continue
-
         # set path if it was requested in the REST request
         if (param.identifier() + _girderOutputFolderSuffix not in hargs['params'] or
                 param.identifier() + _girderOutputNameSuffix not in hargs['params']):
@@ -281,8 +277,7 @@ def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, hargs):
         # add to task spec
         curTaskSpec = _createOptionalParamTaskSpec(param)
 
-        curTaskSpec['path'] =\
-            hargs['params'][param.identifier() + _girderOutputNameSuffix]
+        curTaskSpec['path'] = hargs['params'][param.identifier() + _girderOutputNameSuffix]
 
         taskSpec['outputs'].append(curTaskSpec)
 
@@ -324,8 +319,7 @@ def _addReturnParameterFileParamToTaskSpec(taskSpec, hargs):
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
     curTaskSpec['target'] = 'filepath'  # check
-    curTaskSpec['path'] =\
-        hargs['params'][curName + _girderOutputNameSuffix]
+    curTaskSpec['path'] = hargs['params'][curName + _girderOutputNameSuffix]
 
     taskSpec['outputs'].append(curTaskSpec)
 
@@ -426,12 +420,11 @@ def _addOptionalOutputParamBindings(opt_output_params,
 
         curModel = ModelImporter.model('folder')
         curId = hargs['params'][param.identifier() + _girderOutputFolderSuffix]
+        doc = curModel.load(id=curId, level=AccessType.WRITE, user=user)
+        if doc:
+            hargs[param.identifier()] = doc
 
-        hargs[param.identifier()] = curModel.load(id=curId,
-                                                  level=AccessType.WRITE,
-                                                  user=user)
-
-        if param.identifier() in hargs['params']:
+        if param.identifier() in hargs:
             bspec[param.identifier()] = _createOutputParamBindingSpec(param, hargs, user, token)
 
 
@@ -515,7 +508,6 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
 
 def _addOptionalOutputParamsToContainerArgs(opt_output_params,
                                             containerArgs, kwargs, hargs):
-
     for param in opt_output_params:
 
         if param.longflag:
@@ -524,7 +516,6 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
             curFlag = param.flag
         else:
             continue
-
         if _is_on_girder(param) and param.identifier() in kwargs['outputs']:
 
             curValue = os.path.join(
@@ -632,10 +623,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     if clim.contributor is not None and len(clim.contributor) > 0:
         str_description.append('Author(s): ' + clim.contributor)
 
-    if clim.acknowledgements is not None and \
-       len(clim.acknowledgements) > 0:
-        str_description.append(
-            'Acknowledgements: ' + clim.acknowledgements)
+    if clim.acknowledgements is not None and len(clim.acknowledgements) > 0:
+        str_description.append('Acknowledgements: ' + clim.acknowledgements)
 
     str_description = '<br/><br/>'.join(str_description)
 
