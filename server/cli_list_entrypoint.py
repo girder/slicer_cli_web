@@ -45,7 +45,7 @@ def _make_print_cli_list_spec_action(cli_list_spec_file):
                 help=help)
 
         def __call__(self, parser, namespace, values, option_string=None):
-            print str_cli_list_spec
+            print(str_cli_list_spec)
             parser.exit()
 
     return _PrintCLIListSpecAction
