@@ -18,9 +18,9 @@
 ###############################################################################
 
 
-from six import iteritems, string_types
 import hashlib
 import jsonschema
+import six
 
 from girder import logger
 
@@ -36,7 +36,7 @@ class DockerImageError(Exception):
     def __str__(self):
         if isinstance(self.imageName, list):
             return self.message + ' (image names [' + ','.join(self.imageName) + '])'
-        elif isinstance(self.imageName, string_types):
+        elif isinstance(self.imageName, six.string_types):
             return self.message + ' (image name: ' + self.imageName + ' )'
         else:
             return self.message
@@ -61,21 +61,19 @@ class DockerImage(object):
     cli_dict = 'cli_list'
     # structure of the dictionary to store metadata
     # {
-    # imagehash:<hash of docker image name>
-    #     cli_list: {
-    #         cli_name: {
-    #                   type: < type >
-    #                   xml: < xml >
-    #
-    # }
-    # }
-    # docker_image_name: < name >
+    #     'imagehash': <hash of docker image name>
+    #     'cli_list': {
+    #         <cli_name>: {
+    #             'type': <type>
+    #             'xml': <xml>
+    #         }
+    #     }
+    #     'docker_image_name': <name>
     # }
 
     def __init__(self, name):
         try:
-            if isinstance(name, string_types):
-
+            if isinstance(name, six.string_types):
                 imageKey = DockerImage.getHashKey(name)
                 self.data = {}
                 self.data[DockerImage.imageName] = name
@@ -90,10 +88,9 @@ class DockerImage(object):
                 self.name = self.data[DockerImage.imageName]
                 self.hash = DockerImage.getHashKey(self.name)
             else:
-
-                raise DockerImageError('Image should be a string, or dict'
-                                       ' could not add the image',
-                                       'bad init val')
+                raise DockerImageError(
+                    'Image should be a string, or dict could not add the image',
+                    'bad init val')
         except Exception as err:
             logger.exception('Could not initialize docker image %r', name)
             raise DockerImageError(
@@ -151,7 +148,7 @@ class DockerImage(object):
         }
         """
         spec_dict = {}
-        for (key, val) in iteritems(self.data[DockerImage.cli_dict]):
+        for (key, val) in six.iteritems(self.data[DockerImage.cli_dict]):
             spec_dict[key] = val[DockerImage.type]
         return spec_dict
 
@@ -229,7 +226,7 @@ class DockerCache(object):
 
     def getRawData(self):
         dataCopy = {}
-        for (key, val) in iteritems(self.data):
+        for (key, val) in six.iteritems(self.data):
             dataCopy[key] = val.getRawData()
         return dataCopy
 
@@ -244,7 +241,7 @@ class DockerCache(object):
     def getAllCliSpec(self):
         spec_dict = {}
 
-        for (key, val) in iteritems(self.data):
+        for (key, val) in six.iteritems(self.data):
             spec_dict[val.name] = val.getCLIListSpec()
 
         return spec_dict

@@ -18,6 +18,7 @@
 ###############################################################################
 
 import docker
+import six
 
 from girder import logger
 from girder.models.model_base import ModelImporter
@@ -25,7 +26,6 @@ from girder.plugins.jobs.constants import JobStatus
 import json
 from .models import DockerImage, DockerImageError, \
     DockerImageNotFoundError, DockerCache
-from six import iteritems
 
 
 def deleteImage(job):
@@ -251,6 +251,8 @@ def getDockerOutput(imgName, command, client):
         cont = client.containers.create(image=imgName, command=command)
         cont.start()
         ret_code = cont.wait()
+        if isinstance(ret_code, dict):
+            ret_code = ret_code['StatusCode']
         logs = cont.logs(stdout=True, stderr=False, stream=False)
         cont.remove()
     except Exception as err:
@@ -272,22 +274,20 @@ def getDockerOutput(imgName, command, client):
 
 def getCliData(name, client, img, jobModel, job):
     try:
-
         if isinstance(client, docker.DockerClient) and isinstance(img, DockerImage):
 
             cli_dict = getDockerOutput(name, '--list_cli', client)
             # contains nested dict
-
-            # {<cliname>:{
-            #             type:<type>
-            #             }
-            # }
-
+            # {<cliname>:{type:<type>}}
+            if isinstance(cli_dict, six.binary_type):
+                cli_dict = cli_dict.decode('utf8')
             cli_dict = json.loads(cli_dict)
 
-            for (key, val) in iteritems(cli_dict):
+            for (key, val) in six.iteritems(cli_dict):
 
                 cli_xml = getDockerOutput(name, '%s --xml' % key, client)
+                if isinstance(cli_xml, six.binary_type):
+                    cli_xml = cli_xml.decode('utf8')
                 cli_dict[key][DockerImage.xml] = cli_xml
                 jobModel.updateJob(
                     job,

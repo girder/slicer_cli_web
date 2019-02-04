@@ -57,7 +57,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         cli_list_spec_file = os.path.join(os.getcwd(), 'slicer_cli_list.json')
 
     # Parse CLI List spec
-    with open(cli_list_spec_file) as f:
+    with open(cli_list_spec_file, 'rt') as f:
         cli_list_spec = json.load(f)
 
     # create command-line argument parser
