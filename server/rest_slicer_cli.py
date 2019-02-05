@@ -1,8 +1,8 @@
 import os
-import sys
 import json
 import six
 import subprocess
+import sys
 import tempfile
 
 from ctk_cli import CLIModule
@@ -463,6 +463,8 @@ def _is_on_girder(param):
 
 
 def _getParamCommandLineValue(param, value):
+    if isinstance(value, six.binary_type):
+        value = value.decode('utf8')
     if param.isVector():
         cmdVal = '%s' % ', '.join(map(str, json.loads(value)))
     else:
@@ -607,7 +609,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
 
     # parse cli xml spec
     with tempfile.NamedTemporaryFile(suffix='.xml') as f:
-        f.write(str_xml)
+        f.write(str_xml if isinstance(str_xml, six.binary_type) else str_xml.encode('utf8'))
         f.flush()
         clim = CLIModule(f.name)
 
@@ -635,22 +637,22 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     index_params, opt_params, simple_out_params = _getCLIParameters(clim)
 
     # add indexed input parameters
-    index_input_params = filter(lambda p: p.channel != 'output', index_params)
+    index_input_params = [p for p in index_params if p.channel != 'output']
 
     _addIndexedInputParamsToHandler(index_input_params, handlerDesc)
 
     # add indexed output parameters
-    index_output_params = filter(lambda p: p.channel == 'output', index_params)
+    index_output_params = [p for p in index_params if p.channel == 'output']
 
     _addIndexedOutputParamsToHandler(index_output_params, handlerDesc)
 
     # add optional input parameters
-    opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
+    opt_input_params = [p for p in opt_params if p.channel != 'output']
 
     _addOptionalInputParamsToHandler(opt_input_params, handlerDesc)
 
     # add optional output parameters
-    opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
+    opt_output_params = [p for p in opt_params if p.channel == 'output']
 
     _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc)
 
@@ -751,7 +753,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     handlerFunc = cliHandler
 
     # loadmodel stuff for indexed input params on girder
-    index_input_params_on_girder = filter(_is_on_girder, index_input_params)
+    index_input_params_on_girder = list(filter(_is_on_girder, index_input_params))
 
     for param in index_input_params_on_girder:
 
@@ -764,7 +766,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
                                 level=AccessType.READ)(handlerFunc)
 
     # loadmodel stuff for indexed output params on girder
-    index_output_params_on_girder = filter(_is_on_girder, index_output_params)
+    index_output_params_on_girder = list(filter(_is_on_girder, index_output_params))
 
     for param in index_output_params_on_girder:
 
@@ -853,11 +855,10 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
                         'string or a list of docker image strings')
 
     if isinstance(dockerImages, list):
-        for img in dockerImages:
-            if not isinstance(img, str):
-                raise Exception('dockerImages must either be a single '
-                                'docker image string or a list of docker '
-                                'image strings')
+        if any(not isinstance(img, str) for img in dockerImages):
+            raise Exception(
+                'dockerImages must either be a single docker image string or '
+                'a list of docker image strings')
     else:
         dockerImages = [dockerImages]
 
@@ -880,6 +881,8 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         # get CLI list
         cliListSpec = getDockerImageCLIList(dimg)
 
+        if isinstance(cliListSpec, six.binary_type):
+            cliListSpec = cliListSpec.decode('utf8')
         cliListSpec = json.loads(cliListSpec)
 
         # Add REST end-point for each CLI
@@ -973,8 +976,7 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
     dockerImages = dockerCache.getImageNames()
     # validate restResource argument
     if not isinstance(restResource, Resource):
-        raise Exception('restResource must be a '
-                        'Docker Resource')
+        raise Exception('restResource must be a Docker Resource')
 
     for dimg in dockerImages:
 
@@ -989,12 +991,8 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
             # create a POST REST route that runs the CLI
             try:
                 cliXML = docker_image.getCLIXML(cliRelPath)
-
-                cliRunHandler = genHandlerToRunDockerCLI(dimg,
-                                                         cliRelPath,
-                                                         cliXML,
-                                                         restResource)
-
+                cliRunHandler = genHandlerToRunDockerCLI(
+                    dimg, cliRelPath, cliXML, restResource)
             except Exception:
                 logger.exception('Failed to create REST endpoints for %r',
                                  cliRelPath)

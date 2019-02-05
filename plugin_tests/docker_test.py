@@ -298,7 +298,7 @@ class DockerImageManagementTest(base.TestCase):
                 self.fail('A status ok or code 200 should not have been '
                           'recieved for deleting the image %s' % str(name))
             except Exception:
-                    pass
+                pass
         if deleteDockerImage:
             if not event.wait(TIMEOUT):
                 del self.delHandler
@@ -353,8 +353,7 @@ class DockerImageManagementTest(base.TestCase):
 
         if not event.wait(TIMEOUT):
             del self.addHandler
-            self.fail('adding the docker image is taking '
-                      'longer than %d seconds' % TIMEOUT)
+            self.fail('adding the docker image is taking longer than %d seconds' % TIMEOUT)
         else:
             del self.addHandler
             self.assertEqual(job_status[0], status,

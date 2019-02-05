@@ -30,7 +30,7 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from girder.plugins.jobs.constants import JobStatus
-from models import DockerImageNotFoundError, DockerImage
+from .models import DockerImageNotFoundError, DockerImage
 
 
 class DockerResource(Resource):
@@ -59,14 +59,12 @@ class DockerResource(Resource):
 
         dockermodel = ModelImporter.model('docker_image_model',
                                           'slicer_cli_web')
-
         dockerCache = dockermodel.loadAllImages()
         cache = dockerCache.getImages()
         data = {}
         for val in cache:
             name, tag, imgData = self.createRestDataForImageVersion(val)
             data.setdefault(name, {})[tag] = imgData
-
         return data
 
     def createRestDataForImageVersion(self, dockerImage):
@@ -166,6 +164,8 @@ class DockerResource(Resource):
         :returns: a list of image names.
         """
         nameList = param
+        if isinstance(param, six.binary_type):
+            param = param.decode('utf8')
         if isinstance(param, six.string_types):
             try:
                 nameList = json.loads(param)
@@ -243,7 +243,7 @@ class DockerResource(Resource):
 
         if imageList is None:
             imageList = self.currentEndpoints.keys()
-        for imageName in imageList:
+        for imageName in list(imageList):
             if imageName in self.currentEndpoints:
                 for (cli, val) in six.iteritems(
                         self.currentEndpoints[imageName]):
@@ -261,7 +261,7 @@ class DockerResource(Resource):
         Determines if the job event being triggered is due to the caching of
         new docker images or deleting a docker image off the local machine.  If
         a new image is being loaded all old rest endpoints are deleted and
-        endpoints fro all cached docker images are regenerated.
+        endpoints for all cached docker images are regenerated.
 
         :param event: An event dictionary
         """
