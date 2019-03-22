@@ -20,9 +20,10 @@ var PanelGroup = View.extend({
         'click .s-info-panel-submit': 'submit',
         'click .s-remove-panel': 'removePanel'
     },
-    initialize: function () {
+    initialize: function (settings) {
         this.panels = [];
         this._panelViews = {};
+        this._closeButton = (settings || {}).closeButton;
 
         this._jobsPanelView = new JobsPanel({
             parentView: this,
@@ -37,7 +38,8 @@ var PanelGroup = View.extend({
     render: function () {
         this.$el.html(panelGroup({
             info: this._gui,
-            panels: this.panels
+            panels: this.panels,
+            closeButton: this._closeButton
         }));
         this.$el.addClass('hidden');
         _.each(this._panelViews, function (view) {

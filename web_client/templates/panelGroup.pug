@@ -1,7 +1,11 @@
 if info
   .s-panel
     .s-panel-title-container
-      | #{info.title}
+      span.s-panel-title
+        | #{info.title}
+      span.s-panel-controls
+        if closeButton
+          i.icon-cancel.s-close-panel-group
     .s-panel-content
       .s-info-panel-description.well
         | #{info.description}
