@@ -3,46 +3,19 @@ import json
 import six
 import sys
 
-from girder.api.rest import Resource, loadmodel, boundHandler, \
+from girder.api.rest import Resource, boundHandler, \
     RestException, setResponseHeader, setRawResponse
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
-from girder_worker.girder_plugin import utils as wutils
 from girder.utility.model_importer import ModelImporter
-from girder_worker.girder_plugin import constants
 from girder import logger
 
-from .cli_utils import as_model, generate_description
+from .cli_utils import as_model, generate_description, \
+    SLICER_TYPE_TO_GIRDER_MODEL_MAP, \
+    get_cli_parameters, is_on_girder, return_parameter_file_name
 
-_SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
-    'boolean': 'boolean',
-    'integer': 'integer',
-    'float': 'number',
-    'double': 'number',
-    'string': 'string',
-    'integer-vector': 'integer_list',
-    'float-vector': 'number_list',
-    'double-vector': 'number_list',
-    'string-vector': 'string_list',
-    'integer-enumeration': 'integer',
-    'float-enumeration': 'number',
-    'double-enumeration': 'number',
-    'string-enumeration': 'string',
-    'region': 'number_list',
-    'file': 'string',
-    'directory': 'string',
-    'image': 'string'
-}
 
-_SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
-    'image': 'file',
-    'file': 'file',
-    'item': 'item',
-    'directory': 'folder'
-}
-
-_return_parameter_file_name = 'returnparameterfile'
 _return_parameter_file_desc = """
     Filename in which to write simple return parameters
     (integer, float, integer-vector, etc.) as opposed to bulk
@@ -51,33 +24,30 @@ _return_parameter_file_desc = """
 """
 
 
-def _getCLIParameters(clim):
+def _parseParamValue(param, value, user):
+    if isinstance(value, six.binary_type):
+        value = value.decode('utf8')
 
-    # get parameters
-    index_params, opt_params, simple_out_params = clim.classifyParameters()
+    param_id = param.identifier()
+    if is_on_girder(param):
+        curModel = ModelImporter.model(SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ])
+        loaded = curModel.load(value, level=AccessType.READ, user=user)
+        if not loaded:
+            raise RestException('Invalid %s id (%s).' % (curModel.name, str(value)))
+        return value
 
-    # perform sanity checks
-    for param in index_params + opt_params:
-        if param.typ not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
-            raise Exception(
-                'Parameter type %s is currently not supported' % param.typ
-            )
-
-    # sort indexed parameters in increasing order of index
-    index_params.sort(key=lambda p: p.index)
-
-    # sort opt parameters in increasing order of name for easy lookup
-    def get_flag(p):
-        if p.flag is not None:
-            return p.flag.strip('-')
-        elif p.longflag is not None:
-            return p.longflag.strip('-')
+    try:
+        if param.isVector():
+            return '%s' % ', '.join(map(str, json.loads(value)))
         else:
-            return None
-
-    opt_params.sort(key=lambda p: get_flag(p))
-
-    return index_params, opt_params, simple_out_params
+            return str(json.loads(value))
+    except Exception:
+        logger.exception(
+            'Error: Parameter value is not in json.dumps format\n'
+            '  Parameter name = %r\n  Parameter type = %r\n'
+            '  Value passed = %r', param_id, param.typ,
+            value)
+        raise
 
 
 def _addIndexedInputParamsToHandler(index_input_params, handlerDesc):
@@ -173,7 +143,7 @@ def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
 
 def _addReturnParameterFileParamToHandler(handlerDesc):
 
-    curName = _return_parameter_file_name
+    curName = return_parameter_file_name
     curType = 'file'
     curDesc = _return_parameter_file_desc
 
@@ -190,10 +160,6 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       'Name of output %s - %s: %s'
                       % (curType, curName, curDesc),
                       dataType='string', required=False)
-
-
-def _is_on_girder(param):
-    return param.typ in _SLICER_TYPE_TO_GIRDER_MODEL_MAP
 
 
 def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
@@ -230,17 +196,15 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     handlerDesc = Description(clim.title).notes(generate_description(clim))
 
     # get CLI parameters
-    index_params, opt_params, simple_out_params = _getCLIParameters(clim)
+    index_params, opt_params, simple_out_params = get_cli_parameters(clim)
 
     # add indexed input parameters
     index_input_params = [p for p in index_params if p.channel != 'output']
-    index_input_params_on_girder = list(filter(_is_on_girder, index_input_params))
 
     _addIndexedInputParamsToHandler(index_input_params, handlerDesc)
 
     # add indexed output parameters
     index_output_params = [p for p in index_params if p.channel == 'output']
-    index_output_params_on_girder = list(filter(_is_on_girder, index_output_params))
 
     _addIndexedOutputParamsToHandler(index_output_params, handlerDesc)
 
@@ -255,7 +219,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc)
 
     # add returnparameterfile if there are simple output params
-    if len(simple_out_params) > 0:
+    has_simple_return_file = len(simple_out_params) > 0
+    if has_simple_return_file:
         _addReturnParameterFileParamToHandler(handlerDesc)
 
     # define CLI handler function
@@ -265,20 +230,45 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     def cliHandler(self, params):
         user = self.getCurrentUser()
 
-        # verify that they are valid objects references
-        for param in index_input_params_on_girder:
-            curModel = ModelImporter.model(_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ])
-            curId = params[param.identifier()]
-            loaded = curModel.load(curId, level=AccessType.READ, user=user)
-            if not loaded:
-                raise RestException('Invalid %s id (%s).' % (curModel.name, str(curId)))
+        args = params.copy()
+
+        # verify parameters
+        for param in index_input_params:
+            param_id = param.identifier()
+            args[param_id] = _parseParamValue(param, args[param_id], user)
+
+        for param in opt_input_params:
+            param_id = param.identifier()
+            if param_id in args:
+                args[param_id] = _parseParamValue(param, args[param_id], user)
 
         folderModel = ModelImporter.model('folder')
-        for param in index_output_params_on_girder:
-            curId = params[param.identifier() + '_folder']
+        for param in opt_output_params:
+            param_id = param.identifier() + '_folder'
+            param_name_id = param.identifier()
+            if not param.isExternalType() or param_id not in args or \
+               param_name_id not in args:
+                continue
+            curId = args[param_id]
             loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
             if not loaded:
-                raise RestException('Invalid Folder id (%s).' % (curModel.name, str(curId)))
+                raise RestException('Invalid Folder id (%s).' % (str(curId)))
+
+        if has_simple_return_file:
+            param_id = return_parameter_file_name + '_folder'
+            param_name_id = return_parameter_file_name
+            if param_id in args and param_name_id in args:
+                curId = args[param_id]
+                loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
+                if not loaded:
+                    raise RestException('Invalid Folder id (%s).' % (str(curId)))
+
+        for param in index_output_params:
+            param_id = param.identifier() + '_folder'
+            curId = args[param_id]
+            loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
+            if not loaded:
+                raise RestException('Invalid Folder id (%s).' % (str(curId)))
 
         # create job
         jobModel = ModelImporter.model('job', 'jobs')
@@ -294,7 +284,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
             'cliXML': cliXML,
             'dockerImage': dockerImage,
             'cliRelPath': cliRelPath,
-            'params': params
+            'args': args
         }
 
         job = jobModel.save(job)
