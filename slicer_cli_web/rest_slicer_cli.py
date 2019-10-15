@@ -10,6 +10,8 @@ from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.utility.model_importer import ModelImporter
 from girder import logger
+from girder_worker.girder_plugin.utils import jobInfoSpec, girderInputSpec, \
+    girderOutputSpec
 
 from .cli_utils import as_model, generate_description, \
     SLICER_TYPE_TO_GIRDER_MODEL_MAP, \
@@ -24,16 +26,18 @@ _return_parameter_file_desc = """
 """
 
 
-def _parseParamValue(param, value, user):
+def _parseParamValue(param, value, user, token, inputs):
     if isinstance(value, six.binary_type):
         value = value.decode('utf8')
 
     param_id = param.identifier()
     if is_on_girder(param):
-        curModel = ModelImporter.model(SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ])
+        girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
+        curModel = ModelImporter.model(girder_type)
         loaded = curModel.load(value, level=AccessType.READ, user=user)
         if not loaded:
             raise RestException('Invalid %s id (%s).' % (curModel.name, str(value)))
+        inputs.append(girderInputSpec(loaded, girder_type, token=token))
         return value
 
     try:
@@ -229,18 +233,23 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     @describeRoute(handlerDesc)
     def cliHandler(self, params):
         user = self.getCurrentUser()
+        jobModel = ModelImporter.model('job', 'jobs')
+        # create job
+        jobTitle = '.'.join((restResource.resourceName, cliName))
+        job = jobModel.createJob(title=jobTitle,
+                                 type=jobTitle,
+                                 handler='worker_handler',
+                                 user=user)
+        token = jobModel.createJobToken(job)
 
         args = params.copy()
-
-        # verify parameters
-        for param in index_input_params:
-            param_id = param.identifier()
-            args[param_id] = _parseParamValue(param, args[param_id], user)
+        inputs = []
+        outputs = []
 
         for param in opt_input_params:
             param_id = param.identifier()
             if param_id in args:
-                args[param_id] = _parseParamValue(param, args[param_id], user)
+                args[param_id] = _parseParamValue(param, args[param_id], user, token, inputs)
 
         folderModel = ModelImporter.model('folder')
         for param in opt_output_params:
@@ -250,42 +259,47 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
                param_name_id not in args:
                 continue
             curId = args[param_id]
-            loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
-            if not loaded:
+            instance = folderModel.load(curId, level=AccessType.WRITE, user=user)
+            if not instance:
                 raise RestException('Invalid Folder id (%s).' % (str(curId)))
+            outputs.append(girderOutputSpec(instance, token=token))
 
         if has_simple_return_file:
             param_id = return_parameter_file_name + '_folder'
             param_name_id = return_parameter_file_name
             if param_id in args and param_name_id in args:
                 curId = args[param_id]
-                loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
-                if not loaded:
+                instance = folderModel.load(curId, level=AccessType.WRITE, user=user)
+                if not instance:
                     raise RestException('Invalid Folder id (%s).' % (str(curId)))
+                outputs.append(girderOutputSpec(instance, token=token))
+
+        # verify parameters
+        for param in index_input_params:
+            param_id = param.identifier()
+            args[param_id] = _parseParamValue(param, args[param_id], user, token, inputs)
 
         for param in index_output_params:
             param_id = param.identifier() + '_folder'
             curId = args[param_id]
-            loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
-            if not loaded:
+            instance = folderModel.load(curId, level=AccessType.WRITE, user=user)
+            if not instance:
                 raise RestException('Invalid Folder id (%s).' % (str(curId)))
+                outputs.append(girderOutputSpec(instance, token=token))
 
-        # create job
-        jobModel = ModelImporter.model('job', 'jobs')
-        jobTitle = '.'.join((restResource.resourceName, cliName))
-        job = jobModel.createJob(title=jobTitle,
-                                 type=jobTitle,
-                                 handler='worker_handler',
-                                 user=user)
-        # create job info
-        job['token'] = jobModel.createJobToken(job)
+        job['token'] = token
         job['celeryTaskName'] = 'slicer_cli_web.image_worker_tasks.run'
         job['kwargs'] = {
             'cliXML': cliXML,
             'dockerImage': dockerImage,
             'cliRelPath': cliRelPath,
-            'args': args
+            'args': args,
+            'inputs': inputs,
+            'outputs': outputs,
+            'jobInfo': jobInfoSpec(job, token)
         }
+
+
 
         job = jobModel.save(job)
         jobModel.scheduleJob(job)
