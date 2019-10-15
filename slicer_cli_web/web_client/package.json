@@ -22,7 +22,7 @@
   },
   "girderPlugin": {
     "name": "thumbnails",
-    "main": "./main.js",
+    "main": "./index.js",
     "dependencies": [
       "jobs",
       "worker"

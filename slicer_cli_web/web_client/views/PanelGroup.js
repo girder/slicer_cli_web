@@ -1,9 +1,9 @@
 import _ from 'underscore';
 
-import View from 'girder/views/View';
-import girderEvents from 'girder/events';
-import { restRequest } from 'girder/rest';
-import { confirm } from 'girder/dialog';
+import View from '@girder/core/views/View';
+import girderEvents from '@girder/core/events';
+import { restRequest } from '@girder/core/rest';
+import { confirm } from '@girder/core/dialog';
 
 import { parse } from '../parser';
 import WidgetCollection from '../collections/WidgetCollection';
@@ -91,7 +91,7 @@ var PanelGroup = View.extend({
         // post the job to the server
         restRequest({
             url: this._submit,
-            type: 'POST',
+            method: 'POST',
             data: params
         }).then(function (data) {
             events.trigger('h:submit', data);

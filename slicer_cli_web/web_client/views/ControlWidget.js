@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
-import View from 'girder/views/View';
-import events from 'girder/events';
+import View from '@girder/core/views/View';
+import events from '@girder/core/events';
 
 import ItemSelectorWidget from './ItemSelectorWidget';
 

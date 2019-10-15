@@ -19,6 +19,12 @@ def prerelease_local_scheme(version):
         return get_local_node_and_date(version)
 
 
+with open('requirements.txt') as f:
+    install_reqs = f.readlines()
+
+extras_require = {}
+extras_require['girder'] = ['girder>=3.0.0a1', 'girder-jobs>=3.0.0a1']
+
 # perform the install
 setup(
     name='slicer-cli-web',
@@ -42,7 +48,8 @@ setup(
     include_package_data=True,
     packages=find_packages(exclude=['plugin_tests']),
     zip_safe=False,
-    install_requires=['girder>=3'],
+    extras_require=extras_require,
+    install_requires=install_reqs,
     entry_points={
         'girder.plugin': [
             'slicer_cli_web = slicer_cli_web:SlicerCLIWebPlugin'

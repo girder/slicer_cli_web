@@ -1,11 +1,11 @@
 import _ from 'underscore';
 
-import { getCurrentUser } from 'girder/auth';
-import HierarchyWidget from 'girder/views/widgets/HierarchyWidget';
-import View from 'girder/views/View';
-import ItemModel from 'girder/models/ItemModel';
-import FileModel from 'girder/models/FileModel';
-import { restRequest } from 'girder/rest';
+import { getCurrentUser } from '@girder/core/auth';
+import HierarchyWidget from '@girder/core/views/widgets/HierarchyWidget';
+import View from '@girder/core/views/View';
+import ItemModel from '@girder/core/models/ItemModel';
+import FileModel from '@girder/core/models/FileModel';
+import { restRequest } from '@girder/core/rest';
 
 import itemSelectorWidget from '../templates/itemSelectorWidget.pug';
 

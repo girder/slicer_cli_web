@@ -1,3 +1,3 @@
-import girderEvents from 'girder/events';
+import girderEvents from '@girder/core/events';
 
 export default girderEvents;

@@ -1,15 +1,15 @@
 import _ from 'underscore';
 
-import View from 'girder/views/View';
-import { SORT_DESC } from 'girder/constants';
-import eventStream from 'girder/utilities/EventStream';
-import { restRequest } from 'girder/rest';
+import View from '@girder/core/views/View';
+import { SORT_DESC } from '@girder/core/constants';
+import eventStream from '@girder/core/utilities/EventStream';
+import { restRequest } from '@girder/core/rest';
 
 // register worker status definitions as a side effect
-import 'girder_plugins/worker/JobStatus';
+import '@girder/worker/JobStatus';
 
-import JobCollection from 'girder_plugins/jobs/collections/JobCollection';
-import JobStatus from 'girder_plugins/jobs/JobStatus';
+import JobCollection from '@girder/jobs/collections/JobCollection';
+import JobStatus from '@girder/jobs/JobStatus';
 
 import OutputParameterDialog from './OutputParameterDialog';
 
