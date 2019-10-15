@@ -8,46 +8,6 @@ from girder_worker.docker.transforms.girder import GirderFileIdToVolume, \
 from .cli_utils import as_model, get_cli_parameters, is_on_girder, \
   return_parameter_file_name
 
-
-def _add_optional_input_param(param, args, container_args):
-    if param.identifier() not in args:
-        return
-    value = args[param.identifier()]
-
-    if param.longflag:
-        container_args.append(param.longflag)
-    elif param.flag:
-        container_args.append(param.flag)
-    else:
-        return
-
-    if is_on_girder(param):
-        # Bindings
-        container_args.append(GirderFileIdToVolume(value))
-    else:
-        container_args.append(value)
-
-
-def _add_optional_output_param(param, args, container_args):
-    if not param.isExternalType() or not is_on_girder(param) \
-       or param.identifier() not in args or \
-       (param.identifier() + '_folder') not in args:
-        return
-    value = args[param.identifier()]
-    folder = args[param.identifier() + '_folder']
-
-    if param.longflag:
-        container_args.append(param.longflag)
-    elif param.flag:
-        container_args.append(param.flag)
-    else:
-        return
-
-    # Output Binding !!
-    path = VolumePath(value)
-    container_args.append(GirderUploadVolumePathToFolder(path, folder))
-
-
 def _add_indexed_input_param(param, args, container_args):
     value = args[param.identifier()]
 
