@@ -10,6 +10,7 @@
     "type": "git",
     "url": "https://github.com/girder/slicer_cli_web.git"
   },
+  "main": "./index.js",
   "dependencies": {
     "bootstrap-colorpicker": "2.3.6",
     "bootstrap-slider": "^6.1.1",
@@ -21,8 +22,8 @@
     "@girder/worker": "*"
   },
   "girderPlugin": {
-    "name": "thumbnails",
-    "main": "./index.js",
+    "name": "slicer_cli_web",
+    "main": "./main.js",
     "dependencies": [
       "jobs",
       "worker"

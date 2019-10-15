@@ -1,4 +1,4 @@
-import View from 'girder/views/View';
+import View from '@girder/core/views/View';
 
 import outputParameterDialog from '../templates/outputParameterDialog.pug';
 import '../stylesheets/outputParameterDialog.styl';

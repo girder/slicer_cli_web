@@ -63,8 +63,8 @@ class SlicerCLIWebPlugin(GirderPlugin):
     CLIENT_SOURCE_PATH = 'web_client'       # path to the web client relative to the python package
 
     def load(self, info):
-        getPlugin('girder_jobs').load(info)  # load plugins you depend on
-        getPlugin('girder_worker').load(info)  # load plugins you depend on
+        getPlugin('jobs').load(info)  # load plugins you depend on
+        getPlugin('worker').load(info)  # load plugins you depend on
 
         ModelImporter.registerModel('docker_image_model', DockerImageModel, 'slicer_cli_web')
 
