@@ -18,6 +18,9 @@ from .cli_utils import \
     SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, return_parameter_file_name
 
 
+OPENAPI_DIRECT_TYPES = set(['boolean', 'integer', 'float', 'double', 'string'])
+
+
 def _to_file_volume(param, model):
     girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
 
@@ -50,20 +53,21 @@ def _parseParamValue(param, value, user, token):
     try:
         if param.isVector():
             return '%s' % ', '.join(map(str, json.loads(value)))
-        else:
+        elif param.typ in OPENAPI_DIRECT_TYPES or param.typ == 'string-enumeration':
+            return str(value)
+        else:  # json
             return str(json.loads(value))
-    except Exception:
-        logger.exception(
-            'Error: Parameter value is not in json.dumps format\n'
-            '  Parameter name = %r\n  Parameter type = %r\n'
-            '  Value passed = %r', param_id, param.typ,
-            value)
-        raise
+    except json.JSONDecodeError:
+        msg = 'Error: Parameter value is not in json.dumps format\n' \
+              '  Parameter name = %r\n  Parameter type = %r\n' \
+             '  Value passed = %r' % (param_id, param.typ, value)
+        logger.exception(msg)
+        raise RestException(msg)
 
 
 def _add_optional_input_param(param, args, user, token):
     if param.identifier() not in args:
-        return
+        return []
     value = _parseParamValue(param, args[param.identifier()], user, token)
 
     container_args = []
@@ -86,7 +90,7 @@ def _add_optional_output_param(param, args, user):
     if not param.isExternalType() or not is_on_girder(param) \
        or param.identifier() not in args or \
        (param.identifier() + '_folder') not in args:
-        return
+        return []
     value = args[param.identifier()]
     folder = args[param.identifier() + '_folder']
 
@@ -141,7 +145,7 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
         if param.channel == 'output':
             ca.extend(_add_optional_output_param(param, params, user, token))
         else:
-            ca.extend(_add_optional_input_param(param, params, user))
+            ca.extend(_add_optional_input_param(param, params, user, token))
 
     if has_simple_return_file:
         param_id = return_parameter_file_name + '_folder'
