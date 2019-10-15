@@ -21,10 +21,12 @@ import json
 
 from girder import events
 from girder.models.model_base import ModelImporter
+from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .docker_resource import DockerResource
+from .models import DockerImageModel
 
 
 def _onUpload(event):
@@ -45,20 +47,29 @@ def _onUpload(event):
         })
 
 
-def load(info):
-    # passed in resource name must match the attribute added to info[apiroot]
-    resource = DockerResource('slicer_cli_web')
-    info['apiRoot'].slicer_cli_web = resource
+class SlicerCLIWebPlugin(GirderPlugin):
+    DISPLAY_NAME = 'Slicer CLI Web'         # a user-facing plugin name, the plugin is still
+                                            # referenced internally by the entrypoint name.
+    CLIENT_SOURCE_PATH = 'web_client'       # path to the web client relative to the python package
 
-    dockerImageModel = ModelImporter.model('docker_image_model',
-                                           'slicer_cli_web')
-    dockerCache = dockerImageModel.loadAllImages()
+    def load(self, info):
+        getPlugin('mydependency').load(info)  # load plugins you depend on
 
-    genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
+        ModelImporter.registerModel('docker_image_model', DockerImageModel, 'slicer_cli_web')
 
-    ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
-        'slicerCLIBindings'})
+        # passed in resource name must match the attribute added to info[apiroot]
+        resource = DockerResource('slicer_cli_web')
+        info['apiRoot'].slicer_cli_web = resource
 
-    events.bind('jobs.job.update.after', resource.resourceName,
-                resource.AddRestEndpoints)
-    events.bind('data.process', info['name'], _onUpload)
+        dockerImageModel = ModelImporter.model('docker_image_model',
+                                            'slicer_cli_web')
+        dockerCache = dockerImageModel.loadAllImages()
+
+        genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
+
+        ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
+            'slicerCLIBindings'})
+
+        events.bind('jobs.job.update.after', resource.resourceName,
+                    resource.AddRestEndpoints)
+        events.bind('data.process', 'slicer_cli_web', _onUpload)

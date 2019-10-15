@@ -22,7 +22,7 @@ import six
 
 from girder import logger
 from girder.models.model_base import ModelImporter
-from girder.plugins.jobs.constants import JobStatus
+from girder_jobs.constants import JobStatus
 import json
 from .models import DockerImage, DockerImageError, \
     DockerImageNotFoundError, DockerCache

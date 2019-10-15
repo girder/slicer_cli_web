@@ -6,13 +6,14 @@ import sys
 import tempfile
 
 from ctk_cli import CLIModule
-from girder.api.rest import Resource, loadmodel, boundHandler, setResponseHeader, setRawResponse
+from girder.api.rest import Resource, loadmodel, boundHandler, \
+    setResponseHeader, setRawResponse
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
-from girder.plugins.worker import utils as wutils
+from girder_worker import utils as wutils
 from girder.utility.model_importer import ModelImporter
-from girder.plugins.worker import constants
+from girder_worker import constants
 from girder import logger
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
@@ -1064,12 +1065,13 @@ def getDockerImage(imageName, pullIfNotExist=False):
             # none is returned if it fails
             data = pullDockerImage(imageName)
             return data
-        raise Exception("cant find the image %s" % imageName)
+        raise Exception('cant find the image %s' % imageName)
 
 
 def getDockerImageCLIList(imageName):
     """
-    Gets the cli list of the docker image
+    Gets the cli list of the docker image.
+
     :param imageName: the docker image name in the form of repo/name:tag
     :type imageName: string
     :returns: if the image exist the cli dictionary is returned otherwise

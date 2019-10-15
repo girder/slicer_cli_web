@@ -1,0 +1,31 @@
+{
+  "name": "@girder/slicer_cli_web",
+  "version": "1.0.0",
+  "description": "A girder plugin for exposing slicer CLIs over the web",
+  "bugs": {
+    "url": "https://github.com/girder/slicer_cli_web/issues"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/girder/slicer_cli_web.git"
+  },
+  "dependencies": {
+    "bootstrap-colorpicker": "2.3.6",
+    "bootstrap-slider": "^6.1.1",
+    "tinycolor2": "^1.3.0"
+  },
+  "peerDependencies": {
+    "@girder/core": "*",
+    "@girder/jobs": "*",
+    "@girder/worker": "*"
+  },
+  "girderPlugin": {
+    "name": "thumbnails",
+    "main": "./main.js",
+    "dependencies": [
+      "jobs",
+      "worker"
+    ]
+  }
+}

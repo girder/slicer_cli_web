@@ -29,7 +29,7 @@ from girder.utility.model_importer import ModelImporter
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
-from girder.plugins.jobs.constants import JobStatus
+from girder_jobs.constants import JobStatus
 from .models import DockerImageNotFoundError, DockerImage
 
 
