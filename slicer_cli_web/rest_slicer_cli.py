@@ -27,9 +27,9 @@ def _getParamDefaultVal(param):
     if param.default is not None:
         return json.dumps(param.default)
     elif param.typ == 'boolean':
-        return json.dumps(False)
+        return False
     elif param.isVector():
-        return json.dumps(None)
+        return None
     elif param.isExternalType():
         return None
     else:
@@ -38,15 +38,26 @@ def _getParamDefaultVal(param):
             'provide a default value in the xml' % param.typ)
 
 
+_OPENAPI_DIRECT_TYPES = set(['boolean', 'integer', 'float', 'double', 'string'])
+
+
 def _addInputParamToHandler(param, handlerDesc, required=True):
     # add to route description
     desc = param.description
+    dataType = 'string'
+    enum = None
 
     if param.isExternalType():
         desc = 'Girder ID of input %s - %s: %s' \
                     % (param.typ, param.identifier(), param.description)
+    elif param.typ in _OPENAPI_DIRECT_TYPES:
+        dataType = param.typ
+    elif param.typ == 'string-enumeration':
+        enum = param.elements
+    else:
+        desc = '%s as JSON (%s)' % (param.description, param.typ)
 
-    handlerDesc.param(param.identifier(), desc, dataType='string',
+    handlerDesc.param(param.identifier(), desc, dataType=dataType, enum=enum,
                       default=_getParamDefaultVal(param) if not required else None,
                       required=required)
 

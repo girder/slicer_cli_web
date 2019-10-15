@@ -27,7 +27,6 @@ SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'image': 'string'
 }
 
-
 SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'image': 'file',
     'file': 'file',
