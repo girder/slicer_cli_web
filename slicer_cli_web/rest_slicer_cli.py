@@ -23,95 +23,50 @@ _return_parameter_file_desc = """
 """
 
 
-def _addIndexedInputParamsToHandler(index_input_params, handlerDesc):
-
-    for param in index_input_params:
-
-        # add to route description
-        if param.isExternalType():
-            handlerDesc.param(param.identifier(),
-                              'Girder ID of input %s - %s: %s'
-                              % (param.typ, param.identifier(), param.description),
-                              dataType='string', required=True)
-        else:
-            handlerDesc.param(param.identifier(), param.description,
-                              dataType='string', required=True)
-
-
-def _addIndexedOutputParamsToHandler(index_output_params, handlerDesc):
-
-    for param in index_output_params:
-
-        # add param for parent folder to route description
-        handlerDesc.param(param.identifier() + '_folder',
-                          'Girder ID of parent folder '
-                          'for output %s - %s: %s'
-                          % (param.typ, param.typ, param.description),
-                          dataType='string', required=True)
-
-        # add param for name of current output to route description
-        handlerDesc.param(param.identifier(),
-                          'Name of output %s - %s: %s'
-                          % (param.typ, param.identifier(), param.description),
-                          dataType='string', required=True)
-
-
 def _getParamDefaultVal(param):
-
     if param.default is not None:
-        return param.default
+        return json.dumps(param.default)
     elif param.typ == 'boolean':
-        return False
+        return json.dumps(False)
     elif param.isVector():
-        return None
+        return json.dumps(None)
     elif param.isExternalType():
-        return ""
+        return None
     else:
         raise Exception(
             'optional parameters of type %s must '
             'provide a default value in the xml' % param.typ)
 
 
-def _addOptionalInputParamsToHandler(opt_input_params, handlerDesc):
+def _addInputParamToHandler(param, handlerDesc, required=True):
+    # add to route description
+    desc = param.description
 
-    for param in opt_input_params:
+    if param.isExternalType():
+        desc = 'Girder ID of input %s - %s: %s' \
+                    % (param.typ, param.identifier(), param.description)
 
-        # add to route description
-        defaultVal = _getParamDefaultVal(param)
-
-        if param.isExternalType():
-            handlerDesc.param(param.identifier(),
-                              'Girder ID of input %s - %s: %s'
-                              % (param.typ, param.identifier(), param.description),
-                              dataType='string',
-                              required=False)
-        else:
-            handlerDesc.param(param.identifier(), param.description,
-                              dataType='string',
-                              default=json.dumps(defaultVal),
-                              required=False)
+    handlerDesc.param(param.identifier(), desc, dataType='string',
+                      default=_getParamDefaultVal(param) if not required else None,
+                      required=required)
 
 
-def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
+def _addOutputParamToHandler(param, handlerDesc, required=True):
+    if not param.isExternalType():  # just files are supported
+        return
 
-    for param in opt_output_params:
+    # add param for parent folder to route description
+    handlerDesc.param(param.identifier() + '_folder',
+                      'Girder ID of parent folder '
+                      'for output %s - %s: %s'
+                      % (param.typ, param.typ, param.description),
+                      dataType='string', required=required)
 
-        if not param.isExternalType():
-            continue
-
-        # add param for parent folder to route description
-        handlerDesc.param(param.identifier() + '_folder',
-                          'Girder ID of parent folder '
-                          'for output %s - %s: %s'
-                          % (param.typ, param.identifier(), param.description),
-                          dataType='string',
-                          required=False)
-
-        # add param for name of current output to route description
-        handlerDesc.param(param.identifier(),
-                          'Name of output %s - %s: %s'
-                          % (param.typ, param.identifier(), param.description),
-                          dataType='string', required=False)
+    # add param for name of current output to route description
+    handlerDesc.param(param.identifier(),
+                      'Name of output %s - %s: %s'
+                      % (param.typ, param.identifier(), param.description),
+                      dataType='string', required=required)
 
 
 def _addReturnParameterFileParamToHandler(handlerDesc):
@@ -171,25 +126,16 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     # get CLI parameters
     index_params, opt_params, simple_out_params = get_cli_parameters(clim)
 
-    # add indexed input parameters
-    index_input_params = [p for p in index_params if p.channel != 'output']
-
-    _addIndexedInputParamsToHandler(index_input_params, handlerDesc)
-
-    # add indexed output parameters
-    index_output_params = [p for p in index_params if p.channel == 'output']
-
-    _addIndexedOutputParamsToHandler(index_output_params, handlerDesc)
-
-    # add optional input parameters
-    opt_input_params = [p for p in opt_params if p.channel != 'output']
-
-    _addOptionalInputParamsToHandler(opt_input_params, handlerDesc)
-
-    # add optional output parameters
-    opt_output_params = [p for p in opt_params if p.channel == 'output']
-
-    _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc)
+    for param in index_params:
+        if param.channel == 'output':
+            _addOutputParamToHandler(param, handlerDesc, True)
+        else:
+            _addInputParamToHandler(param, handlerDesc, True)
+    for param in opt_params:
+        if param.channel == 'output':
+            _addOutputParamToHandler(param, handlerDesc, False)
+        else:
+            _addInputParamToHandler(param, handlerDesc, False)
 
     # add returnparameterfile if there are simple output params
     has_simple_return_file = len(simple_out_params) > 0
