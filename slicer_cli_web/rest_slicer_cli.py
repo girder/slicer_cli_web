@@ -41,17 +41,6 @@ _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'item': 'item',
     'directory': 'folder'
 }
-_SLICER_TYPE_TO_GIRDER_INPUT_SUFFIX_MAP = {
-    'image': '_girderFileId',
-    'file': '_girderFileId',
-    'item': '_girderItemId',
-    'directory': '_girderFolderId',
-}
-
-_worker_docker_data_dir = constants.DOCKER_DATA_VOLUME
-
-_girderOutputFolderSuffix = '_girderFolderId'
-_girderOutputNameSuffix = '_name'
 
 _return_parameter_file_name = 'returnparameterfile'
 _return_parameter_file_desc = """
@@ -159,6 +148,7 @@ def _addOptionalInputParamsToHandler(opt_input_params, handlerDesc):
                               default=json.dumps(defaultVal),
                               required=False)
 
+
 def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
 
     for param in opt_output_params:
@@ -200,6 +190,7 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       'Name of output %s - %s: %s'
                       % (curType, curName, curDesc),
                       dataType='string', required=False)
+
 
 def _is_on_girder(param):
     return param.typ in _SLICER_TYPE_TO_GIRDER_MODEL_MAP
@@ -271,20 +262,21 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     @boundHandler(restResource)
     @access.user
     @describeRoute(handlerDesc)
-    def cliHandler(self, **hargs):
+    def cliHandler(self, params):
+        user = self.getCurrentUser()
 
         # verify that they are valid objects references
         for param in index_input_params_on_girder:
             curModel = ModelImporter.model(_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ])
-            curId = hargs[param.identifier()]
-            loaded = curModel.load(curId, level=AccessType.READ)
+            curId = params[param.identifier()]
+            loaded = curModel.load(curId, level=AccessType.READ, user=user)
             if not loaded:
                 raise RestException('Invalid %s id (%s).' % (curModel.name, str(curId)))
 
         folderModel = ModelImporter.model('folder')
         for param in index_output_params_on_girder:
-            curId = hargs[param.identifier() + '_folder']
-            loaded = folderModel.load(curId, level=AccessType.WRITE)
+            curId = params[param.identifier() + '_folder']
+            loaded = folderModel.load(curId, level=AccessType.WRITE, user=user)
             if not loaded:
                 raise RestException('Invalid Folder id (%s).' % (curModel.name, str(curId)))
 
@@ -294,28 +286,22 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
         job = jobModel.createJob(title=jobTitle,
                                  type=jobTitle,
                                  handler='worker_handler',
-                                 user=self.getCurrentUser())
+                                 user=user)
         # create job info
         job['token'] = jobModel.createJobToken(job)
         job['celeryTaskName'] = 'slicer_cli_web.image_worker_tasks.run'
-
-        kwargs = {
-            'inputs': dict(),
-            'outputs': dict(),
+        job['kwargs'] = {
             'cliXML': cliXML,
             'dockerImage': dockerImage,
             'cliRelPath': cliRelPath,
-            'hargs': hargs
+            'params': params
         }
-
-        # schedule job
-        job['kwargs'] = kwargs
 
         job = jobModel.save(job)
         jobModel.scheduleJob(job)
 
         # return result
-        return jobModel.filter(job, self.getCurrentUser())
+        return jobModel.filter(job, user)
 
     return cliHandler
 
