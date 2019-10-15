@@ -57,6 +57,9 @@ setup(
     entry_points={
         'girder.plugin': [
             'slicer_cli_web = slicer_cli_web:SlicerCLIWebPlugin'
+        ],
+        'girder_worker_plugins': [
+            'slicer_cli_web = slicer_cli_web:SlicerCLIWebWorkerPlugin'
         ]
     }
 )

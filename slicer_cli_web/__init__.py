@@ -22,6 +22,7 @@ from girder import events
 from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
+from girder_worker import GirderWorkerPluginABC
 from pkg_resources import DistributionNotFound, get_distribution
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
@@ -84,3 +85,11 @@ class SlicerCLIWebPlugin(GirderPlugin):
         events.bind('jobs.job.update.after', resource.resourceName,
                     resource.AddRestEndpoints)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
+
+
+class SlicerCLIWebWorkerPlugin(GirderWorkerPluginABC):
+    def __init__(self, app, *args, **kwargs):
+        self.app = app
+
+    def task_imports(self):
+        return ['slicer_cli_web.image_worker_tasks']

@@ -89,7 +89,7 @@ class DockerImageModel(AccessControlledModel):
                     pullList.append(name)
 
         job = jobModel.createLocalJob(
-            module='girder.plugins.slicer_cli_web.image_job',
+            module='slicer_cli_web.image_job',
             function='jobPullAndLoad',
             kwargs={
                 'pullList': pullList,
@@ -214,7 +214,7 @@ class DockerImageModel(AccessControlledModel):
 
         job = jobModel.createLocalJob(
 
-            module='girder.plugins.slicer_cli_web.image_job',
+            module='slicer_cli_web.image_job',
 
             function='deleteImage',
             kwargs={
