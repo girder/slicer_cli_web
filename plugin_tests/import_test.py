@@ -40,7 +40,7 @@ class ImportPackageTest(base.TestCase):
         from girder.plugins.slicer_cli_web import rest_slicer_cli  # noqa
 
     def test_docker_image_model(self):
-        from girder.models.model_base import ModelImporter
+        from girder.utility.model_importer import ModelImporter
 
         raised = False
         try:

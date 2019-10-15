@@ -21,7 +21,8 @@ import docker
 from girder import logger
 from girder.constants import AccessType
 from girder.api.rest import getCurrentUser
-from girder.models.model_base import ModelImporter, AccessControlledModel
+from girder.models.model_base import AccessControlledModel
+from girder.utility.model_importer import ModelImporter
 
 import jsonschema
 
@@ -98,7 +99,7 @@ class DockerImageModel(AccessControlledModel):
             type=jobType,
             user=getCurrentUser(),
             public=True,
-            async=True
+            asynchronous=True
         )
         jobModel.scheduleJob(job)
         return job
@@ -223,7 +224,7 @@ class DockerImageModel(AccessControlledModel):
             user=getCurrentUser(),
             type=jobType,
             public=True,
-            async=True
+            asynchronous=True
         )
 
         jobModel.scheduleJob(job)

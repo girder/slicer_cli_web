@@ -19,6 +19,9 @@ def prerelease_local_scheme(version):
         return get_local_node_and_date(version)
 
 
+with open('README.rst') as f:
+    readme = f.read()
+
 with open('requirements.txt') as f:
     install_reqs = f.readlines()
 
@@ -28,9 +31,10 @@ extras_require['girder'] = ['girder>=3.0.0a1', 'girder-jobs>=3.0.0a1']
 # perform the install
 setup(
     name='slicer-cli-web',
-    use_scm_version={'root': '../..', 'local_scheme': prerelease_local_scheme},
-    setup_requires=['setuptools-scm', 'setuptools-git'],
+    use_scm_version={'local_scheme': prerelease_local_scheme},
+    setup_requires=['setuptools-scm'],
     description='A girder plugin for exposing slicer CLIs over the web',
+    long_description=readme,
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
     license='Apache 2.0',

@@ -21,7 +21,7 @@ import docker
 import six
 
 from girder import logger
-from girder.models.model_base import ModelImporter
+from girder.utility.model_importer import ModelImporter
 from girder_jobs.constants import JobStatus
 import json
 from .models import DockerImage, DockerImageError, \

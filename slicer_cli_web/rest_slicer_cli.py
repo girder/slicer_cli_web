@@ -11,9 +11,9 @@ from girder.api.rest import Resource, loadmodel, boundHandler, \
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
-from girder_worker import utils as wutils
+from girder_worker.girder_plugin import utils as wutils
 from girder.utility.model_importer import ModelImporter
-from girder_worker import constants
+from girder_worker.girder_plugin import constants
 from girder import logger
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {

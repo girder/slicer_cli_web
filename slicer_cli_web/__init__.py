@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###############################################################################
@@ -20,13 +19,24 @@
 import json
 
 from girder import events
-from girder.models.model_base import ModelImporter
+from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
+from pkg_resources import DistributionNotFound, get_distribution
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .docker_resource import DockerResource
 from .models import DockerImageModel
+
+
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    pass
+
+
+__license__ = 'Apache 2.0'
 
 
 def _onUpload(event):
