@@ -23,6 +23,7 @@ from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
 from girder_worker import GirderWorkerPluginABC
+from girder_worker import GirderWorkerPluginABC
 from pkg_resources import DistributionNotFound, get_distribution
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
@@ -92,4 +93,4 @@ class SlicerCLIWebWorkerPlugin(GirderWorkerPluginABC):
         self.app = app
 
     def task_imports(self):
-        return ['slicer_cli_web.image_worker_tasks']
+        return ['slicer_cli_web.direct_docker_run']

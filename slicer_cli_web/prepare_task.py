@@ -6,11 +6,32 @@ from girder.utility.model_importer import ModelImporter
 from girder import logger
 from girder.constants import AccessType
 from girder_worker.docker.transforms import VolumePath
-from girder_worker.docker.transforms.girder import GirderFileIdToVolume, \
-  GirderUploadVolumePathToFolder
+from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, GirderFileIdToVolume, GirderFolderIdToVolume
+from girder_worker.girder_plugin.constants import PluginSettings
+from girder.exceptions import FilePathException
+from girder.models.file import File
+from girder.models.setting import Setting
+
+from .direct_docker_run import DirectGirderFileIdToVolume
 
 from .cli_utils import \
     SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, return_parameter_file_name
+
+
+def _to_file_volume(param, model):
+    girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
+
+    if girder_type != 'file':
+        return GirderFolderIdToVolume(model['_id'])
+
+    if not Setting().get(PluginSettings.DIRECT_PATH):
+        return GirderFileIdToVolume(model['_id'])
+
+    try:
+        path = File().getLocalFilePath(model)
+        return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path)
+    except FilePathException:
+        return GirderFileIdToVolume(model['_id'])
 
 
 def _parseParamValue(param, value, user, token):
@@ -24,7 +45,7 @@ def _parseParamValue(param, value, user, token):
         loaded = curModel.load(value, level=AccessType.READ, user=user)
         if not loaded:
             raise RestException('Invalid %s id (%s).' % (curModel.name, str(value)))
-        return value
+        return loaded
 
     try:
         if param.isVector():
@@ -55,7 +76,7 @@ def _add_optional_input_param(param, args, user, token):
 
     if is_on_girder(param):
         # Bindings
-        container_args.append(GirderFileIdToVolume(value))
+        container_args.append(_to_file_volume(param, value))
     else:
         container_args.append(value)
     return container_args
@@ -94,7 +115,7 @@ def _add_indexed_input_param(param, args, user, token):
 
     if is_on_girder(param):
         # Bindings
-        return GirderFileIdToVolume(value)
+        return _to_file_volume(param, value)
     return value
 
 

@@ -8,11 +8,11 @@ from girder.api.rest import Resource, boundHandler, \
 from girder.api import access
 from girder import logger
 from girder.api.describe import Description, describeRoute
-from girder_worker.docker.tasks import docker_run
 
 from .cli_utils import as_model, generate_description, \
     get_cli_parameters, return_parameter_file_name
 from .prepare_task import prepare_task
+from .direct_docker_run import run
 
 
 _return_parameter_file_desc = """
@@ -208,7 +208,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
         container_args = [cliRelPath]
         container_args.extend(prepare_task(params, user, token, index_params, opt_params, has_simple_return_file))
 
-        job = docker_run.delay(
+        job = run.delay(
             girder_job_title=jobTitle,
             image=dockerImage, pull_image=False,
             container_args=container_args
