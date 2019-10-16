@@ -18,23 +18,23 @@ SLICER_SUPPORTED_TYPES = set(['boolean', 'integer', 'float', 'double', 'string',
                               'integer-vector', 'float-vector', 'double-vector', 'string-vector',
                               'integer-enumeration', 'float-enumeration', 'double-enumeration',
                               'string-enumeration',
-                              'region'] + list(SLICER_TYPE_TO_GIRDER_MODEL_MAP.keys()))
+                              'region'] + list(six.iterkeys(SLICER_TYPE_TO_GIRDER_MODEL_MAP))
 
 
 def generate_description(clim):
     """Create CLI description string."""
     str_description = ['Description: <br/><br/>' + clim.description]
 
-    if clim.version is not None and len(clim.version) > 0:
+    if clim.version:
         str_description.append('Version: ' + clim.version)
 
-    if clim.license is not None and len(clim.license) > 0:
+    if clim.license:
         str_description.append('License: ' + clim.license)
 
-    if clim.contributor is not None and len(clim.contributor) > 0:
+    if clim.contributor:
         str_description.append('Author(s): ' + clim.contributor)
 
-    if clim.acknowledgements is not None and len(clim.acknowledgements) > 0:
+    if clim.acknowledgements:
         str_description.append('Acknowledgements: ' + clim.acknowledgements)
 
     return '<br/><br/>'.join(str_description)

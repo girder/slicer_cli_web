@@ -69,6 +69,7 @@ class DockerResource(Resource):
         DockerImage object
 
         :param dockerImage: DockerImage object
+        :type dockerImage: DockerImageItem
 
         :returns: structured dictionary documenting clis and rest
             endpoints for this image version
@@ -126,11 +127,12 @@ class DockerResource(Resource):
         """
         Removes the docker images and there respective clis endpoints
 
-        :param name: The name of the docker image (user/rep:tag)
-        :type name: string
+        :param names: The name of the docker image (user/rep:tag)
+        :type name: list
         :param deleteImage: Boolean indicating whether to delete the docker
             image from the local machine.(if True this is equivalent to
             docker rmi -f <image> )
+        :type name: boolean
         """
         try:
             removed = DockerImageItem.removeImages(names, self.getCurrentUser())
@@ -271,7 +273,7 @@ class DockerResource(Resource):
     def deleteImageEndpoints(self, imageList=None):
 
         if imageList is None:
-            imageList = self.currentEndpoints.keys()
+            imageList = six.iterkeys(self.currentEndpoints)
         for imageName in list(imageList):
             if imageName in self.currentEndpoints:
                 for (cli, val) in six.iteritems(
