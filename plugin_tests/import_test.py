@@ -32,27 +32,17 @@ def tearDownModule():
 
 # Test import of slicer_cli_web
 class ImportPackageTest(base.TestCase):
-
-    def test_slicer_cli_web(self):
-        from girder.plugins import slicer_cli_web  # noqa
-
     def test_rest_slicer_cli(self):
-        from girder.plugins.slicer_cli_web import rest_slicer_cli  # noqa
-
-    def test_docker_image_model(self):
-        from girder.utility.model_importer import ModelImporter
-
-        raised = False
-        try:
-            ModelImporter.model('docker_image_model', 'slicer_cli_web')  # noqa
-        except Exception as e:
-            raised = True
-            print(str(e))
-
-        self.assertFalse(raised, 'docker_image_model import failed')
+        from slicer_cli_web import rest_slicer_cli  # noqa
 
     def test_docker_resource(self):
-        from girder.plugins.slicer_cli_web import docker_resource  # noqa
+        from slicer_cli_web import docker_resource  # noqa
+
+    def test_image_job(self):
+        from slicer_cli_web import image_job  # noqa
+
+    def test_direct_docker_run(self):
+        from slicer_cli_web import direct_docker_run  # noqa
 
     def test_cli_list_entrypoint(self):
-        from girder.plugins.slicer_cli_web import cli_list_entrypoint  # noqa
+        from .slicer_cli_web import cli_list_entrypoint  # noqa

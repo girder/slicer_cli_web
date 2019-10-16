@@ -21,8 +21,8 @@ class RestSlicerCLITest(base.TestCase):
         import datetime
 
         from girder.api import rest
-        from girder.plugins import worker
-        from girder.plugins.worker import utils as worker_utils
+        import girder_worker
+        from girder_worker import utils as worker_utils
         from girder.models.file import File
         from girder.models.folder import Folder
         from girder.models.item import Item
@@ -47,54 +47,59 @@ class RestSlicerCLITest(base.TestCase):
 
         self._origRestGetCurrentToken = rest.getCurrentToken
         self._origRestGetApiUrl = rest.getApiUrl
-        self._origWorkerGetWorkerApiUrl = worker.getWorkerApiUrl
+        self._origWorkerGetWorkerApiUrl = girder_worker.getWorkerApiUrl
 
         rest.getCurrentToken = getCurrentToken
         rest.getApiUrl = lambda x: '/api/v1'
         rest.setCurrentUser(self.admin)
-        worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = getWorkerApiUrl
+        girder_worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = getWorkerApiUrl
 
     def tearDown(self):
         from girder.api import rest
-        from girder.plugins import worker
-        from girder.plugins.worker import utils as worker_utils
+        import girder_worker
+        from girder_worker import utils as worker_utils
 
         rest.getCurrentToken = self._origRestGetCurrentToken
         rest.getApiUrl = self._origRestGetApiUrl
-        worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
+        girder_worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
         base.TestCase.tearDown(self)
 
     def test_genHandlerToRunDockerCLI(self):
-        from girder.plugins.slicer_cli_web import docker_resource
-        from girder.plugins.slicer_cli_web import rest_slicer_cli
+        from slicer_cli_web import docker_resource
+        from slicer_cli_web import rest_slicer_cli
+        from slicer_cli_web.models import CLIItem
+        from girder.models.item import Item
 
         xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
-        cliXML = open(xmlpath, 'rb').read()
+
+        girderCLIItem = Item().createItem('data', self.admin, self.folder)
+        Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python', xml=open(xmlpath, 'rb').read()))
+
         resource = docker_resource.DockerResource('test')
+        item = CLIItem(girderCLIItem)
         handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
-            'dockerImage', 'data', cliXML, resource)
+            'dockerImage', CLIItem(item), resource)
         self.assertIsNotNone(handlerFunc)
 
         job = handlerFunc(params={
-            'inputImageFile_girderFileId': str(self.file['_id']),
-            'secondImageFile_girderFileId': str(self.file['_id']),
-            'outputStainImageFile_1_girderFolderId': str(self.folder['_id']),
-            'outputStainImageFile_1_name': 'sample1.png',
-            'outputStainImageFile_2_girderFolderId': str(self.folder['_id']),
+            'inputImageFile': str(self.file['_id']),
+            'secondImageFile': str(self.file['_id']),
+            'outputStainImageFile_1_folder': str(self.folder['_id']),
+            'outputStainImageFile_1': 'sample1.png',
+            'outputStainImageFile_2_folder': str(self.folder['_id']),
             'outputStainImageFile_2_name': 'sample2.png',
             'stainColor_1': '[0.5, 0.5, 0.5]',
             'stainColor_2': '[0.2, 0.3, 0.4]',
-            'returnparameterfile_girderFolderId': str(self.folder['_id']),
-            'returnparameterfile_name': 'output.data',
+            'returnparameterfile_folder': str(self.folder['_id']),
+            'returnparameterfile': 'output.data',
         })
+
         self.assertHasKeys(
-            job['kwargs']['inputs'],
-            ['inputImageFile', 'stainColor_1', 'stainColor_2'])
-        self.assertEqual(job['kwargs']['inputs']['inputImageFile']['id'], str(self.file['_id']))
-        self.assertEqual(job['kwargs']['inputs']['stainColor_1']['data'], '[0.5, 0.5, 0.5]')
-        self.assertEqual(job['kwargs']['inputs']['stainColor_1']['type'], 'number_list')
-        self.assertHasKeys(
-            job['kwargs']['outputs'],
-            ['outputStainImageFile_1', 'outputStainImageFile_2', 'returnparameterfile'])
-        self.assertEqual(len(job['kwargs']['task']['inputs']), 5)
-        self.assertEqual(len(job['kwargs']['task']['outputs']), 3)
+            job['kwargs'],
+            ['container_args', 'image', 'pull_image'])
+
+        self.assertEqual(job['kwargs']['image'], 'dockerImage')
+        self.assertEqual(job['kwargs']['pull_image'], False)
+        container_args = job['kwargs']['container_args']
+        self.assertEqual(container_args[0], 'data')
+        # TODO

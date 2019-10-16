@@ -56,6 +56,7 @@ class DockerImageManagementTest(base.TestCase):
             'admin': True
         }
         self.admin = self.model('user').createUser(**admin)
+        self.folder = self.model('folderr').createFolder(self.admin, 'folder', parentType='user')
 
     def testAddNonExistentImage(self):
         # add a bad image
@@ -78,7 +79,7 @@ class DockerImageManagementTest(base.TestCase):
             'path': '/slicer_cli_web/slicer_cli_web/docker_image',
             'user': self.admin,
             'method': 'PUT',
-            'params': {'name': json.dumps(6)}
+            'params': {'name': json.dumps(6), 'folder': self.folder['_id']}
         }
         resp = self.request(**kwargs)
         self.assertStatus(resp, 400)
@@ -342,7 +343,7 @@ class DockerImageManagementTest(base.TestCase):
 
         resp = self.request(
             path='/slicer_cli_web/slicer_cli_web/docker_image',
-            user=self.admin, method='PUT', params={'name': json.dumps(name)},
+            user=self.admin, method='PUT', params={'name': json.dumps(name), 'folder': self.folder['_id']},
             isJson=initialStatus == 200)
 
         self.assertStatus(resp, initialStatus)
