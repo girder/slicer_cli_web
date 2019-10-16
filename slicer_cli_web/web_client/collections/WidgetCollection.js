@@ -16,20 +16,24 @@ var WidgetCollection = Backbone.Collection.extend({
             // https://github.com/DigitalSlideArchive/slicer/blob/9e5112ab3444ad8c699d70452a5fe4a74ebbc778/server/__init__.py#L44-L46
             switch (m.get('type')) {
                 case 'file':
-                    params[m.id + '_girderFileId'] = m.value().id;
-                    break;
                 case 'item':
-                    params[m.id + '_girderItemId'] = m.value().id;
+                case 'image':
+                    params[m.id] = m.value().id;
                     break;
                 case 'new-file':
                     if (m && m.value && m.value()) {
-                        params[m.id + '_girderFolderId'] = m.value().get('folderId');
-                        params[m.id + '_name'] = m.value().get('name');
+                        params[m.id + '_folder'] = m.value().get('folderId');
+                        params[m.id] = m.value().get('name');
                     }
                     break;
-                case 'image':
-                    params[m.id + '_girderFileId'] = m.value().id;
-                    break;
+                case 'string':
+                case 'boolean':
+                case 'integer':
+                case 'float':
+                case 'double':
+                case 'string-enumeration':
+                    params[m.id] = m.value();
+                    break
                 default:
                     params[m.id] = JSON.stringify(m.value());
             }
