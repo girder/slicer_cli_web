@@ -1,8 +1,5 @@
-from .docker_image import DockerImage, DockerCache, DockerImageStructure,  \
-    DockerImageError, DockerImageNotFoundError
-from .docker_image_model import DockerImageModel
+from .exceptions import DockerImageError, DockerImageNotFoundError
+from .docker_image import DockerImageItem
 
 
-__all__ = ('DockerImage', 'DockerImageModel', 'DockerCache',
-           'DockerImageError', 'DockerImageNotFoundError',
-           'DockerImageStructure')
+__all__ = ('DockerImageError', 'DockerImageNotFoundError', 'DockerImageItem')

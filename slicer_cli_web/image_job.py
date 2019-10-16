@@ -24,8 +24,8 @@ from girder import logger
 from girder.utility.model_importer import ModelImporter
 from girder_jobs.constants import JobStatus
 import json
-from .models import DockerImage, DockerImageError, \
-    DockerImageNotFoundError, DockerCache
+from .models import DockerImageItem, DockerImageError, \
+    DockerImageNotFoundError
 
 
 def deleteImage(job):
@@ -145,12 +145,9 @@ def jobPullAndLoad(job):
                     'images\n'+'\n'.join(notExistSet)+'\n',
                 status=JobStatus.ERROR,
             )
-        cache, loadingError = LoadMetadata(jobModel, job, docker_client,
-                                           pullList, loadList, notExistSet)
-        imageModel = ModelImporter.model('docker_image_model',
-                                         'slicer_cli_web')
-
-        imageModel.saveAllImgs(cache)
+        images, loadingError = loadMetadata(jobModel, job, docker_client,
+                                            pullList, loadList, notExistSet)
+        DockerImageItem.saveAllImages(images)
         if errorState is False and loadingError is False:
             newStatus = JobStatus.SUCCESS
         else:
@@ -171,7 +168,7 @@ def jobPullAndLoad(job):
         )
 
 
-def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
+def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     """
     Attempt to query preexisting images and pulled images for cli data.
     Cli data for each image is stored and returned as a sing DockerCache Object
@@ -189,9 +186,9 @@ def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     :returns:DockerCache Object containing cli information for each image
     and a boolean indicating whether an error occurred
     """
-    cache = DockerCache()
     # flag to indicate an error occured
     errorState = False
+    images = []
     for name in pullList:
         if name not in notExistSet:
             jobModel.updateJob(
@@ -201,9 +198,9 @@ def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
             )
 
             try:
-                dockerImg = DockerImage(name)
-                getCliData(name, docker_client, dockerImg, jobModel, job)
-                cache.addImage(dockerImg)
+                cli_dict = getCliData(name, docker_client, jobModel, job)
+                dockerImg = DockerImageItem(name, cli_dict)
+                images.append(dockerImg)
                 jobModel.updateJob(
                     job,
                     log='Got pulled image %s metadata \n' % name
@@ -220,9 +217,9 @@ def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     for name in loadList:
         # create dictionary and load to database
         try:
-            dockerImg = DockerImage(name)
-            getCliData(name, docker_client, dockerImg, jobModel, job)
-            cache.addImage(dockerImg)
+            cli_dict = getCliData(name, docker_client, jobModel, job)
+            dockerImg = DockerImageItem(name, cli_dict)
+            images.append(dockerImg)
             jobModel.updateJob(
                 job,
                 log='Loaded metadata from pre-existing local image %s\n' % name
@@ -234,7 +231,7 @@ def LoadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
                 status=JobStatus.ERROR
             )
             errorState = True
-    return cache, errorState
+    return images, errorState
 
 
 def getDockerOutput(imgName, command, client):
@@ -272,35 +269,31 @@ def getDockerOutput(imgName, command, client):
     return logs
 
 
-def getCliData(name, client, img, jobModel, job):
+def getCliData(name, client, jobModel, job):
     try:
-        if isinstance(client, docker.DockerClient) and isinstance(img, DockerImage):
+        cli_dict = getDockerOutput(name, '--list_cli', client)
+        # contains nested dict
+        # {<cliname>:{type:<type>}}
+        if isinstance(cli_dict, six.binary_type):
+            cli_dict = cli_dict.decode('utf8')
+        cli_dict = json.loads(cli_dict)
 
-            cli_dict = getDockerOutput(name, '--list_cli', client)
-            # contains nested dict
-            # {<cliname>:{type:<type>}}
-            if isinstance(cli_dict, six.binary_type):
-                cli_dict = cli_dict.decode('utf8')
-            cli_dict = json.loads(cli_dict)
-
-            for (key, val) in six.iteritems(cli_dict):
-
-                cli_xml = getDockerOutput(name, '%s --xml' % key, client)
-                if isinstance(cli_xml, six.binary_type):
-                    cli_xml = cli_xml.decode('utf8')
-                cli_dict[key][DockerImage.xml] = cli_xml
-                jobModel.updateJob(
-                    job,
-                    log='Got image %s, cli %s metadata\n' % (name, key),
-                    status=JobStatus.RUNNING,
-                )
-                img.addCLI(key, cli_dict[key])
+        for key in six.iterkeys(cli_dict):
+            cli_xml = getDockerOutput(name, '%s --xml' % key, client)
+            if isinstance(cli_xml, six.binary_type):
+                cli_xml = cli_xml.decode('utf8')
+            cli_dict[key]['xml'] = cli_xml
+            jobModel.updateJob(
+                job,
+                log='Got image %s, cli %s metadata\n' % (name, key),
+                status=JobStatus.RUNNING,
+            )
         return cli_dict
     except Exception as err:
         logger.exception(
-            'Error getting %s cli data from image %s', name, img)
+            'Error getting %s cli data from image', name)
         raise DockerImageError(
-            'Error getting %s cli data from image %s ' % (name, img) + str(err))
+            'Error getting %s cli data from image ' % (name) + str(err))
 
 
 def pullDockerImage(client, names):

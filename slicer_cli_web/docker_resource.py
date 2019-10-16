@@ -24,13 +24,12 @@ import json
 from girder.api.v1.resource import Resource, RestException
 from girder import logger
 
-from girder.utility.model_importer import ModelImporter
-
 from girder.api import access
 from girder.api.describe import Description, describeRoute
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
 from girder_jobs.constants import JobStatus
-from .models import DockerImageNotFoundError, DockerImage
+
+from .models import DockerImageNotFoundError, DockerImageItem
 
 
 class DockerResource(Resource):
@@ -56,14 +55,9 @@ class DockerResource(Resource):
         .errorResponse('You are not logged in.', 403)
     )
     def getDockerImages(self, params):
-
-        dockermodel = ModelImporter.model('docker_image_model',
-                                          'slicer_cli_web')
-        dockerCache = dockermodel.loadAllImages()
-        cache = dockerCache.getImages()
         data = {}
-        for val in cache:
-            name, tag, imgData = self.createRestDataForImageVersion(val)
+        for image in DockerImageItem.findAllImages():
+            name, tag, imgData = self.createRestDataForImageVersion(image)
             data.setdefault(name, {})[tag] = imgData
         return data
 
@@ -89,21 +83,20 @@ class DockerResource(Resource):
         tag = imageAndTag[1]
 
         data = {}
-        cli_dict = dockerImage.getCLIListSpec()
 
-        for (cli, val) in six.iteritems(cli_dict):
-            if cli not in endpointData:
+        for cli in dockerImage.getCLIs():
+            if cli.name not in endpointData:
                 logger.warning('"%s" not present in endpoint data.' % cli)
                 continue
-            data[cli] = {}
+            data[cli.name] = {}
 
-            data[cli][DockerImage.type] = val
-            cli_endpoints = endpointData[cli]
+            data[cli.name]['type'] = cli.type
+            cli_endpoints = endpointData[cli.name]
 
             for (operation, endpointRoute) in six.iteritems(cli_endpoints):
                 cli_list = endpointRoute[1]
-                if cli in cli_list:
-                    data[cli][operation] = '/' + self.resourceName + \
+                if cli.name in cli_list:
+                    data[cli.name][operation] = '/' + self.resourceName + \
                                            '/' + '/'.join(cli_list)
         return userAndRepo, tag, data
 
@@ -141,15 +134,12 @@ class DockerResource(Resource):
             image from the local machine.(if True this is equivalent to
             docker rmi -f <image> )
         """
-
-        dockermodel = ModelImporter.model('docker_image_model',
-                                          'slicer_cli_web')
         try:
-            dockermodel.removeImages(names)
+            DockerImageItem.removeImages(names)
 
             self.deleteImageEndpoints(names)
             if deleteImage:
-                dockermodel.delete_docker_image_from_repo(names, self.jobType)
+                DockerImageItem.deleteDockerImageFromRepo(names, self.jobType)
         except DockerImageNotFoundError as err:
             raise RestException('Invalid docker image name. ' + str(err))
 
@@ -199,9 +189,7 @@ class DockerResource(Resource):
         """
         self.requireParams(('name',), params)
         nameList = self.parseImageNameList(params['name'])
-        docker_image_model = ModelImporter.model('docker_image_model',
-                                                 'slicer_cli_web')
-        return docker_image_model.putDockerImage(nameList, self.jobType, True)
+        return DockerImageItem.putImages(nameList, self.jobType, True)
 
     def storeEndpoints(self, imgName, cli, operation, argList):
         """
@@ -256,7 +244,7 @@ class DockerResource(Resource):
                             logger.exception('Failed to remove route')
             del self.currentEndpoints[imageName]
 
-    def AddRestEndpoints(self, event):
+    def addRestEndpoints(self, event):
         """
         Determines if the job event being triggered is due to the caching of
         new docker images or deleting a docker image off the local machine.  If
@@ -268,10 +256,8 @@ class DockerResource(Resource):
         job = event.info['job']
 
         if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
-            # remove all previous endpoints
-            dockermodel = ModelImporter.model('docker_image_model',
-                                              'slicer_cli_web')
-            cache = dockermodel.loadAllImages()
+            images = DockerImageItem.findAllImages()
 
             self.deleteImageEndpoints()
-            genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
+            for image in images:
+                genRESTEndPointsForSlicerCLIsForImage(self, image)

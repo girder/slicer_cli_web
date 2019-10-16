@@ -23,12 +23,11 @@ from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
 from girder_worker import GirderWorkerPluginABC
-from girder_worker import GirderWorkerPluginABC
 from pkg_resources import DistributionNotFound, get_distribution
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
 from .docker_resource import DockerResource
-from .models import DockerImageModel
+from .models import DockerImageItem
 
 
 try:
@@ -68,23 +67,21 @@ class SlicerCLIWebPlugin(GirderPlugin):
         getPlugin('jobs').load(info)  # load plugins you depend on
         getPlugin('worker').load(info)  # load plugins you depend on
 
-        ModelImporter.registerModel('docker_image_model', DockerImageModel, 'slicer_cli_web')
+        DockerImageItem.prepare()
 
         # passed in resource name must match the attribute added to info[apiroot]
         resource = DockerResource('slicer_cli_web')
         info['apiRoot'].slicer_cli_web = resource
 
-        dockerImageModel = ModelImporter.model('docker_image_model',
-                                            'slicer_cli_web')
-        dockerCache = dockerImageModel.loadAllImages()
-
-        genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
+        # dockerCache = dockerImageModel.loadAllImages()
+        for image in DockerImageItem.findAllImages():
+            genRESTEndPointsForSlicerCLIsForImage(resource, image)
 
         ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
             'slicerCLIBindings'})
 
         events.bind('jobs.job.update.after', resource.resourceName,
-                    resource.AddRestEndpoints)
+                    resource.addRestEndpoints)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
 
 
