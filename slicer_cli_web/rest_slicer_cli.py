@@ -1,9 +1,8 @@
 import os
-import six
 import sys
 
 from girder.api.rest import Resource, boundHandler, \
-    setResponseHeader, setRawResponse
+    setResponseHeader, setRawResponse, RestException
 from girder.api import access
 from girder import logger
 from girder.api.describe import Description, describeRoute
@@ -12,6 +11,7 @@ from .cli_utils import as_model, generate_description, \
     get_cli_parameters, return_parameter_file_name
 from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES
 from .direct_docker_run import run
+from .models import CLIItem
 
 
 _return_parameter_file_desc = """
@@ -110,18 +110,14 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       dataType='string', required=False)
 
 
-def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
+def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
     """Generates a handler to run docker CLI using girder_worker
 
     Parameters
     ----------
     dockerImage : str
         Docker image in which the CLI resides
-    cliRelPath : str
-        Relative path of the CLI which is needed to run the CLI by running
-        the command docker run `dockerImage` `cliRelPath`
-    cliXML:str
-        Cached copy of xml spec for this cli
+    cliItem : CLIItem
     restResource : girder.api.rest.Resource
         The object of a class derived from girder.api.rest.Resource to which
         this handler will be attached
@@ -133,12 +129,10 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
 
     """
 
-    cliName = os.path.normpath(cliRelPath).replace(os.sep, '.')
+    cliName = os.path.normpath(cliItem.name).replace(os.sep, '.')
+    itemId = cliItem._id
 
-    # get xml spec
-    str_xml = cliXML
-
-    clim = as_model(str_xml)
+    clim = as_model(cliItem.xml)
 
     # do stuff needed to create REST endpoint for cLI
     handlerDesc = Description(clim.title).notes(generate_description(clim))
@@ -168,10 +162,13 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     @describeRoute(handlerDesc)
     def cliHandler(self, params):
         user = self.getCurrentUser()
+        currentItem = CLIItem.find(itemId, user)
+        if not currentItem:
+            raise RestException('Invalid CLI Item id (%s).' % (itemId))
         token = self.getCurrentToken()
         jobTitle = '.'.join((restResource.resourceName, cliName))
 
-        container_args = [cliRelPath]
+        container_args = [currentItem.name]
         container_args.extend(prepare_task(params, user, token, index_params, opt_params, has_simple_return_file))
 
         job = run.delay(
@@ -186,16 +183,16 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     return cliHandler
 
 
-def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML, restResource):
+def genHandlerToGetDockerCLIXmlSpec(itemId, name, restResource):
     """Generates a handler that returns the XML spec of the docker CLI
 
     Parameters
     ----------
-    dockerImage : str
-        Docker image in which the CLI resides
-    cliRelPath : str
+    itemId : str
+        Girder Item Id
+    name : str
         Relative path of the CLI which is needed to run the CLI by running
-        the command docker run `dockerImage` `cliRelPath`
+        the command docker run `dockerImage` `name`
     cliXML: str
         value of clispec stored in settings
     restResource : girder.api.rest.Resource
@@ -209,20 +206,19 @@ def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML, restResource):
 
     """
 
-    str_xml = cliXML
-    if isinstance(str_xml, six.text_type):
-        str_xml = str_xml.encode('utf8')
-
     # define the handler that returns the CLI's xml spec
     @boundHandler(restResource)
     @access.user
     @describeRoute(
-        Description('Get XML spec of %s CLI' % cliRelPath)
+        Description('Get XML spec of %s CLI' % name)
     )
     def getXMLSpecHandler(self, *args, **kwargs):
+        item = CLIItem.find(itemId, self.getCurrentUser())
+        if not item:
+            raise RestException('Invalid CLI Item id (%s).' % (itemId))
         setResponseHeader('Content-Type', 'application/xml')
         setRawResponse()
-        return str_xml
+        return item.xml
 
     return getXMLSpecHandler
 
@@ -254,14 +250,15 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
         raise Exception('restResource must be a Docker Resource')
 
     dimg = docker_image.name
+    restPath = docker_image.restPath
 
-    restPath = dimg.replace(':', '_').replace('/', '_').replace('@', '_')
     # Add REST end-point for each CLI
     for cli in docker_image.getCLIs():
+        print('register cli', cli)
         # create a POST REST route that runs the CLI
         try:
             cliRunHandler = genHandlerToRunDockerCLI(
-                dimg, cli.name, cli.xml, restResource)
+                dimg, cli, restResource)
         except Exception:
             logger.exception('Failed to create REST endpoints for %r',
                              cli.name)
@@ -276,6 +273,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
                            getattr(restResource, cliRunHandlerName))
 
         # store new rest endpoint
+        print('store', cli)
         restResource.storeEndpoints(
             dimg, cli.name, 'run', ['POST', (restPath, cli.name, 'run'),
                                     cliRunHandlerName])
@@ -283,7 +281,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
         # create GET REST route that returns the xml of the CLI
         try:
             cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
-                cli.name, cli.xml,
+                cli._id, cli.name,
                 restResource)
         except Exception:
             logger.exception('Failed to create REST endpoints for %s',

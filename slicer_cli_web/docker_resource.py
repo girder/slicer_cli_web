@@ -25,7 +25,9 @@ from girder.api.v1.resource import Resource, RestException
 from girder import logger
 
 from girder.api import access
+from girder.constants import AccessType
 from girder.api.describe import Description, describeRoute
+from girder.utility.model_importer import ModelImporter
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
 from girder_jobs.constants import JobStatus
 
@@ -56,7 +58,7 @@ class DockerResource(Resource):
     )
     def getDockerImages(self, params):
         data = {}
-        for image in DockerImageItem.findAllImages():
+        for image in DockerImageItem.findAllImages(self.getCurrentUser()):
             name, tag, imgData = self.createRestDataForImageVersion(image)
             data.setdefault(name, {})[tag] = imgData
         return data
@@ -73,14 +75,10 @@ class DockerResource(Resource):
         """
 
         name = dockerImage.name
-        endpointData = self.currentEndpoints[name]
+        endpointData = self.currentEndpoints.setdefault(name, {})
 
-        if ':' in name:
-            imageAndTag = name.split(':')
-        else:
-            imageAndTag = name.split('@')
-        userAndRepo = imageAndTag[0]
-        tag = imageAndTag[1]
+        userAndRepo = dockerImage.image
+        tag = dockerImage.tag
 
         data = {}
 
@@ -135,13 +133,38 @@ class DockerResource(Resource):
             docker rmi -f <image> )
         """
         try:
-            DockerImageItem.removeImages(names)
-
-            self.deleteImageEndpoints(names)
+            removed = DockerImageItem.removeImages(names, self.getCurrentUser())
+            print(names, removed)
+            self.deleteImageEndpoints(removed)
             if deleteImage:
-                DockerImageItem.deleteDockerImageFromRepo(names, self.jobType)
+                self._deleteDockerImage(removed)
         except DockerImageNotFoundError as err:
             raise RestException('Invalid docker image name. ' + str(err))
+
+    def _deleteDockerImages(self, removed):
+        """
+        Creates an asynchronous job to delete the docker images listed in name
+        from the local machine
+        :param removed:A list of docker image names
+        :type removed: list of strings
+        """
+        jobModel = ModelImporter.model('job', 'jobs')
+
+        job = jobModel.createLocalJob(
+            module='slicer_cli_web.image_job',
+
+            function='deleteImage',
+            kwargs={
+                'deleteList': removed
+            },
+            title='Deleting Docker Images',
+            user=self.getCurrentUser(),
+            type=self.jobType,
+            public=True,
+            asynchronous=True
+        )
+
+        jobModel.scheduleJob(job)
 
     def parseImageNameList(self, param):
         """
@@ -178,6 +201,7 @@ class DockerResource(Resource):
         .notes('Must be a system administrator to call this.')
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
+        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
@@ -189,7 +213,25 @@ class DockerResource(Resource):
         """
         self.requireParams(('name',), params)
         nameList = self.parseImageNameList(params['name'])
-        return DockerImageItem.putImages(nameList, self.jobType, True)
+        return self._createPutImageJob(nameList, params['folder'])
+
+    def _createPutImageJob(self, nameList, baseFolder):
+        jobModel = ModelImporter.model('job', 'jobs')
+        job = jobModel.createLocalJob(
+            module='slicer_cli_web.image_job',
+            function='jobPullAndLoad',
+            kwargs={
+                'nameList': nameList,
+                'folder': baseFolder
+            },
+            title='Pulling and caching docker images',
+            type=self.jobType,
+            user=self.getCurrentUser(),
+            public=True,
+            asynchronous=True
+        )
+        jobModel.scheduleJob(job)
+        return job
 
     def storeEndpoints(self, imgName, cli, operation, argList):
         """
@@ -253,11 +295,12 @@ class DockerResource(Resource):
 
         :param event: An event dictionary
         """
+        print('create rest endpoints')
         job = event.info['job']
 
         if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
             images = DockerImageItem.findAllImages()
-
+            print('create for', [image.name for image in images])
             self.deleteImageEndpoints()
             for image in images:
                 genRESTEndPointsForSlicerCLIsForImage(self, image)

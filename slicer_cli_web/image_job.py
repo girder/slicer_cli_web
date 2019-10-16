@@ -19,11 +19,12 @@
 
 import docker
 import six
+import json
 
 from girder import logger
+from girder.constants import AccessType
 from girder.utility.model_importer import ModelImporter
 from girder_jobs.constants import JobStatus
-import json
 from .models import DockerImageItem, DockerImageError, \
     DockerImageNotFoundError
 
@@ -99,6 +100,20 @@ def deleteImage(job):
         )
 
 
+def findLocalImage(client, name):
+    """
+    Checks if the docker image exist locally
+    :param name: The name of the docker image
+
+    :returns id: returns the docker image id
+    """
+    try:
+        image = client.images.get(name)
+    except Exception:
+        return None
+    return image.id
+
+
 def jobPullAndLoad(job):
     """
     Attempts to cache metadata on images in the pull list and load list.
@@ -112,8 +127,12 @@ def jobPullAndLoad(job):
     """
     try:
         jobModel = ModelImporter.model('job', 'jobs')
-        pullList = job['kwargs']['pullList']
-        loadList = job['kwargs']['loadList']
+        userModel = ModelImporter.model('user')
+        folderModel = ModelImporter.model('folder')
+        user = userModel.load(job['userId'], level=AccessType.READ)
+        baseFolder = folderModel.load(job['kwargs']['folder'], user=user, level=AccessType.WRITE)
+
+        loadList = job['kwargs']['nameList']
 
         errorState = False
 
@@ -134,6 +153,9 @@ def jobPullAndLoad(job):
             )
             raise DockerImageError('Could not create the docker client')
 
+        pullList = [name for name in loadList if not findLocalImage(docker_client, name)]
+        loadList = [name for name in loadList if name not in pullList]
+
         try:
             pullDockerImage(docker_client, pullList)
         except DockerImageNotFoundError as err:
@@ -145,9 +167,10 @@ def jobPullAndLoad(job):
                     'images\n'+'\n'.join(notExistSet)+'\n',
                 status=JobStatus.ERROR,
             )
-        images, loadingError = loadMetadata(jobModel, job, docker_client,
-                                            pullList, loadList, notExistSet)
-        DockerImageItem.saveAllImages(images)
+        images, loadingError = loadMetadata(jobModel, job, docker_client, pullList,
+                                            loadList, notExistSet)
+        for name, cli_dict in images:
+            DockerImageItem.saveImage(name, cli_dict, user, baseFolder)
         if errorState is False and loadingError is False:
             newStatus = JobStatus.SUCCESS
         else:
@@ -199,8 +222,7 @@ def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
 
             try:
                 cli_dict = getCliData(name, docker_client, jobModel, job)
-                dockerImg = DockerImageItem(name, cli_dict)
-                images.append(dockerImg)
+                images.append((name, cli_dict))
                 jobModel.updateJob(
                     job,
                     log='Got pulled image %s metadata \n' % name
@@ -218,8 +240,7 @@ def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
         # create dictionary and load to database
         try:
             cli_dict = getCliData(name, docker_client, jobModel, job)
-            dockerImg = DockerImageItem(name, cli_dict)
-            images.append(dockerImg)
+            images.append((name, cli_dict))
             jobModel.updateJob(
                 job,
                 log='Loaded metadata from pre-existing local image %s\n' % name

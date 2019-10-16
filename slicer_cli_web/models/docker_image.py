@@ -19,131 +19,115 @@
 
 import six
 
+from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
 
 
 class CLIItem(object):
-    def __init__(self, name, desc):
-        self.name = name
+    def __init__(self, item):
+        self.item = item
+        self._id = item['_id']
+        self.name = item['name']
+        desc = item['meta']
         self.type = desc['type']
         self.xml = desc['xml']
+        if isinstance(self.xml, six.text_type):
+            self.xml = self.xml.encode('utf8')
+
+    @staticmethod
+    def find(itemId, user):
+        itemModel = Item()
+        item = itemModel.load(itemId, user=user, level=AccessType.READ)
+        if not item:
+            return None
+        return CLIItem(item)
 
 
 class DockerImageItem(object):
-    def __init__(self, name, cli_dict):
-        self.name = name
-        self.clis = [CLIItem(key, val) for key, val in six.iteritems(cli_dict)]
+    def __init__(self, folder, user):
+        self.name = folder['name']
+        self.folder = folder
+        self._id = self.folder['_id']
+        self.user = user
+
+        if ':' in self.name:
+            imageAndTag = self.name.split(':')
+        else:
+            imageAndTag = self.name.split('@')
+        self.image = imageAndTag[0]
+        self.tag = imageAndTag[1]
+        self.restPath = self.name.replace(':', '_').replace('/', '_').replace('@', '_')
+
+    def getCLIs(self):
+        itemModel = Item()
+        q = {
+            'meta.isSlicerCLITask': True,
+            'folderId': self.folder['_id']
+        }
+        if self.user:
+            items = itemModel.findWithPermissions(q, user=self.user, level=AccessType.READ)
+        else:
+            items = itemModel.find(q)
+
+        return [CLIItem(item) for item in items]
 
     @staticmethod
-    def findAllImages():
-        # remove all previous endpoints
-        # dockermodel = ModelImporter.model('docker_image_model',
-        #                                   'slicer_cli_web')
-        # return dockermodel.loadAllImages()
-        return []
+    def find(folderId, user):
+        folderModel = Folder()
+        folder = folderModel.load(folderId, user=user, level=AccessType.READ)
+        if not folder:
+            return None
+        return DockerImageItem(folder, user)
 
     @staticmethod
-    def removeImages(names):
-        return []
+    def findAllImages(user=None, baseFolder=None):
+        folderModel = Folder()
+        q = {'meta.isSlicerCLIImage': True}
+        if baseFolder:
+            q['parentId'] = baseFolder['_id']
+        if user:
+            folders = folderModel.findWithPermissions(q, user=user, level=AccessType.READ)
+        else:
+            folders = folderModel.find(q)
+        return [DockerImageItem(folder, user) for folder in folders]
 
     @staticmethod
-    def deleteDockerImageFromRepo(names, jobType):
-        return None
+    def removeImages(names, user):
+        folderModel = Folder()
+        q = {
+            'meta.isSlicerCLIImage': True,
+            'name': {'$in': names}
+        }
+        folders = list(folderModel.find(q)) #, user=user, level=AccessType.WRITE))
+        print(folders, names)
+        for folder in folders:
+            folderModel.remove(folder)
+        return [folder['name'] for folder in folders]
 
     @staticmethod
-    def putImages(names, jobType, replace=False):
-        return []
+    def saveImage(name, cli_dict, user, baseFolder):
+        """
+        :param baseFolder
+        :type Folder
+        """
+        folderModel = Folder()
+        itemModel = Item()
+
+        image = folderModel.createFolder(baseFolder, name, 'Slicer CLI generated docker image folder',
+                                         creator=user, reuseExisting=True)
+        folderModel.setMetadata(image, dict(isSlicerCLIImage=True))
+
+        folderModel.clean(image)
+
+        for cli, desc in six.iteritems(cli_dict):
+            item = itemModel.createItem(cli, user, image, 'Slicer CLI generated CLI command item', reuseExisting=True)
+            item.setMetadata(image, dict(isSlicerCLITask=True))
+            item.setMetadata(image, desc)
+
+        return DockerImageItem(image, user)
 
     @staticmethod
     def prepare():
         Folder().ensureIndex(['meta.isSlicerCLIImage', {'sparse': True}])
         Item().ensureIndex(['meta.isSlicerCLITask', {'sparse': True}])
-
-    def getCLIs(self):
-        return self.clis
-
-
-# class DockerImage(object):
-#     """
-#     Represents docker image and contains metadata on a specific image
-#     """
-#     # keys used by the dictionary that stores metadata on the image
-#     imageName = 'docker_image_name'
-#     imageHash = 'imagehash'
-#     type = 'type'
-#     xml = 'xml'
-#     cli_dict = 'cli_list'
-#     # structure of the dictionary to store metadata
-#     # {
-#     #     'imagehash': <hash of docker image name>
-#     #     'cli_list': {
-#     #         <cli_name>: {
-#     #             'type': <type>
-#     #             'xml': <xml>
-#     #         }
-#     #     }
-#     #     'docker_image_name': <name>
-#     # }
-
-#     def __init__(self, name, cli_dict):
-#         # TODO
-#         try:
-#             if isinstance(name, six.string_types):
-#                 imageKey = DockerImage.getHashKey(name)
-#                 self.data = {}
-#                 self.data[DockerImage.imageName] = name
-#                 self.data[DockerImage.cli_dict] = {}
-#                 self.data[DockerImage.imageHash] = imageKey
-#                 self.hash = imageKey
-#                 self.name = name
-#                 # TODO check/validate schema of dict
-#             elif isinstance(name, dict):
-#                 jsonschema.validate(name, DockerImageStructure.ImageSchema)
-#                 self.data = name.copy()
-#                 self.name = self.data[DockerImage.imageName]
-#                 self.hash = DockerImage.getHashKey(self.name)
-#             else:
-#                 raise DockerImageError(
-#                     'Image should be a string, or dict could not add the image',
-#                     'bad init val')
-#         except Exception as err:
-#             logger.exception('Could not initialize docker image %r', name)
-#             raise DockerImageError(
-#                 'Could not initialize instance of Docker Image \n' + str(err))
-
-#     def addCLI(self, cli_name, cli_data):
-#         """
-#         Add metadata on a specific cli
-#         :param cli_name: the name of the cli
-#         :param cli_data: a dictionary following the format:
-#                     {
-#                       type: < type >
-#                       xml: < xml >
-
-#                     }
-#         The data is passed in a s a dictionary in the case the more metadata
-#         is added to eh cli description
-#         """
-#         self.data[DockerImage.cli_dict][cli_name] = cli_data
-
-#     @staticmethod
-#     def getHashKey(imgName):
-#         """
-#         Generates a hash key (on the docker image name) used by the DockerImage
-#          object to provide a means to uniquely find the image metadata
-#          in the girder-mongo database. This prevents user defined image name
-#          from causing issues with pymongo.Note this key is not the same as the
-#          docker image id that the docker engine generates
-#         :imgName: The name of the docker image
-
-#         :returns: The hashkey as a string
-#         """
-#         imageKey = hashlib.sha256(imgName.encode()).hexdigest()
-#         return imageKey
-
-#     def getCLIKeys(self):
-#         return list(self.data[DockerImage.cli_dict].keys())
-
-#     def getRawData(self):
-#         return self.data

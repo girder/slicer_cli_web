@@ -73,7 +73,6 @@ class SlicerCLIWebPlugin(GirderPlugin):
         resource = DockerResource('slicer_cli_web')
         info['apiRoot'].slicer_cli_web = resource
 
-        # dockerCache = dockerImageModel.loadAllImages()
         for image in DockerImageItem.findAllImages():
             genRESTEndPointsForSlicerCLIsForImage(resource, image)
 
