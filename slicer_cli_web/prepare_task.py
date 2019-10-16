@@ -25,16 +25,16 @@ def _to_file_volume(param, model):
     girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
 
     if girder_type != 'file':
-        return GirderFolderIdToVolume(model['_id'])
+        return GirderFolderIdToVolume(model['_id'], folder_name=model['name'])
 
     if not Setting().get(PluginSettings.DIRECT_PATH):
-        return GirderFileIdToVolume(model['_id'])
+        return GirderFileIdToVolume(model['_id'], filename=model['name'])
 
     try:
         path = File().getLocalFilePath(model)
-        return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path)
+        return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path, filename=model['name'])
     except FilePathException:
-        return GirderFileIdToVolume(model['_id'])
+        return GirderFileIdToVolume(model['_id'], filename=model['name'])
 
 
 def _parseParamValue(param, value, user, token):

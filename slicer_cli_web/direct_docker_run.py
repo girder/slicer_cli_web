@@ -56,7 +56,6 @@ def _resolve_direct_file_paths(args, kwargs):
 
 class DirectDockerTask(DockerTask):
     def __call__(self, *args, **kwargs):
-
         extra_volumes = _resolve_direct_file_paths(args, kwargs)
         if extra_volumes:
             volumes = kwargs.setdefault('volumes', [])
@@ -70,8 +69,7 @@ class DirectDockerTask(DockerTask):
         super(DirectDockerTask, self).__call__(*args, **kwargs)
 
 
-@app.task(base=DirectDockerTask, bind=True)
-def run(task, *args, **kwargs):
-    """Test"""
-    print(args, kwargs)
+@app.task(base=DirectDockerTask)
+def run(*args, **kwargs):
+    """Wraps docker_run to support direct mount volumnes."""
     return docker_run(*args, **kwargs)

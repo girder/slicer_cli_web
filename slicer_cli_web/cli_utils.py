@@ -7,32 +7,18 @@ from ctk_cli import CLIModule
 
 return_parameter_file_name = 'returnparameterfile'
 
-SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
-    'boolean': 'boolean',
-    'integer': 'integer',
-    'float': 'number',
-    'double': 'number',
-    'string': 'string',
-    'integer-vector': 'integer_list',
-    'float-vector': 'number_list',
-    'double-vector': 'number_list',
-    'string-vector': 'string_list',
-    'integer-enumeration': 'integer',
-    'float-enumeration': 'number',
-    'double-enumeration': 'number',
-    'string-enumeration': 'string',
-    'region': 'number_list',
-    'file': 'string',
-    'directory': 'string',
-    'image': 'string'
-}
-
 SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'image': 'file',
     'file': 'file',
     'item': 'item',
     'directory': 'folder'
 }
+
+SLICER_SUPPORTED_TYPES = set(['boolean', 'integer', 'float', 'double', 'string',
+                              'integer-vector', 'float-vector', 'double-vector', 'string-vector',
+                              'integer-enumeration', 'float-enumeration', 'double-enumeration',
+                              'string-enumeration',
+                              'region'] + list(SLICER_TYPE_TO_GIRDER_MODEL_MAP.keys()))
 
 
 def generate_description(clim):
@@ -69,7 +55,7 @@ def get_cli_parameters(clim):
 
     # perform sanity checks
     for param in index_params + opt_params:
-        if param.typ not in SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
+        if param.typ not in SLICER_SUPPORTED_TYPES:
             raise Exception(
                 'Parameter type %s is currently not supported' % param.typ
             )
