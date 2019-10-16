@@ -134,7 +134,6 @@ class DockerResource(Resource):
         """
         try:
             removed = DockerImageItem.removeImages(names, self.getCurrentUser())
-            print(names, removed)
             self.deleteImageEndpoints(removed)
             if deleteImage:
                 self._deleteDockerImage(removed)
@@ -295,12 +294,10 @@ class DockerResource(Resource):
 
         :param event: An event dictionary
         """
-        print('create rest endpoints')
         job = event.info['job']
 
         if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
             images = DockerImageItem.findAllImages()
-            print('create for', [image.name for image in images])
             self.deleteImageEndpoints()
             for image in images:
                 genRESTEndPointsForSlicerCLIsForImage(self, image)

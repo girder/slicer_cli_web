@@ -99,8 +99,7 @@ class DockerImageItem(object):
             'meta.isSlicerCLIImage': True,
             'name': {'$in': names}
         }
-        folders = list(folderModel.find(q)) #, user=user, level=AccessType.WRITE))
-        print(folders, names)
+        folders = list(folderModel.find(q, user=user, level=AccessType.WRITE))
         for folder in folders:
             folderModel.remove(folder)
         return [folder['name'] for folder in folders]

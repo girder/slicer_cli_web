@@ -254,7 +254,6 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
 
     # Add REST end-point for each CLI
     for cli in docker_image.getCLIs():
-        print('register cli', cli)
         # create a POST REST route that runs the CLI
         try:
             cliRunHandler = genHandlerToRunDockerCLI(
@@ -273,7 +272,6 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
                            getattr(restResource, cliRunHandlerName))
 
         # store new rest endpoint
-        print('store', cli)
         restResource.storeEndpoints(
             dimg, cli.name, 'run', ['POST', (restPath, cli.name, 'run'),
                                     cliRunHandlerName])
