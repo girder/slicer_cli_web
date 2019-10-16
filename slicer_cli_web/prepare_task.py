@@ -6,7 +6,7 @@ from girder.utility.model_importer import ModelImporter
 from girder import logger
 from girder.constants import AccessType
 from girder_worker.docker.transforms import VolumePath
-from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, GirderFileIdToVolume, GirderFolderIdToVolume
+from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, GirderFileIdToVolume, GirderFolderIdToVolume, GirderItemIdToVolume
 from girder_worker.girder_plugin.constants import PluginSettings
 from girder.exceptions import FilePathException
 from girder.models.file import File
@@ -19,13 +19,16 @@ from .cli_utils import \
 
 
 OPENAPI_DIRECT_TYPES = set(['boolean', 'integer', 'float', 'double', 'string'])
+FOLDER_SUFFIX = '_folder'
 
 
 def _to_file_volume(param, model):
     girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
 
-    if girder_type != 'file':
+    if girder_type == 'folder':
         return GirderFolderIdToVolume(model['_id'], folder_name=model['name'])
+    elif girder_type == 'item':
+        return GirderItemIdToVolume(model['_id'])
 
     if not Setting().get(PluginSettings.DIRECT_PATH):
         return GirderFileIdToVolume(model['_id'], filename=model['name'])
@@ -89,10 +92,10 @@ def _add_optional_input_param(param, args, user, token):
 def _add_optional_output_param(param, args, user):
     if not param.isExternalType() or not is_on_girder(param) \
        or param.identifier() not in args or \
-       (param.identifier() + '_folder') not in args:
+       (param.identifier() + FOLDER_SUFFIX) not in args:
         return []
     value = args[param.identifier()]
-    folder = args[param.identifier() + '_folder']
+    folder = args[param.identifier() + FOLDER_SUFFIX]
 
     container_args = []
     if param.longflag:
@@ -125,7 +128,7 @@ def _add_indexed_input_param(param, args, user, token):
 
 def _add_indexed_output_param(param, args, user):
     value = args[param.identifier()]
-    folder = args[param.identifier() + '_folder']
+    folder = args[param.identifier() + FOLDER_SUFFIX]
 
     folderModel = ModelImporter.model('folder')
     instance = folderModel.load(folder, level=AccessType.WRITE, user=user)
@@ -148,11 +151,11 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
             ca.extend(_add_optional_input_param(param, params, user, token))
 
     if has_simple_return_file:
-        param_id = return_parameter_file_name + '_folder'
+        param_id = return_parameter_file_name + FOLDER_SUFFIX
         param_name_id = return_parameter_file_name
         if param_id in params and param_name_id in params:
             value = params[return_parameter_file_name]
-            folder = params[return_parameter_file_name + '_folder']
+            folder = params[return_parameter_file_name + FOLDER_SUFFIX]
 
             folderModel = ModelImporter.model('folder')
             instance = folderModel.load(folder, level=AccessType.WRITE, user=user)

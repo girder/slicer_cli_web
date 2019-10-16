@@ -9,7 +9,7 @@ from girder.api.describe import Description, describeRoute
 
 from .cli_utils import as_model, generate_description, \
     get_cli_parameters, return_parameter_file_name
-from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES
+from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
 from .direct_docker_run import run
 from .models import CLIItem
 
@@ -76,7 +76,7 @@ def _addOutputParamToHandler(param, handlerDesc, required=True):
         return
 
     # add param for parent folder to route description
-    handlerDesc.param(param.identifier() + '_folder',
+    handlerDesc.param(param.identifier() + FOLDER_SUFFIX,
                       'Girder ID of parent folder '
                       'for output %s - %s: %s'
                       % (param.typ, param.typ, param.description),
@@ -96,7 +96,7 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
     curDesc = _return_parameter_file_desc
 
     # add param for parent folder to route description
-    handlerDesc.param(curName + '_folder',
+    handlerDesc.param(curName + FOLDER_SUFFIX,
                       'Girder ID of parent folder '
                       'for output %s - %s: %s'
                       % (curType, curName, curDesc),
