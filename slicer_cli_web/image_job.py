@@ -170,7 +170,8 @@ def jobPullAndLoad(job):
         images, loadingError = loadMetadata(jobModel, job, docker_client, pullList,
                                             loadList, notExistSet)
         for name, cli_dict in images:
-            DockerImageItem.saveImage(name, cli_dict, user, baseFolder)
+            docker_image = docker_client.images.get(name)
+            DockerImageItem.saveImage(name, cli_dict, docker_image, user, baseFolder)
         if errorState is False and loadingError is False:
             newStatus = JobStatus.SUCCESS
         else:

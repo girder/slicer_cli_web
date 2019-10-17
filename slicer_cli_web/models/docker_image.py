@@ -147,7 +147,7 @@ class DockerImageItem(object):
         return removed
 
     @staticmethod
-    def saveImage(name, cli_dict, user, baseFolder):
+    def saveImage(name, cli_dict, docker_image, user, baseFolder):
         """
         :param baseFolder
         :type Folder
@@ -162,6 +162,14 @@ class DockerImageItem(object):
 
         tag = folderModel.createFolder(image, tagName, 'Slicer CLI generated docker image tag folder',
                                        creator=user, reuseExisting=True)
+
+        # add docker image labels as meta data
+        labels = docker_image.labels.copy()
+        if 'description' in labels:
+            tag['description'] = labels['description']
+            del labels['description']
+        labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
+        folderModel.setMetadata(tag, labels)
         folderModel.setMetadata(tag, dict(slicerCLIType='tag'))
         folderModel.clean(tag)
 
