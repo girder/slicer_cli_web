@@ -61,13 +61,17 @@ def _addInputParamToHandler(param, handlerDesc, required=True):
         dataType = 'json'
         desc = '%s as JSON (%s)' % (param.description, param.typ)
 
+    defaultValue = None
+    if not required or param.default is not None:
+        defaultValue = _getParamDefaultVal(param)
+
     if dataType == 'json':
         handlerDesc.jsonParam(param.identifier(), desc,
-                              default=_getParamDefaultVal(param) if not required else None,
+                              default=defaultValue,
                               required=required, schema=schema)
     else:
         handlerDesc.param(param.identifier(), desc, dataType=dataType, enum=enum,
-                          default=_getParamDefaultVal(param) if not required else None,
+                          default=defaultValue,
                           required=required)
 
 
@@ -83,9 +87,17 @@ def _addOutputParamToHandler(param, handlerDesc, required=True):
                       dataType='string', required=required)
 
     # add param for name of current output to route description
+
+    defaultName = None
+    try:
+        defaultName = '%s%s' % (param.identifier(), param.defaultExtension())
+    except KeyError:
+        pass
+
     handlerDesc.param(param.identifier(),
                       'Name of output %s - %s: %s'
                       % (param.typ, param.identifier(), param.description),
+                      default=defaultName,
                       dataType='string', required=required)
 
 
