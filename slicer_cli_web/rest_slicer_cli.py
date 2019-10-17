@@ -89,17 +89,20 @@ def _addOutputParamToHandler(param, handlerDesc, required=True):
 
     # add param for name of current output to route description
 
-    defaultName = None
+    defaultFileExtension = None
     try:
-        defaultName = '%s%s' % (param.identifier(), param.defaultExtension())
+        defaultFileExtension = param.defaultExtension()
     except KeyError:  # file is not an EXTERNAL_TYPE in the parser
         if param.fileExtensions:
-            defaultName = '%s%s' % (param.identifier(), param.fileExtensions[0])
+            defaultFileExtension = param.fileExtensions[0]
+
+    if defaultFileExtension and '|' in defaultFileExtension:
+        defaultFileExtension = defaultFileExtension.split('|')[0]
 
     handlerDesc.param(param.identifier(),
                       'Name of output %s - %s: %s'
                       % (param.typ, param.identifier(), param.description),
-                      default=defaultName,
+                      default=('%s%s' % (param.identifier(), defaultFileExtension) if defaultFileExtension else None),
                       dataType='string', required=required)
 
 
