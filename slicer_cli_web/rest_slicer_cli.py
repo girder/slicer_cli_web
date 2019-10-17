@@ -158,6 +158,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
             _addOutputParamToHandler(param, handlerDesc, True)
         else:
             _addInputParamToHandler(param, handlerDesc, True)
+
     for param in opt_params:
         if param.channel == 'output':
             _addOutputParamToHandler(param, handlerDesc, False)
