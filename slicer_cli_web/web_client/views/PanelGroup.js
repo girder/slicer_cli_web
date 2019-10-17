@@ -201,19 +201,23 @@ var PanelGroup = View.extend({
      * This code will fetch the actual schema from `path + '/xmlschema'`
      * and cause submissions to post to `path + '/run'`.
      */
-    setAnalysis: function (path) {
+    setAnalysis: function (path, xml) {
         if (!path) {
             this.reset();
             return $.when();
         }
-        return restRequest({
-            url: path + '/xmlspec',
-            dataType: 'xml'
-        }).then(_.bind(function (xml) {
+        function process(xml) {
             this._submit = path + '/run';
             this._schema(xml);
             events.trigger('h:analysis', path, xml);
-        }, this));
+        };
+        if (xml) {
+            return process.call(this, xml);
+        }
+        return restRequest({
+            url: path + '/xmlspec',
+            dataType: 'xml'
+        }).then(_.bind(process, this));
     },
 
     /**

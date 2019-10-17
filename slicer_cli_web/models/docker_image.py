@@ -158,6 +158,7 @@ class DockerImageItem(object):
         fileModel = File()
 
         imageName, tagName = _split(name)
+        restPath = name.replace(':', '_').replace('/', '_').replace('@', '_')
 
         image = folderModel.createFolder(baseFolder, imageName, 'Slicer CLI generated docker image folder',
                                          creator=user, reuseExisting=True)
@@ -179,7 +180,8 @@ class DockerImageItem(object):
         if 'Author' in docker_image.attrs:
             labels['author'] = docker_image.attrs['Author']
         folderModel.setMetadata(tag, labels)
-        folderModel.setMetadata(tag, dict(slicerCLIType='tag'))
+
+        folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
         folderModel.clean(tag)
 
         for cli, desc in six.iteritems(cli_dict):
