@@ -91,8 +91,9 @@ def _addOutputParamToHandler(param, handlerDesc, required=True):
     defaultName = None
     try:
         defaultName = '%s%s' % (param.identifier(), param.defaultExtension())
-    except KeyError:
-        pass
+    except KeyError:  # file is not an EXTERNAL_TYPE in the parser
+        if param.fileExtensions:
+            defaultName = '%s%s' % (param.identifier(), param.fileExtensions[0])
 
     handlerDesc.param(param.identifier(),
                       'Name of output %s - %s: %s'
