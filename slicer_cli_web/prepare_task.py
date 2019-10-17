@@ -12,7 +12,7 @@ from girder.exceptions import FilePathException
 from girder.models.file import File
 from girder.models.setting import Setting
 
-from .direct_docker_run import DirectGirderFileIdToVolume
+from .girder_worker_plugin.direct_docker_run import DirectGirderFileIdToVolume
 
 from .cli_utils import \
     SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, return_parameter_file_name

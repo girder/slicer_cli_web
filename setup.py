@@ -56,10 +56,10 @@ setup(
     install_requires=install_reqs,
     entry_points={
         'girder.plugin': [
-            'slicer_cli_web = slicer_cli_web:SlicerCLIWebPlugin'
+            'slicer_cli_web = slicer_cli_web.girder_plugin:SlicerCLIWebPlugin'
         ],
         'girder_worker_plugins': [
-            'slicer_cli_web = slicer_cli_web:SlicerCLIWebWorkerPlugin'
+            'slicer_cli_web = slicer_cli_web.girder_worker_plugin:SlicerCLIWebWorkerPlugin'
         ]
     }
 )

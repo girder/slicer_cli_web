@@ -16,14 +16,12 @@
 #  limitations under the License.
 ###############################################################################
 
-from pkg_resources import DistributionNotFound, get_distribution
+from girder_worker import GirderWorkerPluginABC
 
 
-try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
-    # package is not installed
-    pass
+class SlicerCLIWebWorkerPlugin(GirderWorkerPluginABC):
+    def __init__(self, app, *args, **kwargs):
+        self.app = app
 
-
-__license__ = 'Apache 2.0'
+    def task_imports(self):
+        return ['slicer_cli_web.direct_docker_run']
