@@ -1,6 +1,6 @@
 """utils for CLI spec handling."""
+import io
 import six
-import tempfile
 
 from ctk_cli import CLIModule
 
@@ -42,10 +42,8 @@ def generate_description(clim):
 
 def as_model(cliXML):
     """Parses cli xml spec."""
-    with tempfile.NamedTemporaryFile(suffix='.xml') as f:
-        f.write(cliXML if isinstance(cliXML, six.binary_type) else cliXML.encode('utf8'))
-        f.flush()
-        return CLIModule(f.name)
+    stream = io.BytesIO(cliXML if isinstance(cliXML, six.binary_type) else cliXML.encode('utf8'))
+    return CLIModule(stream=stream)
 
 
 def get_cli_parameters(clim):
