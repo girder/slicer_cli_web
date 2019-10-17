@@ -24,4 +24,4 @@ class SlicerCLIWebWorkerPlugin(GirderWorkerPluginABC):
         self.app = app
 
     def task_imports(self):
-        return ['slicer_cli_web.direct_docker_run']
+        return ['slicer_cli_web.girder_worker_plugin.direct_docker_run']

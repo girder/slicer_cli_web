@@ -18,7 +18,7 @@ SLICER_SUPPORTED_TYPES = set(['boolean', 'integer', 'float', 'double', 'string',
                               'integer-vector', 'float-vector', 'double-vector', 'string-vector',
                               'integer-enumeration', 'float-enumeration', 'double-enumeration',
                               'string-enumeration',
-                              'region'] + list(six.iterkeys(SLICER_TYPE_TO_GIRDER_MODEL_MAP))
+                              'region'] + list(six.iterkeys(SLICER_TYPE_TO_GIRDER_MODEL_MAP)))
 
 
 def generate_description(clim):

@@ -42,7 +42,7 @@ class ImportPackageTest(base.TestCase):
         from slicer_cli_web import image_job  # noqa
 
     def test_direct_docker_run(self):
-        from slicer_cli_web import direct_docker_run  # noqa
+        from slicer_cli_web.girder_worker_plugin import direct_docker_run  # noqa
 
     def test_cli_list_entrypoint(self):
         from .slicer_cli_web import cli_list_entrypoint  # noqa
