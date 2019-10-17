@@ -22,6 +22,7 @@ import six
 from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
+from girder.models.file import File
 from ..cli_utils import as_model
 
 
@@ -154,6 +155,8 @@ class DockerImageItem(object):
         """
         folderModel = Folder()
         itemModel = Item()
+        fileModel = File()
+
         imageName, tagName = _split(name)
 
         image = folderModel.createFolder(baseFolder, imageName, 'Slicer CLI generated docker image folder',
@@ -178,21 +181,29 @@ class DockerImageItem(object):
             itemModel.setMetadata(item, dict(slicerCLIType='task'))
             itemModel.setMetadata(item, desc)
 
-            if 'xml' in desc:
-                # parse and inject advanced meta data and description
-                clim = as_model(desc['xml'])
-                item['description'] = '%s\n\n%s' % (clim.title, clim.description)
-                extras = {}
-                if clim.version:
-                    extras['version'] = clim.version
-                if clim.license:
-                    extras['license'] = clim.license
-                if clim.contributor:
-                    extras['contributor'] = clim.contributor
-                if clim.acknowledgements:
-                    extras['acknowledgements'] = clim.acknowledgements
-                itemModel.setMetadata(item, extras)
+            if 'xml' not in desc:
+                continue
 
+            # parse and inject advanced meta data and description
+            clim = as_model(desc['xml'])
+            item['description'] = '**%s**\n\n%s' % (clim.title, clim.description)
+            extras = {}
+            if clim.category:
+                extras['category'] = clim.category
+            if clim.version:
+                extras['version'] = clim.version
+            if clim.license:
+                extras['license'] = clim.license
+            if clim.contributor:
+                extras['contributor'] = clim.contributor
+            if clim.acknowledgements:
+                extras['acknowledgements'] = clim.acknowledgements
+            itemModel.setMetadata(item, extras)
+
+            if clim.documentation_url:
+                fileModel.createLinkFile('Documentation', item, 'item',
+                                         clim.documentation_url,
+                                         user, reuseExisting=True)
 
         return DockerImageItem(image, tag, user)
 
