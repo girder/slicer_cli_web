@@ -89,7 +89,7 @@ def _add_optional_input_param(param, args, user, token):
     return container_args
 
 
-def _add_optional_output_param(param, args, user):
+def _add_optional_output_param(param, args, user, result_hooks):
     if not param.isExternalType() or not is_on_girder(param) \
        or param.identifier() not in args or \
        (param.identifier() + FOLDER_SUFFIX) not in args:
@@ -112,7 +112,8 @@ def _add_optional_output_param(param, args, user):
 
     # Output Binding !!
     path = VolumePath(value)
-    container_args.append(GirderUploadVolumePathToFolder(path, folder))
+    container_args.append(path)
+    result_hooks.append(GirderUploadVolumePathToFolder(path, folder))
 
     return container_args
 
@@ -126,7 +127,7 @@ def _add_indexed_input_param(param, args, user, token):
     return value
 
 
-def _add_indexed_output_param(param, args, user):
+def _add_indexed_output_param(param, args, user, result_hooks):
     value = args[param.identifier()]
     folder = args[param.identifier() + FOLDER_SUFFIX]
 
@@ -137,16 +138,18 @@ def _add_indexed_output_param(param, args, user):
 
     # Output Binding !!
     path = VolumePath(value)
-    return GirderUploadVolumePathToFolder(path, folder)
+    result_hooks.append(GirderUploadVolumePathToFolder(path, folder))
+    return path
 
 
 def prepare_task(params, user, token, index_params, opt_params, has_simple_return_file):
     ca = []
+    result_hooks = []
 
     # optional params
     for param in opt_params:
         if param.channel == 'output':
-            ca.extend(_add_optional_output_param(param, params, user, token))
+            ca.extend(_add_optional_output_param(param, params, user, token, result_hooks))
         else:
             ca.extend(_add_optional_input_param(param, params, user, token))
 
@@ -166,13 +169,14 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
 
             # Output Binding !!
             path = VolumePath(value)
-            ca.append(GirderUploadVolumePathToFolder(path, folder))
+            ca.append(path)
+            result_hooks.append(GirderUploadVolumePathToFolder(path, folder))
 
     # indexed params
     for param in index_params:
         if param.channel == 'output':
-            ca.append(_add_indexed_output_param(param, params, user))
+            ca.append(_add_indexed_output_param(param, params, user, result_hooks))
         else:
             ca.append(_add_indexed_input_param(param, params, user, token))
 
-    return ca
+    return ca, result_hooks

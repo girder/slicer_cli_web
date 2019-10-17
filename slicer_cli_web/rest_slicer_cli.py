@@ -169,12 +169,14 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
         jobTitle = '.'.join((restResource.resourceName, cliName))
 
         container_args = [currentItem.name]
-        container_args.extend(prepare_task(params, user, token, index_params, opt_params, has_simple_return_file))
+        args, result_hooks = prepare_task(params, user, token, index_params, opt_params, has_simple_return_file)
+        container_args.extend(args)
 
         job = run.delay(
             girder_user=user,
             girder_job_type='Slicer CLI Task',
             girder_job_title=jobTitle,
+            girder_result_hooks=result_hooks,
             image=dockerImage, pull_image=False,
             container_args=container_args
         )
