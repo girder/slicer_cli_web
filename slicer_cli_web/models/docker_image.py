@@ -22,6 +22,7 @@ import six
 from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
+from ..cli_utils import as_model
 
 
 def _split(name):
@@ -168,6 +169,22 @@ class DockerImageItem(object):
             item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item', reuseExisting=True)
             itemModel.setMetadata(item, dict(slicerCLIType='task'))
             itemModel.setMetadata(item, desc)
+
+            if 'xml' in desc:
+                # parse and inject advanced meta data and description
+                clim = as_model(desc['xml'])
+                item['description'] = '%s\n\n%s' % (clim.title, clim.description)
+                extras = {}
+                if clim.version:
+                    extras['version'] = clim.version
+                if clim.license:
+                    extras['license'] = clim.license
+                if clim.contributor:
+                    extras['contributor'] = clim.contributor
+                if clim.acknowledgements:
+                    extras['acknowledgements'] = clim.acknowledgements
+                itemModel.setMetadata(item, extras)
+
 
         return DockerImageItem(image, tag, user)
 
