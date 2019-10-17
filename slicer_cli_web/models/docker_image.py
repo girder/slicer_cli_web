@@ -163,6 +163,10 @@ class DockerImageItem(object):
                                          creator=user, reuseExisting=True)
         folderModel.setMetadata(image, dict(slicerCLIType='image'))
 
+        fileModel.createLinkFile('Docker Hub', image, 'folder',
+                                 'https://hub.docker.com/r/%s' % imageName,
+                                 user, reuseExisting=True)
+
         tag = folderModel.createFolder(image, tagName, 'Slicer CLI generated docker image tag folder',
                                        creator=user, reuseExisting=True)
 
@@ -172,6 +176,8 @@ class DockerImageItem(object):
             tag['description'] = labels['description']
             del labels['description']
         labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
+        if 'Author' in docker_image.attrs:
+            labels['author'] = docker_image.attrs['Author']
         folderModel.setMetadata(tag, labels)
         folderModel.setMetadata(tag, dict(slicerCLIType='tag'))
         folderModel.clean(tag)
