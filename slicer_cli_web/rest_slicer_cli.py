@@ -57,6 +57,7 @@ def _addInputParamToHandler(param, handlerDesc, required=True):
         if param.typ == 'float' or param.typ == 'double':
             itemType = 'number'
         schema = dict(type='array', items=dict(type=itemType))
+        desc = '%s as JSON (%s)' % (param.description, param.typ)
     else:
         dataType = 'json'
         desc = '%s as JSON (%s)' % (param.description, param.typ)
@@ -148,7 +149,9 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
     clim = as_model(cliItem.xml)
 
     # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clim.title).notes(generate_description(clim))
+    handlerDesc = Description(clim.title) \
+        .notes(generate_description(clim)) \
+        .produces('application/json')
 
     # get CLI parameters
     index_params, opt_params, simple_out_params = get_cli_parameters(clim)
@@ -226,7 +229,7 @@ def genHandlerToGetDockerCLIXmlSpec(itemId, name, restResource):
     @boundHandler(restResource)
     @access.user
     @describeRoute(
-        Description('Get XML spec of %s CLI' % name)
+        Description('Get XML spec of %s CLI' % name).produces('application/xml')
     )
     def getXMLSpecHandler(self, *args, **kwargs):
         item = CLIItem.find(itemId, self.getCurrentUser())
