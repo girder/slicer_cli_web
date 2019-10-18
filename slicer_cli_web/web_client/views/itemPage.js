@@ -7,6 +7,7 @@ import WidgetCollection from '../collections/WidgetCollection';
 import ControlsPanel from './ControlsPanel';
 import { parse } from '../parser';
 import slicerUI from '../templates/slicerUI.pug';
+import '../stylesheets/slicerUI.styl';
 
 wrap(ItemView, 'render', function (render) {
     this.once('g:rendered', function () {
@@ -17,7 +18,7 @@ wrap(ItemView, 'render', function (render) {
             return;
         }
         this.slicerCLIPanel = new SlicerUI({
-            el: $('<form>', { class: 'g-item-slicer-ui' })
+            el: $('<div>', { class: 'g-item-slicer-ui' })
                 .insertAfter(this.$('.g-item-info')),
             parentView: this,
             taskModel: this.model
@@ -28,6 +29,9 @@ wrap(ItemView, 'render', function (render) {
 });
 
 const SlicerUI = View.extend({
+    events: {
+        'click .s-info-panel-submit': 'submit',
+    },
     initialize(settings) {
         this.panels = [];
         this._panelViews = {};
@@ -88,5 +92,10 @@ const SlicerUI = View.extend({
                 }]
             }]
         });
+    },
+
+
+    submit() {
+
     }
 });
