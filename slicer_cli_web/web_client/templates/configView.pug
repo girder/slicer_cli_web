@@ -1,0 +1,15 @@
+.g-config-breadcrumb-container
+p.g-slicer-cli-web-description
+  | A girder plugin for exposing slicer CLIs over the web
+form#g-slicer-cli-web-form(role="form")
+  .form-group
+    label Default Task Upload Folder
+    p.g-slicer-cli-web-description
+      | TODO
+    input.input-sm.form-control.g-slicer-cli-web-upload-folder(
+      type="text", value=settings['slicer_cli_web.task_folder'],
+      placeholder='TODO',
+      title='TODO')
+
+  p#g-slicer-cli-web-error-message.g-validation-failed-message
+  input.btn.btn-sm.btn-primary(type="submit", value="Save")

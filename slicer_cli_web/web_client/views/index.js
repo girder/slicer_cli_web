@@ -4,8 +4,10 @@ import ItemSelectorWidget from './ItemSelectorWidget';
 import JobsPanel from './JobsPanel';
 import Panel from './Panel';
 import PanelGroup from './PanelGroup';
+import ConfigView from './ConfigView';
 
 export {
+    ConfigView,
     ControlWidget,
     ControlsPanel,
     ItemSelectorWidget,

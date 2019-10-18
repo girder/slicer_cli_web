@@ -32,7 +32,7 @@ from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
 from girder_jobs.constants import JobStatus
 
 from .models import DockerImageNotFoundError, DockerImageItem
-
+from .config import PluginSettings
 
 class DockerResource(Resource):
     """
@@ -202,7 +202,8 @@ class DockerResource(Resource):
         .notes('Must be a system administrator to call this.')
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
-        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE)
+        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE,
+                    required=PluginSettings.get_default_folder() is not None)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
@@ -214,7 +215,8 @@ class DockerResource(Resource):
         """
         self.requireParams(('name',), params)
         nameList = self.parseImageNameList(params['name'])
-        return self._createPutImageJob(nameList, params['folder'])
+        folder = params.get('folder', PluginSettings.get_default_folder())
+        return self._createPutImageJob(nameList, folder)
 
     def _createPutImageJob(self, nameList, baseFolder):
         jobModel = ModelImporter.model('job', 'jobs')
