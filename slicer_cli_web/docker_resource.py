@@ -34,6 +34,7 @@ from girder_jobs.constants import JobStatus
 from .models import DockerImageNotFoundError, DockerImageItem
 from .config import PluginSettings
 
+
 class DockerResource(Resource):
     """
     Resource object that handles runtime generation and deletion of rest
@@ -203,7 +204,7 @@ class DockerResource(Resource):
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
         .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE,
-                    required=PluginSettings.get_default_folder() is not None)
+                    required=not PluginSettings.has_task_folder())
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
@@ -215,7 +216,9 @@ class DockerResource(Resource):
         """
         self.requireParams(('name',), params)
         nameList = self.parseImageNameList(params['name'])
-        folder = params.get('folder', PluginSettings.get_default_folder())
+        folder = params.get('folder', PluginSettings.get_task_folder())
+        if not folder:
+            raise RestException('no upload folder given or defined by default')
         return self._createPutImageJob(nameList, folder)
 
     def _createPutImageJob(self, nameList, baseFolder):

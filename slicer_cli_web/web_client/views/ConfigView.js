@@ -1,5 +1,6 @@
 import View from '@girder/core/views/View';
 
+import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
 import PluginConfigBreadcrumbWidget from '@girder/core/views/widgets/PluginConfigBreadcrumbWidget';
 import { restRequest } from '@girder/core/rest';
 import events from '@girder/core/events';
@@ -12,23 +13,46 @@ import '../stylesheets/configView.styl';
  */
 const ConfigView = View.extend({
     events: {
-        'submit #g-slicer-cli-web-form': function (event) {
+        'submit #g-slicer-cli-web-form'(event) {
             event.preventDefault();
             this.$('#g-slicer-cli-web-error-message').empty();
             this._saveSettings([{
                 key: 'slicer_cli_web.task_folder',
-                value: this.$('.g--slicer-cli-web-task-folder').val()
+                value: this.$('#g-slicer-cli-web-upload-folder').val()
             }]);
-        }
+        },
+        'click .g-open-browser': '_openBrowser'
     },
-    initialize: function () {
+
+    initialize() {
+        this._browserWidgetView = new BrowserWidget({
+            parentView: this,
+            titleText: 'Default Task Upload Folder',
+            helpText: 'Browse to a location to select it as the default upload folder.',
+            submitText: 'Select Folder',
+            validate: function (model) {
+                let isValid = $.Deferred();
+                if (!model) {
+                    isValid.reject('Please select a valid root.');
+                } if (model.get('_modelType') !== 'folder') {
+                    isValid.reject('Please select a folder.');
+                } else {
+                    isValid.resolve();
+                }
+                return isValid.promise();
+            }
+        });
+        this.listenTo(this._browserWidgetView, 'g:saved', function (val) {
+            this.$('#g-slicer-cli-web-upload-folder').val(val.id);
+        });
+
         ConfigView.getSettings((settings) => {
             this.settings = settings;
             this.render();
         });
     },
 
-    render: function () {
+    render() {
         this.$el.html(ConfigViewTemplate({
             settings: this.settings,
             viewers: ConfigView.viewers
@@ -44,7 +68,11 @@ const ConfigView = View.extend({
         return this;
     },
 
-    _saveSettings: function (settings) {
+    _openBrowser() {
+        this._browserWidgetView.setElement($('#g-dialog-container')).render();
+    },
+
+    _saveSettings(settings) {
         /* Now save the settings */
         return restRequest({
             type: 'PUT',
@@ -70,33 +98,6 @@ const ConfigView = View.extend({
     }
 }, {
     /* Class methods and objects */
-
-    /* The list of viewers is added as a property to the select widget view so
-     * that it is also available to the settings page. */
-    viewers: [
-        {
-            name: 'geojs',
-            label: 'GeoJS',
-            type: 'geojs'
-        }, {
-            name: 'openseadragon',
-            label: 'OpenSeaDragon',
-            type: 'openseadragon'
-        }, {
-            name: 'openlayers',
-            label: 'OpenLayers',
-            type: 'openlayers'
-        }, {
-            name: 'leaflet',
-            label: 'Leaflet',
-            type: 'leaflet'
-        }, {
-            name: 'slideatlas',
-            label: 'SlideAtlas',
-            type: 'slideatlas'
-        }
-    ],
-
     /**
      * Get settings if we haven't yet done so.  Either way, call a callback
      * when we have settings.
@@ -105,13 +106,19 @@ const ConfigView = View.extend({
      *      fetched.  If the settings are already present, this is called
      *      without any delay.
      */
-    getSettings: function (callback) {
+    getSettings(callback) {
         if (!ConfigView.settings) {
             restRequest({
                 type: 'GET',
-                url: 'large_image/settings'
+                url: 'system/setting',
+                data: {
+                    list: JSON.stringify(['slicer_cli_web.task_folder'])
+                }
             }).done((resp) => {
-                ConfigView.settings = resp;
+                const settings = {
+                    task_folder: resp['slicer_cli_web.task_folder']
+                };
+                ConfigView.settings = settings;
                 if (callback) {
                     callback(ConfigView.settings);
                 }
@@ -126,7 +133,7 @@ const ConfigView = View.extend({
     /**
      * Clear the settings so that getSettings will refetch them.
      */
-    clearSettings: function () {
+    clearSettings() {
         delete ConfigView.settings;
     }
 });

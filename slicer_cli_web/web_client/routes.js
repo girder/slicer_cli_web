@@ -6,6 +6,6 @@ import ConfigView from './views/ConfigView';
 
 exposePluginConfig('slicer_cli_web', 'plugins/slicer_cli_web/config');
 
-router.route('plugins/slicer_cli_web/config', 'slicerCLIWebConfig', function () {
+router.route('plugins/slicer_cli_web/config', 'slicerCLIWebConfig', () => {
     events.trigger('g:navigateTo', ConfigView);
 });

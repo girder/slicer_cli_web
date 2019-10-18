@@ -16,26 +16,40 @@
 #  limitations under the License.
 #############################################################################
 
+from girder.api.rest import getCurrentUser
+from girder.models.folder import Folder
+from girder.constants import AccessType
 from girder.models.setting import Setting
 from girder.utility import setting_utilities
+from girder.exceptions import ValidationException
 from girder.settings import SettingDefault
 
 
 # Constants representing the setting keys for this plugin
 class PluginSettings(object):
-    SLICER_CLI_WEB_DEFAULT_TASK_FOLDER = 'slicer_cli_web.task_folder'
+    SLICER_CLI_WEB_TASK_FOLDER = 'slicer_cli_web.task_folder'
 
     @staticmethod
-    def get_default_folder():
-        return Setting().get(PluginSettings.SLICER_CLI_WEB_DEFAULT_TASK_FOLDER)
+    def has_task_folder():
+        return Setting().get(PluginSettings.SLICER_CLI_WEB_TASK_FOLDER) is not None
+
+    @staticmethod
+    def get_task_folder():
+        folder = Setting().get(PluginSettings.SLICER_CLI_WEB_TASK_FOLDER)
+        if not folder:
+            return None
+        return Folder().load(folder, level=AccessType.WRITE, user=getCurrentUser())
 
 
 @setting_utilities.validator({
-    PluginSettings.SLICER_CLI_WEB_DEFAULT_TASK_FOLDER
+    PluginSettings.SLICER_CLI_WEB_TASK_FOLDER
 })
 def validateFolder(doc):
-    # TODO
-    doc['value'] = str(doc['value']).strip()
+    if not doc['value']:
+        return
+    folder = Folder().load(doc['value'], level=AccessType.WRITE, user=getCurrentUser())
+    if not folder:
+        raise ValidationException('invalid folder selected')
 
 
 # Defaults
@@ -43,5 +57,5 @@ def validateFolder(doc):
 # Defaults that have fixed values can just be added to the system defaults
 # dictionary.
 SettingDefault.defaults.update({
-    PluginSettings.SLICER_CLI_WEB_DEFAULT_TASK_FOLDER: None
+    PluginSettings.SLICER_CLI_WEB_TASK_FOLDER: None
 })

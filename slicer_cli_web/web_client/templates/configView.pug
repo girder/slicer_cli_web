@@ -3,13 +3,15 @@ p.g-slicer-cli-web-description
   | A girder plugin for exposing slicer CLIs over the web
 form#g-slicer-cli-web-form(role="form")
   .form-group
-    label Default Task Upload Folder
-    p.g-slicer-cli-web-description
-      | TODO
-    input.input-sm.form-control.g-slicer-cli-web-upload-folder(
-      type="text", value=settings['slicer_cli_web.task_folder'],
-      placeholder='TODO',
-      title='TODO')
+    label(for="g-slicer-cli-web-upload-folder") Default Task Upload Folder
+    .input-group.input-group-sm
+      input#g-slicer-cli-web-upload-folder.form-control.input-sm(
+          value=settings.task_folder
+          type="text",
+          placeholder="Existing folder to use as the default task upload folder")
+      .input-group-btn
+        button.g-open-browser.btn.btn-default(type="button")
+          i.icon-folder-open
 
   p#g-slicer-cli-web-error-message.g-validation-failed-message
   input.btn.btn-sm.btn-primary(type="submit", value="Save")
