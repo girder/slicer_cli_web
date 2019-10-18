@@ -10,4 +10,10 @@ export function showJobSuccessAlert(job) {
       </div>`);
   $('#g-alerts-container').append(el);
   el.fadeIn(500);
+
+  window.setTimeout(function () {
+    el.fadeOut(750, function () {
+      $(this).remove();
+    });
+  }, 20000);
 }

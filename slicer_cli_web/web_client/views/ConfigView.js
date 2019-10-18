@@ -7,7 +7,7 @@ import events from '@girder/core/events';
 
 import ConfigViewTemplate from '../templates/configView.pug';
 import '../stylesheets/configView.styl';
-import { showJobSuccessAlert } from './utils';
+import { showJobSuccessAlert, getSettings } from './utils';
 
 /**
  * Show the default quota settings for users and collections.
@@ -56,7 +56,7 @@ const ConfigView = View.extend({
             this.$('#g-slicer-cli-web-folder').val(val.id);
         });
 
-        ConfigView.getSettings((settings) => {
+        ConfigView.getSettings().then((settings) => {
             this.settings = settings;
             this.render();
         });
@@ -64,8 +64,7 @@ const ConfigView = View.extend({
 
     render() {
         this.$el.html(ConfigViewTemplate({
-            settings: this.settings,
-            viewers: ConfigView.viewers
+            settings: this.settings
         }));
         if (!this.breadcrumb) {
             this.breadcrumb = new PluginConfigBreadcrumbWidget({
@@ -117,6 +116,7 @@ const ConfigView = View.extend({
             },
             error: null
         }).done(() => {
+            ConfigView.clearSettingsCache();
             events.trigger('g:alert', {
                 icon: 'ok',
                 text: 'Settings saved.',
@@ -130,44 +130,26 @@ const ConfigView = View.extend({
         });
     }
 }, {
-    /* Class methods and objects */
-    /**
-     * Get settings if we haven't yet done so.  Either way, call a callback
-     * when we have settings.
-     *
-     * @param {function} callback a function to call after the settings are
-     *      fetched.  If the settings are already present, this is called
-     *      without any delay.
-     */
-    getSettings(callback) {
-        if (!ConfigView.settings) {
-            restRequest({
-                type: 'GET',
-                url: 'system/setting',
-                data: {
-                    list: JSON.stringify(['slicer_cli_web.task_folder'])
-                }
-            }).done((resp) => {
-                const settings = {
-                    task_folder: resp['slicer_cli_web.task_folder']
-                };
-                ConfigView.settings = settings;
-                if (callback) {
-                    callback(ConfigView.settings);
-                }
-            });
-        } else {
-            if (callback) {
-                callback(ConfigView.settings);
-            }
-        }
-    },
-
-    /**
-     * Clear the settings so that getSettings will refetch them.
-     */
-    clearSettings() {
+    clearSettingsCache() {
         delete ConfigView.settings;
+    },
+    getSettings() {
+        if (ConfigView.settings) {
+            return ConfigView.settings;
+        }
+        return ConfigView.settings = restRequest({
+            type: 'GET',
+            url: 'system/setting',
+            data: {
+                list: JSON.stringify(['slicer_cli_web.task_folder'])
+            }
+        }).then((resp) => {
+            const settings = {
+                task_folder: resp['slicer_cli_web.task_folder']
+            };
+
+            return settings;
+        });
     }
 });
 
