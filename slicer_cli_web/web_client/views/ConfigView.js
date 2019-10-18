@@ -80,11 +80,12 @@ const ConfigView = View.extend({
 
     _uploadImage(data) {
         /* Now submit */
+        const name = data.get('name').split(',').map((d) => d.trim()).filter((d) => d.length > 0);
         return restRequest({
             type: 'PUT',
             url: 'slicer_cli_web/slicer_cli_web/docker_image',
             data: {
-                name: data.get('name'),
+                name: JSON.stringify(name),
                 folder: data.get('folder')
             },
             error: null
