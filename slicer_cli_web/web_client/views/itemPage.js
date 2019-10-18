@@ -130,13 +130,21 @@ const SlicerUI = View.extend({
             method: 'POST',
             data: params
         }).then((data) => {
-            girderEvents.trigger('g:alert', {
-                icon: 'ok',
-                text: `<strong>Job submitted</strong>. Check the <a href="#" class="alert-link">Job status</a>.`,
-                type: 'success',
-                timeout: 5000
-            });
+            this.showSuccess(data);
             return null;
         });
+    },
+
+    showSuccess(job) {
+        // manual alert since the default doesn't support HTML body
+        const el = $(`
+        <div class="alert alert-dismissable alert-success">
+            <button class="close" type="button" data-dismiss="alert" aria-hidden="true"> &times; </button>
+            <i class="icon-ok"></i>
+            <strong>Job submitted</strong>. <br>
+            Check the <a href="/#job/${job._id}" class="alert-link">Job status</a>.
+        </div>`);
+        $('#g-alerts-container').append(el);
+        el.fadeIn(500);
     }
 });
