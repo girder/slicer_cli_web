@@ -6,6 +6,7 @@ import '../stylesheets/controlsPanel.styl';
 
 var ControlsPanel = Panel.extend({
     initialize: function (settings) {
+        this._disableRegionSelect = settings.disableRegionSelect;
         this.title = settings.title || '';
         this.advanced = settings.advanced || false;
         this.listenTo(this.collection, 'add', this.addOne);
@@ -26,6 +27,7 @@ var ControlsPanel = Panel.extend({
     addOne: function (model) {
         var view = new ControlWidget({
             model: model,
+            disableRegionSelect: this._disableRegionSelect,
             parentView: this
         });
         this.$('form').append(view.render().el);

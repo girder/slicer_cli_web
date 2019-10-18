@@ -1,10 +1,12 @@
 import _ from 'underscore';
 
 import { wrap } from '@girder/core/utilities/PluginUtils';
+import { restRequest } from '@girder/core/rest';
 import View from '@girder/core/views/View';
 import ItemView from '@girder/core/views/body/ItemView';
 import WidgetCollection from '../collections/WidgetCollection';
 import ControlsPanel from './ControlsPanel';
+import PanelGroup from './PanelGroup';
 import { parse } from '../parser';
 import slicerUI from '../templates/slicerUI.pug';
 import '../stylesheets/slicerUI.styl';
@@ -48,6 +50,7 @@ const SlicerUI = View.extend({
         }));
         this.panels.forEach((panel) => {
             this._panelViews[panel.id] = new ControlsPanel({
+                disableRegionSelect: true,
                 parentView: this,
                 collection: new WidgetCollection(panel.parameters),
                 title: panel.label,
@@ -94,8 +97,46 @@ const SlicerUI = View.extend({
         });
     },
 
+    generateParameters() {
+        return PanelGroup.prototype.parameters.call(this);
+    },
+
+    validate() {
+        const invalidModels = PanelGroup.prototype.models.call(this, undefined, (m) => {
+            return !m.isValid();
+        });
+        const alert = this.$('.s-validation-alert');
+        alert.toggleClass('hidden', invalidModels.length === 0);
+        alert.text(`Validation errors occurred for: ${invalidModels.map((d) => d.get('title')).join(', ')}`);
+
+        return invalidModels.length === 0;
+    },
+
 
     submit() {
+        if (!this.validate()) {
+            return;
+        }
+        const params = this.generateParameters();
+        _.each(params, (value, key) => {
+            if (Array.isArray(value)) {
+                params[key] = JSON.stringify(value);
+            }
+        });
 
+        // post the job to the server
+        restRequest({
+            url: `slicer_cli_web/${this.restPath}/run`,
+            method: 'POST',
+            data: params
+        }).then((data) => {
+            girderEvents.trigger('g:alert', {
+                icon: 'ok',
+                text: `<strong>Job submitted</strong>. Check the <a href="#" class="alert-link">Job status</a>.`,
+                type: 'success',
+                timeout: 5000
+            });
+            return null;
+        });
     }
 });

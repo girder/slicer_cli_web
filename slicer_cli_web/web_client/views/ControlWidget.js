@@ -27,7 +27,8 @@ var ControlWidget = View.extend({
         'click .s-select-region-button': '_selectRegion'
     },
 
-    initialize: function () {
+    initialize: function (settings) {
+        this._disableRegionSelect = settings.disableRegionSelect === true;
         this.listenTo(this.model, 'change', this.change);
         this.listenTo(this.model, 'destroy', this.remove);
         this.listenTo(this.model, 'invalid', this.invalid);
@@ -42,7 +43,10 @@ var ControlWidget = View.extend({
         if (options && options.norender) {
             return this;
         }
-        this.$el.html(this.template()(this.model.attributes)); // eslint-disable-line backbone/no-view-model-attributes
+        const params = Object.assign({
+            disableRegionSelect: this._disableRegionSelect
+        }, this.model.attributes);
+        this.$el.html(this.template()(params)); // eslint-disable-line backbone/no-view-model-attributes
         this.$('.s-control-item[data-type="range"] input').slider();
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
