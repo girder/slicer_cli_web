@@ -51,8 +51,11 @@ const SlicerUI = View.extend({
         }));
         this.panels.forEach((panel) => {
             this._panelViews[panel.id] = new ControlsPanel({
-                disableRegionSelect: true,
-                setDefaultOutput: this.taskModel.get('name'),
+                controlWidget: {
+                    disableRegionSelect: true,
+                    setDefaultOutput: this.taskModel.get('name'),
+                    rootPath: false,
+                },
                 parentView: this,
                 collection: new WidgetCollection(panel.parameters),
                 title: panel.label,

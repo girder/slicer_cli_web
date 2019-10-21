@@ -2,6 +2,7 @@ import _ from 'underscore';
 
 import { getCurrentUser } from '@girder/core/auth';
 import HierarchyWidget from '@girder/core/views/widgets/HierarchyWidget';
+import RootSelectorWidget from '@girder/core/views/widgets/RootSelectorWidget';
 import View from '@girder/core/views/View';
 import ItemModel from '@girder/core/models/ItemModel';
 import FileModel from '@girder/core/models/FileModel';
@@ -19,9 +20,41 @@ var ItemSelectorWidget = View.extend({
             this.model = new ItemModel();
         }
         this.rootPath = settings.rootPath || getCurrentUser();
+        if (settings.rootPath === false) {
+            // explictly set to choose a root
+            this.rootPath = null;
+        }
+
+        if (!this.rootPath) {
+            // generate the root selection view and listen to it's events
+            this._rootSelectionView = new RootSelectorWidget(_.extend({
+                parentView: this
+            }, settings.rootSelectorSettings));
+            this.listenTo(this._rootSelectionView, 'g:selected', function (evt) {
+                this.rootPath = evt.root;
+                this._renderHierarchyView();
+            });
+        }
     },
 
     render: function () {
+        this.$el.html(
+            itemSelectorWidget(this.model.attributes) // eslint-disable-line backbone/no-view-model-attributes
+        ).girderModal(this);
+        this._renderRootSelection();
+        return this;
+    },
+
+    _renderHierarchyView: function () {
+        if (this._hierarchyView) {
+            this.stopListening(this._hierarchyView);
+            this._hierarchyView.off();
+            this.$('.s-hierarchy-widget-container').empty();
+        }
+        if (!this.rootPath) {
+            return;
+        }
+        this.$('.g-wait-for-root').removeClass('hidden');
         this._hierarchyView = new HierarchyWidget({
             parentView: this,
             parentModel: this.rootPath,
@@ -33,13 +66,14 @@ var ItemSelectorWidget = View.extend({
             viewLinks: false,
             onItemClick: _.bind(this._selectItem, this)
         });
+        this._hierarchyView.setElement(this.$('.s-hierarchy-widget-container')).render();
+    },
 
-        this.$el.html(
-            itemSelectorWidget(this.model.attributes) // eslint-disable-line backbone/no-view-model-attributes
-        ).girderModal(this);
-
-        this._hierarchyView.setElement(this.$('.s-hierarchy-widget')).render();
-        return this;
+    _renderRootSelection: function () {
+        if (this._rootSelectionView) {
+            this._rootSelectionView.setElement(this.$('.s-hierarchy-root-container')).render();
+        }
+        this._renderHierarchyView();
     },
 
     /**

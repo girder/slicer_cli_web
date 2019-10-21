@@ -33,6 +33,7 @@ var ControlWidget = View.extend({
 
     initialize: function (settings) {
         this._disableRegionSelect = settings.disableRegionSelect === true;
+        this._rootPath = settings.rootPath;
         this.listenTo(this.model, 'change', this.change);
         this.listenTo(this.model, 'destroy', this.remove);
         this.listenTo(this.model, 'invalid', this.invalid);
@@ -237,7 +238,8 @@ var ControlWidget = View.extend({
         var modal = new ItemSelectorWidget({
             el: $('#g-dialog-container'),
             parentView: this,
-            model: this.model
+            model: this.model,
+            rootPath: this._rootPath,
         });
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
