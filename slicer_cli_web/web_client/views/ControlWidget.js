@@ -1,7 +1,11 @@
 import _ from 'underscore';
+import moment from 'moment';
 
 import View from '@girder/core/views/View';
 import events from '@girder/core/events';
+import { getCurrentUser } from '@girder/core/auth';
+import FolderCollection from '@girder/core/collections/FolderCollection';
+import ItemModel from '@girder/core/models/ItemModel';
 
 import ItemSelectorWidget from './ItemSelectorWidget';
 
@@ -35,6 +39,67 @@ var ControlWidget = View.extend({
         this.listenTo(events, 's:widgetSet:' + this.model.id, (value) => {
             this.model.set('value', value);
         });
+
+        this._initModel(settings);
+    },
+
+    _initModel(settings) {
+        if (!settings.setDefaultOutput) {
+            return;
+        }
+
+        const prefix = settings.setDefaultOutput;
+        const model = this.model;
+        const type = model.get('type');
+        const channel = model.get('channel');
+        const required = model.get('required');
+        if (!required || channel !== 'output' || !['new-file', 'file', 'item', 'directory'].includes(type)) {
+            return;
+        }
+        this._getDefaultOutputFolder().then((folder) => {
+            if (!folder) {
+                return;
+            }
+            const extension = (model.get('extensions') || '').split('|')[0];
+            const modelName = model.get('id') === 'returnparameterfile' ? '' : `-${model.get('title')}`;
+            const reference = this._findReference();
+            if (reference) {
+                this.listenTo(reference, 'change', () => {
+                    const value = reference.get('value');
+                    if (value && value.get('name')) {
+                        let refName = value.get('name');
+                        if (refName.includes('.')) {
+                            refName = refName.slice(0, refName.lastIndexOf('.'));
+                        }
+                        const name = `${refName}-${prefix}${modelName}-${moment().local().format()}${extension}`;
+                        this._setValue(folder, name);
+                    }
+                });
+            } else {
+                const name = `${prefix}${modelName}-${moment().local().format()}${extension}`;
+                this._setValue(folder, name);
+            }
+        });
+    },
+
+    _setValue(folder, name) {
+        this.model.set({
+            path: [folder.get('name'), name],
+            parent: folder,
+            value: new ItemModel({
+                name,
+                folderId: folder.id
+            })
+        });
+    },
+
+    _findReference() {
+        const ref = this.model.get('reference');
+        if (!ref) {
+            return null;
+        }
+        // ref is an id of another model
+        return this.model.collection.find((d) => d.get('id') === ref);
     },
 
     render: function (_, options) {
@@ -177,6 +242,33 @@ var ControlWidget = View.extend({
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
         }).render();
+    },
+
+    _getDefaultOutputFolder() {
+        const user = getCurrentUser();
+        if (!user) {
+            return Promise.resolve(null);
+        }
+        const userFolders = new FolderCollection();
+        // find first private one
+        return userFolders.fetch({
+            parentId: user.id,
+            parentType: 'user',
+            public: false,
+            limit: 1
+        }).then(() => {
+            if (!userFolders.isEmpty()) {
+                return userFolders.at(0);
+            }
+            // find first one including public
+            return userFolders.fetch({
+                parentId: user.id,
+                parentType: 'user',
+                limit: 1
+            }).then(() => {
+                return userFolders.isEmpty() ? null : userFolders.at(0);
+            });
+        });
     },
 
     /**
