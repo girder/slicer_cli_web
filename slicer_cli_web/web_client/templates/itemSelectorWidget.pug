@@ -4,11 +4,12 @@
       .modal-header
         button.close(data-dismiss="modal", aria-hidden="true", type="button") &times;
         - var t = type === 'new-file' ? 'directory' : type;
+        - var article = type === 'image' || type === 'item' ? 'an' : 'a';
         - var name = title ? ' for "' + title + '"' : '';
         if value && value.name
           - value = value.name()
         h4.modal-title
-          | Select a #{t}#{name}
+          | Select #{article} #{t}#{name}
       .modal-body(
         data-target-id=id)
         .alert.alert-danger.s-modal-error.hidden
