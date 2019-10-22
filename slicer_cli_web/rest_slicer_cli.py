@@ -31,6 +31,8 @@ def _getParamDefaultVal(param):
         return None
     elif param.isExternalType():
         return None
+    elif param.typ == 'float' or param.typ == 'integer':
+        return 0
     else:
         raise Exception(
             'optional parameters of type %s must '

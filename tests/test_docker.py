@@ -67,6 +67,7 @@ class ImageHelper(object):
         resp = self.server.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
                                    user=self.admin)
         assertStatus(resp, 200)
+
         return json.loads(getResponseBody(resp))
 
     def assertNoImages(self):
@@ -145,9 +146,8 @@ class ImageHelper(object):
         if responseCodeOK:
             assertStatus(resp, 200)
         else:
-            assertStatus(resp, 200)
-            raise AssertionError('A status ok or code 200 should not have been '
-                                 'recieved for deleting the image %s' % str(name))
+            assertStatus(resp, 400)
+            # A status ok or code 200 should not have been recieved for deleting the image %s' % str(name))
 
         if deleteDockerImage:
             if not event.wait(TIMEOUT):
@@ -180,7 +180,8 @@ class ImageHelper(object):
 
                 events.unbind('jobs.job.update.after', 'slicer_cli_web_add')
 
-                event.set()
+                # wait 10sec before continue
+                threading.Timer(5, lambda: event.set()).start()
 
         if initialStatus == 200:
             self.addHandler = types.MethodType(tempListener, self)
@@ -231,12 +232,12 @@ def testDockerAdd(images):
     images.addImage(img_name, JobStatus.SUCCESS)
     images.imageIsLoaded(img_name, True)
     images.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
-    images.deleteImage(img_name, False)
+    images.deleteImage(img_name, True)
     images.assertNoImages()
 
 
 @pytest.mark.plugin('slicer_cli_web')
-def testDockerAddBadParam(server, admin):
+def testDockerAddBadParam(server, admin, folder):
     # test sending bad parameters to the PUT endpoint
     kwargs = {
         'path': '/slicer_cli_web/slicer_cli_web/docker_image',
@@ -271,7 +272,7 @@ def testDockerAddList(images):
     images.assertNoImages()
     images.addImage([img_name], JobStatus.SUCCESS)
     images.imageIsLoaded(img_name, True)
-    images.deleteImage(img_name, False)
+    images.deleteImage(img_name, True)
     images.assertNoImages()
 
 
@@ -353,7 +354,7 @@ def testXmlEndpoint(images, server, admin):
                 xmlString = getResponseBody(resp)
                 # TODO validate with xml schema
                 assert xmlString != ''
-    images.deleteImage(img_name, False, )
+    images.deleteImage(img_name, True, )
 
 
 @pytest.mark.plugin('slicer_cli_web')
@@ -375,7 +376,6 @@ def testEndpointDeletion(images, server, admin):
                     isJson=False)
                 # xml route should have been deleted
                 assertStatus(resp, 400)
-    images.deleteImage(img_name, False, )
 
 
 @pytest.mark.plugin('slicer_cli_web')

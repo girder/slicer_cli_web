@@ -86,7 +86,7 @@ class DockerResource(Resource):
 
         for cli in dockerImage.getCLIs():
             if cli.name not in endpointData:
-                logger.warning('"%s" not present in endpoint data.' % cli)
+                logger.warning('"%s" not present in endpoint data.' % cli.name)
                 continue
             data[cli.name] = {}
 
@@ -135,11 +135,14 @@ class DockerResource(Resource):
             docker rmi -f <image> )
         :type name: boolean
         """
+        removed = DockerImageItem.removeImages(names, self.getCurrentUser())
+        if removed != names:
+            raise RestException('Some docker images could not be removed. %s' % ([name for name in names if name not in removed]))
+        self.deleteImageEndpoints(removed)
+
         try:
-            removed = DockerImageItem.removeImages(names, self.getCurrentUser())
-            self.deleteImageEndpoints(removed)
             if deleteImage:
-                self._deleteDockerImage(removed)
+                self._deleteDockerImages(removed)
         except DockerImageNotFoundError as err:
             raise RestException('Invalid docker image name. ' + str(err))
 
