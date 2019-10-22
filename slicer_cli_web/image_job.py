@@ -164,7 +164,7 @@ def jobPullAndLoad(job):
             jobModel.updateJob(
                 job,
                 log='could not find the following '
-                    'images\n'+'\n'.join(notExistSet)+'\n',
+                    'images\n' + '\n'.join(notExistSet) + '\n',
                 status=JobStatus.ERROR,
             )
         images, loadingError = loadMetadata(jobModel, job, docker_client, pullList,

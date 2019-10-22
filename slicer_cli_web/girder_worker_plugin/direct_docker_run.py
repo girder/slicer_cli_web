@@ -8,7 +8,9 @@ from girder_worker.docker.tasks import docker_run, DockerTask
 from girder_worker_utils import _walk_obj
 
 
-def _get_basename(direct_path):
+def _get_basename(filename, direct_path):
+    if filename:
+        return filename
     if not direct_path:
         return None
     return basename(direct_path)
@@ -19,10 +21,9 @@ TEMP_VOLUME_DIRECT_MOUNT_PREFIX = '/mnt/girder_direct_worker'
 
 class DirectGirderFileIdToVolume(GirderFileIdToVolume):
     def __init__(self, _id, filename=None, direct_file_path=None, **kwargs):
-        super(DirectGirderFileIdToVolume, self).__init__(_id,
-                                                         filename=filename or
-                                                         _get_basename(direct_file_path),
-                                                         **kwargs)
+        superc = super(DirectGirderFileIdToVolume, self)
+        superc.__init__(_id, filename=_get_basename(filename, direct_file_path),
+                        **kwargs)
         self._direct_file_path = direct_file_path
         self._direct_container_path = None
 

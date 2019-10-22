@@ -19,7 +19,7 @@ class DockerImageError(Exception):
 
 
 class DockerImageNotFoundError(DockerImageError):
-    def __init__(self, message, image_name, locations=[]):
+    def __init__(self, message, image_name, locations=None):
         super(DockerImageNotFoundError, self).__init__(message, image_name)
         # list of registries tried(local dockerhub etc )
-        self.locations = locations
+        self.locations = locations or []

@@ -289,7 +289,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
 
         cliSuffix = os.path.normpath(cli.name).replace(os.sep, '_')
 
-        cliRunHandlerName = restPath+'_run_' + cliSuffix
+        cliRunHandlerName = restPath + '_run_' + cliSuffix
         setattr(restResource, cliRunHandlerName, cliRunHandler)
         restResource.route('POST',
                            (restPath, cli.name, 'run'),
@@ -313,7 +313,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
             logger.error('%r', [exc_type, fname, exc_tb.tb_lineno])
             continue
 
-        cliGetXMLSpecHandlerName = restPath+'_get_xml_' + cliSuffix
+        cliGetXMLSpecHandlerName = restPath + '_get_xml_' + cliSuffix
         setattr(restResource,
                 cliGetXMLSpecHandlerName,
                 cliGetXMLSpecHandler)

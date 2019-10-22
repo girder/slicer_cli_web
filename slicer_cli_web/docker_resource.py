@@ -281,9 +281,9 @@ class DockerResource(Resource):
             imageList = six.iterkeys(self.currentEndpoints)
         for imageName in list(imageList):
             if imageName in self.currentEndpoints:
-                for (cli, val) in six.iteritems(
+                for val in six.itervalues(
                         self.currentEndpoints[imageName]):
-                    for (operation, endpoint) in six.iteritems(val):
+                    for endpoint in six.itervalues(val):
                         try:
                             self.removeRoute(endpoint[0], endpoint[1],
                                              getattr(self, endpoint[2]))

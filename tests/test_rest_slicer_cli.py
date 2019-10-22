@@ -1,39 +1,38 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
-
-from tests import base
-
-
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('slicer_cli_web')
-    base.startServer()
+import pytest
 
 
-def tearDownModule():
-    base.stopServer()
+@pytest.fixture
+def folder(admin):
+    from girder.models.folder import Folder
+    f = Folder().createFolder(admin, 'folder', parentType='user')
+
+    yield f
 
 
-class RestSlicerCLITest(base.TestCase):
-    def setUp(self):
+@pytest.fixture
+def item(folder, admin):
+    from girder.models.item import Item
+    f = Item().createItem('item', admin, folder)
+
+    yield f
+
+
+@pytest.fixture
+def file(item, admin, fsAssetstore):
+    from girder.models.file import File
+    f = File().createFile(admin, item, 'file', 7, fsAssetstore)
+
+    yield f
+
+
+class TestClass:
+    def setup_method(self, method):
         import datetime
 
         from girder.api import rest
         import girder_worker
         from girder_worker import utils as worker_utils
-        from girder.models.file import File
-        from girder.models.folder import Folder
-        from girder.models.item import Item
-        from girder.models.user import User
-
-        base.TestCase.setUp(self)
-
-        self.admin = User().createUser('admin', 'passwd', 'admin', 'admin', 'a@d.min')
-        self.folder = Folder().createFolder(self.admin, 'folder', parentType='user')
-        self.item = Item().createItem('item', self.admin, self.folder)
-        self.file = File().createFile(self.admin, self.item, 'file', 7, self.assetstore)
 
         # Mock several functions so we can fake creating jobs
         def getCurrentToken():
@@ -54,7 +53,7 @@ class RestSlicerCLITest(base.TestCase):
         rest.setCurrentUser(self.admin)
         girder_worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = getWorkerApiUrl
 
-    def tearDown(self):
+    def teardown_method(self, method):
         from girder.api import rest
         import girder_worker
         from girder_worker import utils as worker_utils
@@ -63,9 +62,9 @@ class RestSlicerCLITest(base.TestCase):
         rest.getApiUrl = self._origRestGetApiUrl
         girder_worker.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
         worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
-        base.TestCase.tearDown(self)
 
-    def test_genHandlerToRunDockerCLI(self):
+    @pytest.mark.plugin('sclicer_cli_web')
+    def test_genHandlerToRunDockerCLI(self, admin, folder, file):
         from slicer_cli_web import docker_resource
         from slicer_cli_web import rest_slicer_cli
         from slicer_cli_web.models import CLIItem
@@ -73,7 +72,7 @@ class RestSlicerCLITest(base.TestCase):
 
         xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
 
-        girderCLIItem = Item().createItem('data', self.admin, self.folder)
+        girderCLIItem = Item().createItem('data', admin, folder)
         Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python',
                                                xml=open(xmlpath, 'rb').read()))
 
@@ -81,27 +80,26 @@ class RestSlicerCLITest(base.TestCase):
         item = CLIItem(girderCLIItem)
         handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
             'dockerImage', CLIItem(item), resource)
-        self.assertIsNotNone(handlerFunc)
+        assert handlerFunc is not None
 
         job = handlerFunc(params={
-            'inputImageFile': str(self.file['_id']),
-            'secondImageFile': str(self.file['_id']),
-            'outputStainImageFile_1_folder': str(self.folder['_id']),
+            'inputImageFile': str(file['_id']),
+            'secondImageFile': str(file['_id']),
+            'outputStainImageFile_1_folder': str(folder['_id']),
             'outputStainImageFile_1': 'sample1.png',
-            'outputStainImageFile_2_folder': str(self.folder['_id']),
+            'outputStainImageFile_2_folder': str(folder['_id']),
             'outputStainImageFile_2_name': 'sample2.png',
             'stainColor_1': '[0.5, 0.5, 0.5]',
             'stainColor_2': '[0.2, 0.3, 0.4]',
-            'returnparameterfile_folder': str(self.folder['_id']),
+            'returnparameterfile_folder': str(folder['_id']),
             'returnparameterfile': 'output.data',
         })
 
-        self.assertHasKeys(
-            job['kwargs'],
-            ['container_args', 'image', 'pull_image'])
+        assert 'container_args' in job['kwargs']
+        assert 'image' in job['kwargs']
+        assert 'pull_image' in job['kwargs']
 
-        self.assertEqual(job['kwargs']['image'], 'dockerImage')
-        self.assertEqual(job['kwargs']['pull_image'], False)
+        assert job['kwargs']['image'] == 'dockerImage'
+        assert not job['kwargs']['pull_image']
         container_args = job['kwargs']['container_args']
-        self.assertEqual(container_args[0], 'data')
-        # TODO
+        assert container_args[0] == 'data'
