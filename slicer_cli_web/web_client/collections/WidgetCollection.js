@@ -33,7 +33,7 @@ var WidgetCollection = Backbone.Collection.extend({
                 case 'double':
                 case 'string-enumeration':
                     params[m.id] = m.value();
-                    break
+                    break;
                 default:
                     params[m.id] = JSON.stringify(m.value());
             }

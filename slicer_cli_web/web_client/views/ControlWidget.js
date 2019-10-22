@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import _ from 'underscore';
 import moment from 'moment';
 
@@ -26,7 +27,7 @@ import 'bootstrap-slider/dist/css/bootstrap-slider.css';
 var ControlWidget = View.extend({
     events: {
         'change input,select': '_input',
-        'changeColor': '_input',
+        changeColor: '_input',
         'click .s-select-file-button': '_selectFile',
         'click .s-select-region-button': '_selectRegion'
     },
@@ -59,7 +60,7 @@ var ControlWidget = View.extend({
         }
         this._getDefaultOutputFolder().then((folder) => {
             if (!folder) {
-                return;
+                return null;
             }
             const extension = (model.get('extensions') || '').split('|')[0];
             const modelName = model.get('id') === 'returnparameterfile' ? '' : `-${model.get('title')}`;
@@ -80,6 +81,7 @@ var ControlWidget = View.extend({
                 const name = `${prefix}${modelName}-${moment().local().format()}${extension}`;
                 this._setValue(folder, name);
             }
+            return null;
         });
     },
 
@@ -239,7 +241,7 @@ var ControlWidget = View.extend({
             el: $('#g-dialog-container'),
             parentView: this,
             model: this.model,
-            rootPath: this._rootPath,
+            rootPath: this._rootPath
         });
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
@@ -249,7 +251,7 @@ var ControlWidget = View.extend({
     _getDefaultOutputFolder() {
         const user = getCurrentUser();
         if (!user) {
-            return Promise.resolve(null);
+            return $.Deferred().resolve(null).promise();
         }
         const userFolders = new FolderCollection();
         // find first private one
@@ -260,16 +262,16 @@ var ControlWidget = View.extend({
             limit: 1
         }).then(() => {
             if (!userFolders.isEmpty()) {
-                return userFolders.at(0);
+                return userFolders;
             }
             // find first one including public
             return userFolders.fetch({
                 parentId: user.id,
                 parentType: 'user',
                 limit: 1
-            }).then(() => {
-                return userFolders.isEmpty() ? null : userFolders.at(0);
             });
+        }).then(() => {
+            return userFolders.isEmpty() ? null : userFolders.at(0);
         });
     },
 

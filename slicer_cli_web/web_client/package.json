@@ -183,6 +183,6 @@
     "stylint": "^2.0.0"
   },
   "scripts": {
-    "lint": "eslint --cache . && pug-lint . && stylint"
+    "lint": "eslint --cache --fix . && pug-lint . && stylint"
   }
 }

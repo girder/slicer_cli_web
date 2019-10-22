@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import _ from 'underscore';
 
 import View from '@girder/core/views/View';
@@ -210,7 +211,7 @@ var PanelGroup = View.extend({
             this._submit = path + '/run';
             this._schema(xml);
             events.trigger('h:analysis', path, xml);
-        };
+        }
         if (xml) {
             return process.call(this, xml);
         }

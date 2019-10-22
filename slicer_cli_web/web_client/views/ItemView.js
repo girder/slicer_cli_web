@@ -1,9 +1,11 @@
+import $ from 'jquery';
 import _ from 'underscore';
 
 import { wrap } from '@girder/core/utilities/PluginUtils';
 import { restRequest } from '@girder/core/rest';
 import View from '@girder/core/views/View';
 import ItemView from '@girder/core/views/body/ItemView';
+
 import WidgetCollection from '../collections/WidgetCollection';
 import ControlsPanel from './ControlsPanel';
 import PanelGroup from './PanelGroup';
@@ -28,12 +30,12 @@ wrap(ItemView, 'render', function (render) {
         });
         this.slicerCLIPanel.render();
     });
-    render.call(this);
+    return render.call(this);
 });
 
 const SlicerUI = View.extend({
     events: {
-        'click .s-info-panel-submit': 'submit',
+        'click .s-info-panel-submit': 'submit'
     },
     initialize(settings) {
         this.panels = [];
@@ -54,7 +56,7 @@ const SlicerUI = View.extend({
                 controlWidget: {
                     disableRegionSelect: true,
                     setDefaultOutput: this.taskModel.get('name'),
-                    rootPath: false,
+                    rootPath: false
                 },
                 parentView: this,
                 collection: new WidgetCollection(panel.parameters),
@@ -64,6 +66,7 @@ const SlicerUI = View.extend({
             });
             this._panelViews[panel.id].render();
         });
+        return this;
     },
 
     loadModel() {
@@ -117,7 +120,6 @@ const SlicerUI = View.extend({
         return invalidModels.length === 0;
     },
 
-
     submit() {
         if (!this.validate()) {
             return;
@@ -138,7 +140,6 @@ const SlicerUI = View.extend({
             showJobSuccessAlert(data);
             return null;
         });
-    },
-
+    }
 
 });

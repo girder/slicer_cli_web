@@ -6,5 +6,5 @@ import './views/ItemView';
 import './views/CollectionView';
 
 // expose symbols under girder.plugins
-import * as slicer_cli_web from './index';
-registerPluginNamespace('slicer_cli_web', slicer_cli_web);
+import * as slicerCLIWeb from './index';
+registerPluginNamespace('slicer_cli_web', slicerCLIWeb);

@@ -1,8 +1,10 @@
+import $ from 'jquery';
 import { wrap } from '@girder/core/utilities/PluginUtils';
 import { restRequest } from '@girder/core/rest';
 import View from '@girder/core/views/View';
 import CollectionView from '@girder/core/views/body/CollectionView';
 import HierarchyWidget from '@girder/core/views/widgets/HierarchyWidget';
+
 import UploadImageDialogTemplate from '../templates/uploadImageDialog.pug';
 import { showJobSuccessAlert } from './utils';
 import ConfigView from './ConfigView';
@@ -32,10 +34,10 @@ wrap(HierarchyWidget, 'render', function (render) {
             if (settings.task_folder === this.parentModel.id) {
                 injectUploadImageButton.call(this);
             }
+            return null;
         });
     }
 });
-
 
 const UploadImageDialog = View.extend({
     events: {
@@ -43,11 +45,12 @@ const UploadImageDialog = View.extend({
             e.preventDefault();
             this.$('#g-slicer-cli-web-error-upload-message').empty();
             this._uploadImage(new FormData(e.currentTarget));
-        },
+        }
     },
     render() {
         this.$el.html(UploadImageDialogTemplate());
         this.$el.girderModal(this);
+        return this;
     },
 
     _uploadImage(data) {
@@ -57,7 +60,7 @@ const UploadImageDialog = View.extend({
             type: 'PUT',
             url: 'slicer_cli_web/slicer_cli_web/docker_image',
             data: {
-                name: JSON.stringify(name),
+                name: JSON.stringify(name)
             },
             error: null
         }).done((job) => {
@@ -68,5 +71,5 @@ const UploadImageDialog = View.extend({
                 resp.responseJSON.message
             );
         });
-    },
+    }
 });

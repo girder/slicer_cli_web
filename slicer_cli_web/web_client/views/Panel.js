@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import View from '@girder/core/views/View';
 
 import panel from '../templates/panel.pug';

@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import _ from 'underscore';
 
 import widget from './widget';
@@ -26,9 +27,9 @@ function param(paramTag, opts = {}) {
 
     if ((type === 'file' || type === 'image') && channel === 'output') {
         type = 'new-file';
-        extra['extensions'] = $param.attr('fileExtensions');
+        extra.extensions = $param.attr('fileExtensions');
         extra.reference = $param.attr('reference');
-        extra['required'] = $param.find('index').text().length > 0;
+        extra.required = $param.find('index').text().length > 0;
     } else if (channel === 'output') {
         opts.output = true;
         opts.params = _.extend(opts.params || {}, {

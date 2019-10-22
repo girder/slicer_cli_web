@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import View from '@girder/core/views/View';
 
 import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
@@ -7,7 +8,7 @@ import events from '@girder/core/events';
 
 import ConfigViewTemplate from '../templates/configView.pug';
 import '../stylesheets/configView.styl';
-import { showJobSuccessAlert, getSettings } from './utils';
+import { showJobSuccessAlert } from './utils';
 
 /**
  * Show the default quota settings for users and collections.
@@ -38,7 +39,7 @@ const ConfigView = View.extend({
             helpText: 'Browse to a location to select it as the upload folder.',
             submitText: 'Select Folder',
             validate: function (model) {
-                let isValid = $.Deferred();
+                const isValid = $.Deferred();
                 if (!model) {
                     isValid.reject('Please select a valid root.');
                 } if (model.get('_modelType') !== 'folder') {
@@ -59,6 +60,7 @@ const ConfigView = View.extend({
         ConfigView.getSettings().then((settings) => {
             this.settings = settings;
             this.render();
+            return null;
         });
     },
 
@@ -137,7 +139,7 @@ const ConfigView = View.extend({
         if (ConfigView.settings) {
             return ConfigView.settings;
         }
-        return ConfigView.settings = restRequest({
+        ConfigView.settings = restRequest({
             type: 'GET',
             url: 'system/setting',
             data: {
@@ -150,6 +152,7 @@ const ConfigView = View.extend({
 
             return settings;
         });
+        return ConfigView.settings;
     }
 });
 
