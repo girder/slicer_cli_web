@@ -17,32 +17,11 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
+import pytest
+
+from girder.plugin import loadedPlugins
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('slicer_cli_web')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
-# Test import of slicer_cli_web
-class ImportPackageTest(base.TestCase):
-    def test_rest_slicer_cli(self):
-        from slicer_cli_web import rest_slicer_cli  # noqa
-
-    def test_docker_resource(self):
-        from slicer_cli_web import docker_resource  # noqa
-
-    def test_image_job(self):
-        from slicer_cli_web import image_job  # noqa
-
-    def test_direct_docker_run(self):
-        from slicer_cli_web.girder_worker_plugin import direct_docker_run  # noqa
-
-    def test_cli_list_entrypoint(self):
-        from .slicer_cli_web import cli_list_entrypoint  # noqa
+@pytest.mark.plugin('slicer_cli_web')
+def test_import(server):
+    assert 'slicer_cli_web' in loadedPlugins()

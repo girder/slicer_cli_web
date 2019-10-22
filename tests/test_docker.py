@@ -17,13 +17,13 @@
 #  limitations under the License.
 ###############################################################################
 
+import pytest
 import docker
 import json
 import six
 import threading
 import types
 
-from tests import base
 from girder import events
 
 # boiler plate to start and stop the server

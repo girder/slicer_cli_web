@@ -1,9 +1,12 @@
+/* globals girderTest, describe, it, waitsFor */
+
 girderTest.importPlugin('jobs', 'worker', 'slicer_cli_web');
 
 var parser;
 girderTest.promise.done(function () {
     parser = girder.plugins.slicer_cli_web.parser;
 });
+
 
 describe('XML Schema parser', function () {
     describe('type conversion', function () {
