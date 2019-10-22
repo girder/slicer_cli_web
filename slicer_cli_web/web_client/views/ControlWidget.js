@@ -111,8 +111,8 @@ var ControlWidget = View.extend({
         }
         const params = Object.assign({
             disableRegionSelect: this._disableRegionSelect
-        }, this.model.attributes);
-        this.$el.html(this.template()(params)); // eslint-disable-line backbone/no-view-model-attributes
+        }, this.model.toJSON());
+        this.$el.html(this.template()(params));
         this.$('.s-control-item[data-type="range"] input').slider();
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});

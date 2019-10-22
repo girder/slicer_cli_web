@@ -39,7 +39,7 @@ var ItemSelectorWidget = View.extend({
 
     render: function () {
         this.$el.html(
-            itemSelectorWidget(this.model.attributes) // eslint-disable-line backbone/no-view-model-attributes
+            itemSelectorWidget(this.model.toJSON())
         ).girderModal(this);
         this._renderRootSelection();
         return this;
