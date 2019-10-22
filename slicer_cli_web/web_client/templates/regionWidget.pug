@@ -1,0 +1,11 @@
+extends ./widget.pug
+
+block input
+  .input-group
+    +input(title, type, id, value.join(','))
+    span.input-group-btn
+      button.btn.btn-default.s-select-region-button(
+          disabled=disableRegionSelect,
+          type='button', data-toggle='tooltip', data-placement='right',
+          title='Draw a region on the image')
+        i.icon-pencil
