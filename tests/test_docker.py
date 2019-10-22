@@ -41,7 +41,7 @@ def folder(db, admin):
     yield f
 
 
-def splitName(self, name):
+def splitName(name):
     if ':' in name:
         imageAndTag = name.split(':')
     else:
@@ -214,7 +214,7 @@ def images(server, admin, folder):
     return ImageHelper(server, admin, folder)
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testAddNonExistentImage(images):
     # add a bad image
     img_name = 'null/null:null'
@@ -223,7 +223,7 @@ def testAddNonExistentImage(images):
     images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerAdd(images):
     # try to cache a good image to the mongo database
     img_name = 'girder/slicer_cli_web:small'
@@ -231,9 +231,11 @@ def testDockerAdd(images):
     images.addImage(img_name, JobStatus.SUCCESS)
     images.imageIsLoaded(img_name, True)
     images.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
+    images.deleteImage(img_name, False)
+    images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerAddBadParam(server, admin):
     # test sending bad parameters to the PUT endpoint
     kwargs = {
@@ -262,16 +264,18 @@ def testDockerAddBadParam(server, admin):
     assert 'does not have a tag' in resp.json['message']
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerAddList(images):
     # try to cache a good image to the mongo database
     img_name = 'girder/slicer_cli_web:small'
     images.assertNoImages()
     images.addImage([img_name], JobStatus.SUCCESS)
     images.imageIsLoaded(img_name, True)
+    images.deleteImage(img_name, False)
+    images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerAddWithoutVersion(images):
     # all images need a version or hash
     img_name = 'girder/slicer_cli_web'
@@ -280,7 +284,7 @@ def testDockerAddWithoutVersion(images):
     images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerDelete(images):
     # just delete the metadata in the mongo database
     # don't delete the docker image
@@ -293,7 +297,7 @@ def testDockerDelete(images):
     images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testDockerDeleteFull(images):
     # attempt to delete docker image metadata and the image off the local
     # machine
@@ -319,7 +323,7 @@ def testDockerDeleteFull(images):
     images.assertNoImages()
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testBadImageDelete(images):
     # attempt to delete a non existent image
     img_name = 'null/null:null'
@@ -327,12 +331,13 @@ def testBadImageDelete(images):
     images.deleteImage(img_name, False, )
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testXmlEndpoint(images, server, admin):
     # loads an image and attempts to run an arbitrary xml endpoint
 
     img_name = 'girder/slicer_cli_web:small'
-    testDockerAdd(images)
+    images.addImage(img_name, JobStatus.SUCCESS)
+    images.imageIsLoaded(img_name, True)
 
     name, tag = splitName(img_name)
     data = images.getEndpoint()
@@ -348,12 +353,14 @@ def testXmlEndpoint(images, server, admin):
                 xmlString = getResponseBody(resp)
                 # TODO validate with xml schema
                 assert xmlString != ''
+    images.deleteImage(img_name, False, )
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testEndpointDeletion(images, server, admin):
     img_name = 'girder/slicer_cli_web:small'
-    testXmlEndpoint(images, server, admin)
+    images.addImage(img_name, JobStatus.SUCCESS)
+    images.imageIsLoaded(img_name, True)
     data = images.getEndpoint()
     images.deleteImage(img_name, True)
     name, tag = splitName(img_name)
@@ -368,9 +375,10 @@ def testEndpointDeletion(images, server, admin):
                     isJson=False)
                 # xml route should have been deleted
                 assertStatus(resp, 400)
+    images.deleteImage(img_name, False, )
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 def testAddBadImage(images):
     # job should fail gracefully after pulling the image
     img_name = 'library/hello-world:latest'

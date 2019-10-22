@@ -3,7 +3,7 @@ import pytest
 from pytest_girder.web_client import runWebClientTest
 
 
-@pytest.mark.plugin('sclicer_cli_web')
+@pytest.mark.plugin('slicer_cli_web')
 @pytest.mark.parametrize('spec', (
     'parseSpec.js',
     'widgetSpec.js',

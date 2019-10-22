@@ -63,7 +63,7 @@ class TestClass:
         girder_worker.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
         worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
 
-    @pytest.mark.plugin('sclicer_cli_web')
+    @pytest.mark.plugin('slicer_cli_web')
     def test_genHandlerToRunDockerCLI(self, admin, folder, file):
         from slicer_cli_web import docker_resource
         from slicer_cli_web import rest_slicer_cli
