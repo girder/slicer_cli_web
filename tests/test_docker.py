@@ -343,7 +343,8 @@ class DockerImageManagementTest(base.TestCase):
 
         resp = self.request(
             path='/slicer_cli_web/slicer_cli_web/docker_image',
-            user=self.admin, method='PUT', params={'name': json.dumps(name), 'folder': self.folder['_id']},
+            user=self.admin, method='PUT', params={'name': json.dumps(name),
+                                                   'folder': self.folder['_id']},
             isJson=initialStatus == 200)
 
         self.assertStatus(resp, initialStatus)

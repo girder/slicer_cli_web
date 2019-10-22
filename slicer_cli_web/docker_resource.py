@@ -97,7 +97,7 @@ class DockerResource(Resource):
                 cli_list = endpointRoute[1]
                 if cli.name in cli_list:
                     data[cli.name][operation] = '/' + self.resourceName + \
-                                           '/' + '/'.join(cli_list)
+                                                '/' + '/'.join(cli_list)
         return userAndRepo, tag, data
 
     @access.admin
@@ -203,8 +203,8 @@ class DockerResource(Resource):
         .notes('Must be a system administrator to call this.')
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
-        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE,
-                    required=not PluginSettings.has_task_folder())
+        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
+                    level=AccessType.WRITE, required=not PluginSettings.has_task_folder())
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )

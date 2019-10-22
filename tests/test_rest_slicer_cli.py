@@ -61,7 +61,8 @@ class RestSlicerCLITest(base.TestCase):
 
         rest.getCurrentToken = self._origRestGetCurrentToken
         rest.getApiUrl = self._origRestGetApiUrl
-        girder_worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
+        girder_worker.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
+        worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
         base.TestCase.tearDown(self)
 
     def test_genHandlerToRunDockerCLI(self):
@@ -73,7 +74,8 @@ class RestSlicerCLITest(base.TestCase):
         xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
 
         girderCLIItem = Item().createItem('data', self.admin, self.folder)
-        Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python', xml=open(xmlpath, 'rb').read()))
+        Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python',
+                                               xml=open(xmlpath, 'rb').read()))
 
         resource = docker_resource.DockerResource('test')
         item = CLIItem(girderCLIItem)

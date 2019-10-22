@@ -6,7 +6,8 @@ from girder.utility.model_importer import ModelImporter
 from girder import logger
 from girder.constants import AccessType
 from girder_worker.docker.transforms import VolumePath
-from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, GirderFileIdToVolume, GirderFolderIdToVolume, GirderItemIdToVolume
+from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, \
+    GirderFileIdToVolume, GirderFolderIdToVolume, GirderItemIdToVolume
 from girder_worker.girder_plugin.constants import PluginSettings
 from girder.exceptions import FilePathException
 from girder.models.file import File
@@ -35,7 +36,8 @@ def _to_file_volume(param, model):
 
     try:
         path = File().getLocalFilePath(model)
-        return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path, filename=model['name'])
+        return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path,
+                                          filename=model['name'])
     except FilePathException:
         return GirderFileIdToVolume(model['_id'], filename=model['name'])
 
@@ -63,7 +65,7 @@ def _parseParamValue(param, value, user, token):
     except json.JSONDecodeError:
         msg = 'Error: Parameter value is not in json.dumps format\n' \
               '  Parameter name = %r\n  Parameter type = %r\n' \
-             '  Value passed = %r' % (param_id, param.typ, value)
+              '  Value passed = %r' % (param_id, param.typ, value)
         logger.exception(msg)
         raise RestException(msg)
 

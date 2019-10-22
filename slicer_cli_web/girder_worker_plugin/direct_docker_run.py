@@ -19,7 +19,10 @@ TEMP_VOLUME_DIRECT_MOUNT_PREFIX = '/mnt/girder_direct_worker'
 
 class DirectGirderFileIdToVolume(GirderFileIdToVolume):
     def __init__(self, _id, filename=None, direct_file_path=None, **kwargs):
-        super(DirectGirderFileIdToVolume, self).__init__(_id, filename=filename or _get_basename(direct_file_path), **kwargs)
+        super(DirectGirderFileIdToVolume, self).__init__(_id,
+                                                         filename=filename or
+                                                         _get_basename(direct_file_path),
+                                                         **kwargs)
         self._direct_file_path = direct_file_path
         self._direct_container_path = None
 
