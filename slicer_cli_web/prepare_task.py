@@ -151,7 +151,7 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
     # optional params
     for param in opt_params:
         if param.channel == 'output':
-            ca.extend(_add_optional_output_param(param, params, user, token, result_hooks))
+            ca.extend(_add_optional_output_param(param, params, user, result_hooks))
         else:
             ca.extend(_add_optional_input_param(param, params, user, token))
 

@@ -31,7 +31,7 @@ class TestClass:
         import datetime
 
         from girder.api import rest
-        import girder_worker
+        from girder_worker.girder_plugin import utils
         from girder_worker import utils as worker_utils
 
         # Mock several functions so we can fake creating jobs
@@ -46,30 +46,32 @@ class TestClass:
 
         self._origRestGetCurrentToken = rest.getCurrentToken
         self._origRestGetApiUrl = rest.getApiUrl
-        self._origWorkerGetWorkerApiUrl = girder_worker.getWorkerApiUrl
+        self._origWorkerGetWorkerApiUrl = utils.getWorkerApiUrl
 
         rest.getCurrentToken = getCurrentToken
         rest.getApiUrl = lambda x: '/api/v1'
-        rest.setCurrentUser(self.admin)
-        girder_worker.getWorkerApiUrl = worker_utils.getWorkerApiUrl = getWorkerApiUrl
+        utils.getWorkerApiUrl = worker_utils.getWorkerApiUrl = getWorkerApiUrl
 
     def teardown_method(self, method):
         from girder.api import rest
-        import girder_worker
+        from girder_worker.girder_plugin import utils
         from girder_worker import utils as worker_utils
 
         rest.getCurrentToken = self._origRestGetCurrentToken
         rest.getApiUrl = self._origRestGetApiUrl
-        girder_worker.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
+        utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
         worker_utils.getWorkerApiUrl = self._origWorkerGetWorkerApiUrl
 
     @pytest.mark.plugin('slicer_cli_web')
     def test_genHandlerToRunDockerCLI(self, admin, folder, file):
+        from girder.api import rest
         from slicer_cli_web import docker_resource
         from slicer_cli_web import rest_slicer_cli
         from slicer_cli_web.models import CLIItem
         from girder.models.item import Item
 
+        self.admin = admin
+        rest.setCurrentUser(admin)
         xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
 
         girderCLIItem = Item().createItem('data', admin, folder)
@@ -79,7 +81,7 @@ class TestClass:
         resource = docker_resource.DockerResource('test')
         item = CLIItem(girderCLIItem)
         handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
-            'dockerImage', CLIItem(item), resource)
+            'dockerImage', item, resource)
         assert handlerFunc is not None
 
         job = handlerFunc(params={

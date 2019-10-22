@@ -317,18 +317,18 @@ describe('widget collection', function () {
         expect(c.values()).toEqual({
             range: '0',
             number: '1',
-            boolean: 'true',
-            string: '"0"',
+            boolean: true,
+            string: '0',
             color: '"#ff0000"',
             'string-vector': '["a","b","c"]',
             'number-vector': '[1,2,3]',
-            'string-enumeration': '"a"',
+            'string-enumeration': 'a',
             'number-enumeration': '1',
-            'file_girderFileId': 'a',
-            'new-file_girderFolderId': 'b',
-            'new-file_name': 'a',
-            'item_girderItemId': 'c',
-            'image_girderFileId': 'd'
+            'file': 'a',
+            'new-file_folder': 'b',
+            'new-file': 'a',
+            'item': 'c',
+            'image': 'd'
         });
     });
 });
@@ -337,6 +337,8 @@ describe('control widget view', function () {
     var $el, hInit, hRender, hProto, parentView = {
         registerChildView: function () {}
     };
+
+    girderTest.startApp();
 
     function checkWidgetCommon(widget) {
         var model = widget.model;
@@ -355,6 +357,7 @@ describe('control widget view', function () {
         hRender = hProto.render;
 
         $el = $('<div/>').appendTo('body');
+
     });
 
     afterEach(function () {
@@ -362,6 +365,8 @@ describe('control widget view', function () {
         hProto.render = hRender;
         $el.remove();
     });
+
+    it('login an admin user', girderTest.login('admin', 'Admin', 'Admin', 'password'));
 
     it('range', function () {
         var w = new slicer.views.ControlWidget({
