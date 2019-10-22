@@ -26,7 +26,7 @@ with open('requirements.txt') as f:
     install_reqs = f.readlines()
 
 extras_require = {}
-extras_require['girder'] = ['girder>=3.0.0a1', 'girder-jobs>=3.0.0a1']
+extras_require['girder'] = ['girder>=3.0.3', 'girder-jobs>=3.0.3', 'girder-worker>=0.6.0']
 
 # perform the install
 setup(

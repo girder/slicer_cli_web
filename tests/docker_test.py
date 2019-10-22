@@ -34,7 +34,7 @@ def setUpModule():
     base.enabledPlugins.append('slicer_cli_web')
     base.startServer()
     global JobStatus
-    from girder.plugins.jobs.constants import JobStatus
+    from girder_jobs.constants import JobStatus
 
 
 def tearDownModule():
