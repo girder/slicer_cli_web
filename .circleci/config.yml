@@ -12,7 +12,7 @@ jobs:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
           # consume the exit code
-          command: tox | cat; test ${PIPESTATUS[0]} -eq 0
+          command: tox -e flake8,lintclient  | cat; test ${PIPESTATUS[0]} -eq 0
       # - run:
       #     name: Install Codecov client
       #     command: pip install codecov
@@ -20,12 +20,79 @@ jobs:
       #     name: Upload coverage
       #     # Retry as codecov can be flaky
       #     command: for i in $(seq 1 10); do [ %i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file build/test/coverage/py_coverage.xml build/test/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
+  py27:
+    working_directory: ~/project
+    docker:
+      - image: zachmullen/tox-and-node
+      - image: circleci/mongo:4.0-ram
 
+    steps:
+      - checkout
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e py27 | cat; test ${PIPESTATUS[0]} -eq 0
+  py35:
+    working_directory: ~/project
+    docker:
+      - image: zachmullen/tox-and-node
+      - image: circleci/mongo:4.0-ram
+
+    steps:
+      - checkout
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e py35 | cat; test ${PIPESTATUS[0]} -eq 0
+  py36:
+    working_directory: ~/project
+    docker:
+      - image: zachmullen/tox-and-node
+      - image: circleci/mongo:4.0-ram
+
+    steps:
+      - checkout
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e py36 | cat; test ${PIPESTATUS[0]} -eq 0
+  py37:
+    working_directory: ~/project
+    docker:
+      - image: zachmullen/tox-and-node
+      - image: circleci/mongo:4.0-ram
+
+    steps:
+      - checkout
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e py37 | cat; test ${PIPESTATUS[0]} -eq 0
 workflows:
   version: 2
   ci:
     jobs:
       - build:
+          filters:
+            tags:
+              only: /^v.*/
+      - py27:
+          filters:
+            tags:
+              only: /^v.*/
+      - py35:
+          filters:
+            tags:
+              only: /^v.*/
+      - py36:
+          filters:
+            tags:
+              only: /^v.*/
+      - py37:
           filters:
             tags:
               only: /^v.*/
