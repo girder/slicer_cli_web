@@ -31,6 +31,7 @@ jobs:
         # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
         # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
+      - image: rabbitmq
     steps:
       - checkout
       - setup_remote_docker:
@@ -46,6 +47,7 @@ jobs:
         # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
         # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
+      - image: rabbitmq
     steps:
       - checkout
       - setup_remote_docker:
@@ -61,6 +63,7 @@ jobs:
         # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
         # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
+      - image: rabbitmq
     steps:
       - checkout
       - setup_remote_docker:
