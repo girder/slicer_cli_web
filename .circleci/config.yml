@@ -33,6 +33,8 @@ jobs:
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Run tests via tox
           command: tox -e py27 | cat; test ${PIPESTATUS[0]} -eq 0
@@ -46,6 +48,8 @@ jobs:
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Run tests via tox
           command: tox -e py36 | cat; test ${PIPESTATUS[0]} -eq 0
@@ -59,6 +63,8 @@ jobs:
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Run tests via tox
           command: tox -e py37 | cat; test ${PIPESTATUS[0]} -eq 0
