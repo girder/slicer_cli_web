@@ -644,7 +644,7 @@ describe('control widget view', function () {
         });
     });
 
-    it('image', function (done) {
+    it('image', function () {
         var arg, item, file, w;
         runs(function () {
             file = new girder.models.FileModel({_id: 'file id', name: 'g'});
