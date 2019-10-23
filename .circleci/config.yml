@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.5
 jobs:
   lint:
     working_directory: ~/project
@@ -71,6 +73,12 @@ jobs:
       - run:
           name: Run tests via tox
           command: tox -e py37 | cat; test ${PIPESTATUS[0]} -eq 0
+      - codecov/upload:
+          file: .tox/coverage/py_coverage.xml
+          flags: backend
+      - codecov/upload:
+          file: build/test/coverage/web_temp/*.json
+          flags: ui
 workflows:
   version: 2
   ci:
