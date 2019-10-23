@@ -137,7 +137,8 @@ class DockerResource(Resource):
         """
         removed = DockerImageItem.removeImages(names, self.getCurrentUser())
         if removed != names:
-            raise RestException('Some docker images could not be removed. %s' % ([name for name in names if name not in removed]))
+            rest = [name for name in names if name not in removed]
+            raise RestException('Some docker images could not be removed. %s' % (rest))
         self.deleteImageEndpoints(removed)
 
         try:
