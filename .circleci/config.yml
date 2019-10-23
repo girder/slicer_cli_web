@@ -76,14 +76,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      # - py27:
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      # - py36:
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
+      - py27:
+          filters:
+            tags:
+              only: /^v.*/
+      - py36:
+          filters:
+            tags:
+              only: /^v.*/
       - py37:
           filters:
             tags:
