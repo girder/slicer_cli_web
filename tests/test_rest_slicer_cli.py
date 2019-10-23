@@ -69,6 +69,7 @@ class TestClass:
         from slicer_cli_web import rest_slicer_cli
         from slicer_cli_web.models import CLIItem
         from girder.models.item import Item
+        import json
 
         self.admin = admin
         rest.setCurrentUser(admin)
@@ -97,11 +98,14 @@ class TestClass:
             'returnparameterfile': 'output.data',
         })
 
-        assert 'container_args' in job['kwargs']
-        assert 'image' in job['kwargs']
-        assert 'pull_image' in job['kwargs']
+        kwargs = json.loads(job['kwargs'])
+        assert 'container_args' in kwargs
+        assert 'image' in kwargs
+        assert 'pull_image' in kwargs
 
-        assert job['kwargs']['image'] == 'dockerImage'
-        assert not job['kwargs']['pull_image']
-        container_args = job['kwargs']['container_args']
+        print(kwargs)
+
+        assert kwargs['image'] == 'dockerImage'
+        assert not kwargs['pull_image']
+        container_args = kwargs['container_args']
         assert container_args[0] == 'data'
