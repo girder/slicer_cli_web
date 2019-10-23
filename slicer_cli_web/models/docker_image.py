@@ -141,7 +141,8 @@ class DockerImageItem(object):
             folderModel.remove(tagFolder)
             removed.append(name)
 
-            if folderModel.hasAccess(imageFolder, user, AccessType.WRITE) and folderModel.countFolders(imageFolder) == 0:
+            if folderModel.hasAccess(imageFolder, user, AccessType.WRITE) and \
+               folderModel.countFolders(imageFolder) == 0:
                 # clean also empty image folders
                 folderModel.remove(imageFolder)
 
@@ -160,7 +161,8 @@ class DockerImageItem(object):
         imageName, tagName = _split(name)
         restPath = name.replace(':', '_').replace('/', '_').replace('@', '_')
 
-        image = folderModel.createFolder(baseFolder, imageName, 'Slicer CLI generated docker image folder',
+        image = folderModel.createFolder(baseFolder, imageName,
+                                         'Slicer CLI generated docker image folder',
                                          creator=user, reuseExisting=True)
         folderModel.setMetadata(image, dict(slicerCLIType='image'))
 
@@ -168,7 +170,8 @@ class DockerImageItem(object):
                                  'https://hub.docker.com/r/%s' % imageName,
                                  user, reuseExisting=True)
 
-        tag = folderModel.createFolder(image, tagName, 'Slicer CLI generated docker image tag folder',
+        tag = folderModel.createFolder(image, tagName,
+                                       'Slicer CLI generated docker image tag folder',
                                        creator=user, reuseExisting=True)
 
         # add docker image labels as meta data
@@ -185,7 +188,8 @@ class DockerImageItem(object):
         folderModel.clean(tag)
 
         for cli, desc in six.iteritems(cli_dict):
-            item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item', reuseExisting=True)
+            item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
+                                        reuseExisting=True)
             itemModel.setMetadata(item, dict(slicerCLIType='task'))
             itemModel.setMetadata(item, desc)
 

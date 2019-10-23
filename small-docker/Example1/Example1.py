@@ -5,5 +5,6 @@ def main(args):
     print('>> parsed arguments')
     print('%r' % args)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())

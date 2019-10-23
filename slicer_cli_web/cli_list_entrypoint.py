@@ -73,8 +73,8 @@ def CLIListEntrypoint(cli_list_spec_file=None):
     )
 
     # add cl-rel-path argument
-    cmdparser.add_argument("cli",
-                           help="CLI to run",
+    cmdparser.add_argument('cli',
+                           help='CLI to run',
                            metavar='<cli>',
                            choices=cli_list_spec.keys())
 
@@ -115,5 +115,5 @@ def CLIListEntrypoint(cli_list_spec_file=None):
     return output_code
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     sys.exit(CLIListEntrypoint())

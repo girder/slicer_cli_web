@@ -86,7 +86,7 @@ class DockerResource(Resource):
 
         for cli in dockerImage.getCLIs():
             if cli.name not in endpointData:
-                logger.warning('"%s" not present in endpoint data.' % cli)
+                logger.warning('"%s" not present in endpoint data.' % cli.name)
                 continue
             data[cli.name] = {}
 
@@ -97,7 +97,7 @@ class DockerResource(Resource):
                 cli_list = endpointRoute[1]
                 if cli.name in cli_list:
                     data[cli.name][operation] = '/' + self.resourceName + \
-                                           '/' + '/'.join(cli_list)
+                                                '/' + '/'.join(cli_list)
         return userAndRepo, tag, data
 
     @access.admin
@@ -135,11 +135,15 @@ class DockerResource(Resource):
             docker rmi -f <image> )
         :type name: boolean
         """
+        removed = DockerImageItem.removeImages(names, self.getCurrentUser())
+        if removed != names:
+            rest = [name for name in names if name not in removed]
+            raise RestException('Some docker images could not be removed. %s' % (rest))
+        self.deleteImageEndpoints(removed)
+
         try:
-            removed = DockerImageItem.removeImages(names, self.getCurrentUser())
-            self.deleteImageEndpoints(removed)
             if deleteImage:
-                self._deleteDockerImage(removed)
+                self._deleteDockerImages(removed)
         except DockerImageNotFoundError as err:
             raise RestException('Invalid docker image name. ' + str(err))
 
@@ -203,8 +207,8 @@ class DockerResource(Resource):
         .notes('Must be a system administrator to call this.')
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
-        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query', level=AccessType.WRITE,
-                    required=not PluginSettings.has_task_folder())
+        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
+                    level=AccessType.WRITE, required=not PluginSettings.has_task_folder())
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
@@ -281,9 +285,9 @@ class DockerResource(Resource):
             imageList = six.iterkeys(self.currentEndpoints)
         for imageName in list(imageList):
             if imageName in self.currentEndpoints:
-                for (cli, val) in six.iteritems(
+                for val in six.itervalues(
                         self.currentEndpoints[imageName]):
-                    for (operation, endpoint) in six.iteritems(val):
+                    for endpoint in six.itervalues(val):
                         try:
                             self.removeRoute(endpoint[0], endpoint[1],
                                              getattr(self, endpoint[2]))

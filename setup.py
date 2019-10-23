@@ -26,7 +26,6 @@ with open('requirements.txt') as f:
     install_reqs = f.readlines()
 
 extras_require = {}
-extras_require['girder'] = ['girder>=3.0.3', 'girder-jobs>=3.0.3', 'girder-worker>=0.6.0']
 
 # perform the install
 setup(
@@ -35,6 +34,9 @@ setup(
     setup_requires=['setuptools-scm'],
     description='A girder plugin for exposing slicer CLIs over the web',
     long_description=readme,
+    long_description_content_type='text/x-rst',
+    url='https://github.com/girder/slicer_cli_web',
+    keywords='girder-plugin, slicer_cli_web',
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
     license='Apache 2.0',
@@ -50,7 +52,7 @@ setup(
         'Programming Language :: Python :: 3.6'
     ],
     include_package_data=True,
-    packages=find_packages(exclude=['plugin_tests']),
+    packages=find_packages(exclude=['test', 'test.*']),
     zip_safe=False,
     extras_require=extras_require,
     install_requires=install_reqs,

@@ -1,23 +1,4 @@
-# Top level dependencies
-girder>=3.0.3
-girder-jobs>=3.0.3
-girder-worker>=0.6.0
-
 # External dependencies
-pip>=9
-coverage
-flake8
-flake8-blind-except
-flake8-bugbear; python_version >= '3.5'
-flake8-docstrings
-flake8-quotes
-pytest>=3.6
-pytest-cov>=2.6
-pytest-girder>=3.0.3
-pytest-xdist
-mock
+pip
 tox
-twine
 virtualenv
-
-

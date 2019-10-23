@@ -31,6 +31,8 @@ def _getParamDefaultVal(param):
         return None
     elif param.isExternalType():
         return None
+    elif param.typ == 'float' or param.typ == 'integer':
+        return 0
     else:
         raise Exception(
             'optional parameters of type %s must '
@@ -45,8 +47,7 @@ def _addInputParamToHandler(param, handlerDesc, required=True):
     schema = None
 
     if param.isExternalType():
-        desc = 'Girder ID of input %s - %s: %s' \
-                    % (param.typ, param.identifier(), param.description)
+        desc = 'Girder ID of input %s - %s: %s' % (param.typ, param.identifier(), param.description)
     elif param.typ in OPENAPI_DIRECT_TYPES:
         dataType = param.typ
     elif param.typ == 'string-enumeration':
@@ -99,10 +100,12 @@ def _addOutputParamToHandler(param, handlerDesc, required=True):
     if defaultFileExtension and '|' in defaultFileExtension:
         defaultFileExtension = defaultFileExtension.split('|')[0]
 
+    defaultValue = ('%s%s' % (param.identifier(), defaultFileExtension)
+                    if defaultFileExtension else None)
     handlerDesc.param(param.identifier(),
                       'Name of output %s - %s: %s'
                       % (param.typ, param.identifier(), param.description),
-                      default=('%s%s' % (param.identifier(), defaultFileExtension) if defaultFileExtension else None),
+                      default=defaultValue,
                       dataType='string', required=required)
 
 
@@ -189,7 +192,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
         jobTitle = '.'.join((restResource.resourceName, cliName))
 
         container_args = [currentItem.name]
-        args, result_hooks = prepare_task(params, user, token, index_params, opt_params, has_simple_return_file)
+        args, result_hooks = prepare_task(params, user, token, index_params, opt_params,
+                                          has_simple_return_file)
         container_args.extend(args)
 
         job = run.delay(
@@ -287,7 +291,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
 
         cliSuffix = os.path.normpath(cli.name).replace(os.sep, '_')
 
-        cliRunHandlerName = restPath+'_run_' + cliSuffix
+        cliRunHandlerName = restPath + '_run_' + cliSuffix
         setattr(restResource, cliRunHandlerName, cliRunHandler)
         restResource.route('POST',
                            (restPath, cli.name, 'run'),
@@ -311,7 +315,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
             logger.error('%r', [exc_type, fname, exc_tb.tb_lineno])
             continue
 
-        cliGetXMLSpecHandlerName = restPath+'_get_xml_' + cliSuffix
+        cliGetXMLSpecHandlerName = restPath + '_get_xml_' + cliSuffix
         setattr(restResource,
                 cliGetXMLSpecHandlerName,
                 cliGetXMLSpecHandler)

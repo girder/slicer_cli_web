@@ -34,5 +34,5 @@ def processCLI(filename):
         raise Exception('CLIs of type %s are not supported' % list_spec[cli]['type'])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     processCLI('cli_list.json')

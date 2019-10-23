@@ -317,25 +317,25 @@ describe('widget collection', function () {
         expect(c.values()).toEqual({
             range: '0',
             number: '1',
-            boolean: 'true',
-            string: '"0"',
+            boolean: true,
+            string: '0',
             color: '"#ff0000"',
             'string-vector': '["a","b","c"]',
             'number-vector': '[1,2,3]',
-            'string-enumeration': '"a"',
+            'string-enumeration': 'a',
             'number-enumeration': '1',
-            'file_girderFileId': 'a',
-            'new-file_girderFolderId': 'b',
-            'new-file_name': 'a',
-            'item_girderItemId': 'c',
-            'image_girderFileId': 'd'
+            'file': 'a',
+            'new-file_folder': 'b',
+            'new-file': 'a',
+            'item': 'c',
+            'image': 'd'
         });
     });
 });
 
 describe('control widget view', function () {
-    var $el, hInit, hRender, hProto, parentView = {
-        registerChildView: function () {}
+    var $el, admin, hInit, hRender, hProto, parentView = {
+        registerChildView: function () { }
     };
 
     function checkWidgetCommon(widget) {
@@ -350,11 +350,13 @@ describe('control widget view', function () {
     }
 
     beforeEach(function () {
+        admin = new girder.models.UserModel({ _id: 'admin', name: 'admin' });
         hProto = girder.views.widgets.HierarchyWidget.prototype;
         hInit = hProto.initialize;
         hRender = hProto.render;
 
         $el = $('<div/>').appendTo('body');
+
     });
 
     afterEach(function () {
@@ -578,6 +580,7 @@ describe('control widget view', function () {
 
         var w = new slicer.views.ControlWidget({
             parentView: parentView,
+            rootPath: admin,
             el: $el.get(0),
             model: new slicer.models.WidgetModel({
                 type: 'item',
@@ -590,7 +593,7 @@ describe('control widget view', function () {
         checkWidgetCommon(w);
 
         w.$('.s-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+        expect(arg.parentModel).toBe(admin);
         arg.onItemClick(item);
         expect(w.model.value().name()).toBe('b');
 
@@ -609,6 +612,7 @@ describe('control widget view', function () {
             };
             hProto.render = function () {};
             w = new slicer.views.ControlWidget({
+                rootPath: admin,
                 parentView: parentView,
                 el: $el.get(0),
                 model: new slicer.models.WidgetModel({
@@ -621,14 +625,14 @@ describe('control widget view', function () {
             w.render();
             checkWidgetCommon(w);
 
-            girder.rest.mockRestRequest(function (opts) {
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
                 if (opts.url.substr(0, 5) === 'file/') {
                     return $.Deferred().resolve(file.toJSON());
                 }
                 return $.Deferred().resolve([file.toJSON()]);
             });
             w.$('.s-select-file-button').click();
-            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
         });
         waitsFor(function () {
@@ -637,11 +641,10 @@ describe('control widget view', function () {
         runs(function () {
             expect(w.model.value().name()).toBe('e');
             expect(w.model.get('path')).toEqual([]);
-            girder.rest.unmockRestRequest();
         });
     });
 
-    it('image', function (done) {
+    it('image', function () {
         var arg, item, file, w;
         runs(function () {
             file = new girder.models.FileModel({_id: 'file id', name: 'g'});
@@ -656,6 +659,7 @@ describe('control widget view', function () {
 
             w = new slicer.views.ControlWidget({
                 parentView: parentView,
+                rootPath: admin,
                 el: $el.get(0),
                 model: new slicer.models.WidgetModel({
                     type: 'image',
@@ -667,11 +671,11 @@ describe('control widget view', function () {
             w.render();
             checkWidgetCommon(w);
 
-            girder.rest.mockRestRequest(function (opts) {
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
                 return $.Deferred().resolve(file.toJSON());
             });
             w.$('.s-select-file-button').click();
-            expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+            expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
         });
         waitsFor(function () {
@@ -680,7 +684,6 @@ describe('control widget view', function () {
         runs(function () {
             expect(w.model.value().name()).toBe('g');
             expect(w.model.get('path')).toEqual([]);
-            girder.rest.unmockRestRequest();
         });
     });
 
@@ -699,6 +702,7 @@ describe('control widget view', function () {
         hProto.render = function () {};
         var w = new slicer.views.ControlWidget({
             parentView: parentView,
+            rootPath: admin,
             el: $el.get(0),
             model: new slicer.models.WidgetModel({
                 type: 'new-file',
@@ -712,7 +716,7 @@ describe('control widget view', function () {
 
         slicer.rootPath = {};
         w.$('.s-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.auth.getCurrentUser());
+        expect(arg.parentModel).toBe(admin);
 
         // selecting without a file name entered should error
         $modal.find('.s-select-button').click();

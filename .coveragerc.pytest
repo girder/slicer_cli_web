@@ -1,0 +1,5 @@
+[run]
+data_file=.coverage.pytest
+branch = False
+omit =
+  slicer_cli_web/*

@@ -47,9 +47,8 @@ def _onUpload(event):
 
 
 class SlicerCLIWebPlugin(GirderPlugin):
-    DISPLAY_NAME = 'Slicer CLI Web'         # a user-facing plugin name, the plugin is still
-                                            # referenced internally by the entrypoint name.
-    CLIENT_SOURCE_PATH = 'web_client'       # path to the web client relative to the python package
+    DISPLAY_NAME = 'Slicer CLI Web'
+    CLIENT_SOURCE_PATH = 'web_client'
 
     def load(self, info):
         getPlugin('jobs').load(info)  # load plugins you depend on
