@@ -1,10 +1,13 @@
 version: 2
 jobs:
-  build:
+  lint:
     working_directory: ~/project
     docker:
-      - image: zachmullen/tox-and-node
-      - image: circleci/mongo:4.0-ram
+      - image: girder/girder_test:latest-py3
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
 
     steps:
       - checkout
@@ -23,60 +26,60 @@ jobs:
   py27:
     working_directory: ~/project
     docker:
-      - image: zachmullen/tox-and-node
-      - image: circleci/mongo:4.0-ram
-
+      - image: girder/girder_test:latest-py2
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
       - run:
           name: Run tests via tox
-          # Piping through cat does less buffering of the output but can
-          # consume the exit code
           command: tox -e py27 | cat; test ${PIPESTATUS[0]} -eq 0
   py35:
     working_directory: ~/project
     docker:
-      - image: zachmullen/tox-and-node
-      - image: circleci/mongo:4.0-ram
-
+      - image: girder/girder_test:latest-py3
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
       - run:
           name: Run tests via tox
-          # Piping through cat does less buffering of the output but can
-          # consume the exit code
           command: tox -e py35 | cat; test ${PIPESTATUS[0]} -eq 0
   py36:
     working_directory: ~/project
     docker:
-      - image: zachmullen/tox-and-node
-      - image: circleci/mongo:4.0-ram
-
+      - image: girder/girder_test:latest-py3
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
       - run:
           name: Run tests via tox
-          # Piping through cat does less buffering of the output but can
-          # consume the exit code
           command: tox -e py36 | cat; test ${PIPESTATUS[0]} -eq 0
   py37:
     working_directory: ~/project
     docker:
-      - image: zachmullen/tox-and-node
-      - image: circleci/mongo:4.0-ram
-
+      - image: girder/girder_test:latest-py3
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
     steps:
       - checkout
       - run:
           name: Run tests via tox
-          # Piping through cat does less buffering of the output but can
-          # consume the exit code
           command: tox -e py37 | cat; test ${PIPESTATUS[0]} -eq 0
 workflows:
   version: 2
   ci:
     jobs:
-      - build:
+      - lint:
           filters:
             tags:
               only: /^v.*/
