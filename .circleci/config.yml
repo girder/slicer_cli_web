@@ -1,31 +1,23 @@
 version: 2.1
+
 orbs:
   codecov: codecov/codecov@1.0.5
-jobs:
-  lint:
-    working_directory: ~/project
-    docker:
-      - image: girder/girder_test:latest-py3
-      - image: circleci/mongo:3.4-ram
-        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
-        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
-        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
 
+commands:
+  tox:
+    description: "run tox"
+    parameters:
+      env:
+        type: string
     steps:
-      - checkout
       - run:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
           # consume the exit code
-          command: tox -e flake8,lintclient  | cat; test ${PIPESTATUS[0]} -eq 0
-      # - run:
-      #     name: Install Codecov client
-      #     command: pip install codecov
-      # - run:
-      #     name: Upload coverage
-      #     # Retry as codecov can be flaky
-      #     command: for i in $(seq 1 10); do [ %i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file build/test/coverage/py_coverage.xml build/test/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
-  py27:
+          command: tox -e << parameters.env >>  | cat; test ${PIPESTATUS[0]} -eq 0
+
+executors:
+  py2:
     working_directory: ~/project
     docker:
       - image: girder/girder_test:latest-py2
@@ -34,51 +26,65 @@ jobs:
         # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
       - image: rabbitmq
+  py3:
+    working_directory: ~/project
+    docker:
+      - image: girder/girder_test:latest-py3
+      - image: circleci/mongo:3.4-ram
+        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
+        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
+        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
+      - image: rabbitmq
+
+jobs:
+  lint:
+    executor: py3
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Run tests via tox
-          command: tox -e py27 | cat; test ${PIPESTATUS[0]} -eq 0
+      - tox:
+          env: flake8,lintclient
+  py27:
+    working_directory: ~/project
+    executor: py2
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py27
   py36:
     working_directory: ~/project
-    docker:
-      - image: girder/girder_test:latest-py3
-      - image: circleci/mongo:3.4-ram
-        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
-        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
-        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
-      - image: rabbitmq
+    executor: py3
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Run tests via tox
-          command: tox -e py36 | cat; test ${PIPESTATUS[0]} -eq 0
+      - setup_remote_docker
+      - tox:
+          env: py36
   py37:
     working_directory: ~/project
-    docker:
-      - image: girder/girder_test:latest-py3
-      - image: circleci/mongo:3.4-ram
-        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
-        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
-        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
-      - image: rabbitmq
+    executor: py3
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Run tests via tox
-          command: tox -e py37 | cat; test ${PIPESTATUS[0]} -eq 0
+      - setup_remote_docker
+      - tox:
+          env: py37
       - codecov/upload:
           file: .tox/coverage/py_coverage.xml
           flags: backend
       - codecov/upload:
           file: build/test/coverage/web_temp/*.json
           flags: ui
+      - store_test_results:
+          path: build/test-reports
+      - store_artifacts:
+          path: build/test-reports
+  deploy:
+    executor: py3
+    steps:
+      - checkout
+      - setup_remote_docker
+      - deploy:
+          command: tox -e release
+
 workflows:
   version: 2
   ci:
