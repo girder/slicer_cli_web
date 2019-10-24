@@ -105,3 +105,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      - deploy:
+          requires:
+            - lint
+            - py27
+            - py36
+            - py37
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: master
