@@ -17,15 +17,13 @@
 #  limitations under the License.
 ###############################################################################
 
-import jsonschema
 import six
-import yaml
 
 from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.file import File
-from ..cli_utils import as_model
+from .parser import parse_xml_desc, parse_yaml_desc
 
 
 def _split(name):
@@ -151,43 +149,6 @@ class DockerImageItem(object):
         return removed
 
     @staticmethod
-    def _parse_xml_desc(item, desc, user):
-        meta_data = {
-            'xml': desc['xml']
-        }
-
-        # parse and inject advanced meta data and description
-        clim = as_model(desc['xml'])
-        item['description'] = '**%s**\n\n%s' % (clim.title, clim.description)
-
-        if clim.category:
-            meta_data['category'] = clim.category
-        if clim.version:
-            meta_data['version'] = clim.version
-        if clim.license:
-            meta_data['license'] = clim.license
-        if clim.contributor:
-            meta_data['contributor'] = clim.contributor
-        if clim.acknowledgements:
-            meta_data['acknowledgements'] = clim.acknowledgements
-
-        if clim.documentation_url:
-            fileModel = File()
-            fileModel.createLinkFile('Documentation', item, 'item',
-                                     clim.documentation_url,
-                                     user, reuseExisting=True)
-        return meta_data
-
-    @staticmethod
-    def _parse_yaml_desc(item, desc, user):
-        meta_data = {
-            'yaml': desc['yaml']
-        }
-
-        # TODO
-        return meta_data
-
-    @staticmethod
     def saveImage(name, cli_dict, docker_image, user, baseFolder):
         """
         :param baseFolder
@@ -234,9 +195,9 @@ class DockerImageItem(object):
                 meta_data['type'] = desc['type']
 
             if 'xml' in desc:
-                meta_data.update(DockerImageItem._parse_xml_desc(item, desc, user))
+                meta_data.update(parse_xml_desc(item, desc, user))
             elif 'yaml' in desc:
-                meta_data.update(DockerImageItem._parse_yaml_desc(item, desc))
+                meta_data.update(parse_yaml_desc(item, desc))
 
             itemModel.setMetadata(item, meta_data)
 
