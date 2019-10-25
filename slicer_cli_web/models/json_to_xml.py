@@ -2,7 +2,7 @@ import six
 from xml.etree.ElementTree import Element, SubElement, dump
 
 
-def copy(parent, data, *keys, **kwargs):
+def _copy(parent, data, *keys, **kwargs):
     for key in keys:
         if key in data:
             SubElement(parent, key).text = str(data[key])
@@ -12,7 +12,7 @@ def copy(parent, data, *keys, **kwargs):
             SubElement(parent, value).text = str(data[key])
 
 
-def copy_attr(parent, data, *keys, **kwargs):
+def _copy_attr(parent, data, *keys, **kwargs):
     for key in keys:
         if key in data:
             parent.set(key, str(data[key]))
@@ -22,16 +22,16 @@ def copy_attr(parent, data, *keys, **kwargs):
             parent.set(value, str(data[key]))
 
 
-def convert_param(parent, param):
+def _convert_param(parent, param):
     p = SubElement(parent, param['type'])
     if param.get('multiple'):
         p.set('multiple', 'true')
 
-    copy(p, param, 'label', 'description', 'name', 'index', 'channel')
+    _copy(p, param, 'label', 'description', 'name', 'index', 'channel')
 
-    copy_attr(p, param, 'coordinateSystem', 'fileExtensions',
-              image_type='type', table_type='type', geometry_type='type',
-              transform_type='type')
+    _copy_attr(p, param, 'coordinateSystem', 'fileExtensions',
+               image_type='type', table_type='type', geometry_type='type',
+               transform_type='type')
 
     if 'default' in param:
         default_value = param['default']
@@ -52,38 +52,38 @@ def convert_param(parent, param):
 
     if 'constraints' in param:
         c = SubElement(p, 'constraints')
-        copy(c, param['constraints'], 'minimum', 'maximum', 'step')
+        _copy(c, param['constraints'], 'minimum', 'maximum', 'step')
 
     if 'reference' in param:
         ref = param['reference']
         if isinstance(ref, dict):
             ref_e = SubElement(p, 'reference')
-            copy_attr(ref_e, ref, 'role', 'parameter')
+            _copy_attr(ref_e, ref, 'role', 'parameter')
             ref_e.text = ref['value']
         else:
             p.set('reference', ref)
 
 
-def convert_group(parent, group):
+def _convert_group(parent, group):
     parameters = SubElement(parent, 'parameters')
     if group.get('advanced'):
         parameters.set('advanced', 'true')
-    copy(parameters, group, 'label', 'description')
+    _copy(parameters, group, 'label', 'description')
 
     if 'parameters' not in group:
         return
 
     for param in group['parameters']:
-        convert_param(parameters, param)
+        _convert_param(parameters, param)
 
 
 def json_to_xml(data):
     root = Element('executable')
-    copy(root, data, 'category', 'title', 'description', 'version', 'license',
-         'contributor', 'documentation_url', 'acknowledgements')
+    _copy(root, data, 'category', 'title', 'description', 'version', 'license',
+          'contributor', 'documentation_url', 'acknowledgements')
 
     if 'parameter_groups' in data:
         for group in data['parameter_groups']:
-            convert_group(root, group)
+            _convert_group(root, group)
 
     return dump(root)

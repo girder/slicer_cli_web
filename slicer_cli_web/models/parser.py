@@ -13,7 +13,7 @@ with open(join(dirname(__file__), 'schema.json')) as f:
     json_schema = json.load(f)
 
 
-def _parse_xml_desc(item, desc, user, xml):
+def _parse_xml_desc(item, user, xml):
     meta_data = {
         'xml': xml
     }
@@ -42,22 +42,22 @@ def _parse_xml_desc(item, desc, user, xml):
 
 
 def parse_xml_desc(item, desc, user):
-    return _parse_xml_desc(item, desc, user, desc['xml'])
+    return _parse_xml_desc(item, user, desc['xml'])
 
 
-def _parse_json_desc(item, desc, user, data):
+def _parse_json_desc(item, user, data):
     validate(data, schema=json_schema)
     xml = json_to_xml(data)
-    return _parse_xml_desc(item, desc, user, xml)
+    return _parse_xml_desc(item, user, xml)
 
 
 def parse_json_desc(item, desc, user):
     data = json.loads(desc['json'])
 
-    return _parse_json_desc(item, desc, user, data)
+    return _parse_json_desc(item, user, data)
 
 
 def parse_yaml_desc(item, desc, user):
     data = yaml.safe_load(desc['yaml'])
 
-    return _parse_json_desc(item, desc, user, data)
+    return _parse_json_desc(item, user, data)
