@@ -598,7 +598,9 @@
                     "fileExtensions": {
                       "$ref": "#/definitions/fileExtensions"
                     },
-                    "reference": {}
+                    "reference": {
+                      "$ref": "#/definitions/reference"
+                    }
                   }
                 },
                 {
