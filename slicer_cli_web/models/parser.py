@@ -1,17 +1,25 @@
-import jsonschema
+import json
+from jsonschema import validate
+from os.path import join, dirname
 import yaml
+
 
 from girder.models.file import File
 from ..cli_utils import as_model
+from .json_to_xml import json_to_xml
 
 
-def parse_xml_desc(item, desc, user):
+with open(join(dirname(__file__), 'schema.json')) as f:
+    json_schema = json.load(f)
+
+
+def _parse_xml_desc(item, desc, user, xml):
     meta_data = {
-        'xml': desc['xml']
+        'xml': xml
     }
 
     # parse and inject advanced meta data and description
-    clim = as_model(desc['xml'])
+    clim = as_model(xml)
     item['description'] = '**%s**\n\n%s' % (clim.title, clim.description)
 
     if clim.category:
@@ -33,12 +41,23 @@ def parse_xml_desc(item, desc, user):
     return meta_data
 
 
-def parse_yaml_desc(item, desc, user):
-    meta_data = {
-        'yaml': desc['yaml']
-    }
+def parse_xml_desc(item, desc, user):
+    return _parse_xml_desc(item, desc, user, desc['xml'])
 
-    desc = yaml.safe_load(desc['yaml'])
-    jsonschema.validate(desc, )
-    # TODO
-    return meta_data
+
+def _parse_json_desc(item, desc, user, data):
+    validate(data, schema=json_schema)
+    xml = json_to_xml(data)
+    return _parse_xml_desc(item, desc, user, xml)
+
+
+def parse_json_desc(item, desc, user):
+    data = json.loads(desc['json'])
+
+    return _parse_json_desc(item, desc, user, data)
+
+
+def parse_yaml_desc(item, desc, user):
+    data = yaml.safe_load(desc['yaml'])
+
+    return _parse_json_desc(item, desc, user, data)

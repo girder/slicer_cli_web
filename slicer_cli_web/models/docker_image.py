@@ -23,7 +23,7 @@ from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.file import File
-from .parser import parse_xml_desc, parse_yaml_desc
+from .parser import parse_xml_desc, parse_yaml_desc, parse_json_desc
 
 
 def _split(name):
@@ -193,11 +193,14 @@ class DockerImageItem(object):
             meta_data = dict(slicerCLIType='task')
             if 'type' in desc:
                 meta_data['type'] = desc['type']
+            desc_type = desc.get('desc-type', 'xml')
 
-            if 'xml' in desc:
+            if desc_type == 'xml':
                 meta_data.update(parse_xml_desc(item, desc, user))
-            elif 'yaml' in desc:
-                meta_data.update(parse_yaml_desc(item, desc))
+            elif desc_type == 'yaml':
+                meta_data.update(parse_yaml_desc(item, desc, user))
+            elif desc_type == 'json':
+                meta_data.update(parse_json_desc(item, desc, user))
 
             itemModel.setMetadata(item, meta_data)
 

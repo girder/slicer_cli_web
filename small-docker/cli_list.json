@@ -3,9 +3,11 @@
     "type": "python"
   },
   "Example2": {
-    "type": "python"
+    "type": "python",
+    "desc-type": "yaml"
   },
   "Example3": {
-    "type": "python"
+    "type": "python",
+    "desc-type": "json"
   }
 }
