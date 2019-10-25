@@ -1,4 +1,26 @@
 import pytest
+import re
+
+from slicer_cli_web.models.parser import parse_xml_desc, parse_json_desc, parse_yaml_desc
+
+
+def assert_string_equal(a, b):
+    """
+    assert equal ignoring withspaces
+
+    """
+    if a == b:
+        return
+    assert (a is None) == (b is None)
+    if a is None:
+        return
+
+    white = re.compile('\\s+')
+
+    a_clean = white.sub(a, '')
+    b_clean = white.sub(b, '')
+
+    assert a_clean == b_clean
 
 
 @pytest.fixture
@@ -18,20 +40,42 @@ def item(folder, admin):
 
 
 @pytest.mark.plugin('slicer_cli_web')
-def test_xml_parser(admin, item):  # noqa
-    from slicer_cli_web.models.parser import parse_xml_desc
-
-    xml = """
-<?xml version="1.0" encoding="UTF-8"?>
+class TestParserSimple:
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>A</category>
   <title>T</title>
   <description>D</description>
-</executable>
+</executable>"""
+
+    json = """{
+    "$schema": "../../slicer_cli_web/models/schema.json",
+    "category": "A",
+    "title": "T",
+    "description": "D",
+    "parameter_groups": []
+}"""
+
+    yaml = """category: A
+title: T
+description: D
+parameter_groups: []
 """
 
-    meta = parse_xml_desc(item, dict(xml=xml), admin)
-    assert meta.get('xml') == xml
-    assert meta.get('category') == 'A'
-    assert meta.get('title') == 'T'
-    assert meta.get('description') == 'D'
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserSimple.xml), admin)
+        assert_string_equal(meta.get('xml'), TestParserSimple.xml)
+        assert meta.get('category') == 'A'
+        assert item.get('description') == '**T**\n\nD'
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserSimple.json), admin)
+        assert_string_equal(meta.get('xml'), TestParserSimple.xml)
+        assert meta.get('category') == 'A'
+        assert item.get('description') == '**T**\n\nD'
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserSimple.yaml), admin)
+        assert_string_equal(meta.get('xml'), TestParserSimple.xml)
+        assert meta.get('category') == 'A'
+        assert item.get('description') == '**T**\n\nD'
