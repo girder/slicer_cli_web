@@ -6,23 +6,6 @@
     "description"
   ],
   "definitions": {
-    "flag": {
-      "type": "object",
-      "required": [
-        "value"
-      ],
-      "properties": {
-        "value": {
-          "type": "string"
-        },
-        "alias": {
-          "type": "string"
-        },
-        "decpreatedalias": {
-          "type": "string"
-        }
-      }
-    },
     "xyz": {
       "type": "object",
       "required": [
@@ -44,13 +27,16 @@
     },
     "coordinateSystem": {
       "type": "string",
+      "description": "Specifies the coordinate system. If unspecified, the executing module is free to interpret the coordinates in the most appropriate way. For more information about the different systems, see\n<a href=\"http://www.slicer.org/slicerWiki/index.php/Coordinate_systems\">Coordinate Systems</a>.<ul>  <li><b>ras</b> (Right, Anterior, Superior) coordinate system.</li>      <li><b>ijk</b> image coordinate system.</li><li><b>lps</b> (Left, Posterior, Superior) coordinate system.</li></ul>",
       "enum": [
         "lps",
+        "ijk",
         "ras"
       ]
     },
     "fileExtensions": {
       "type": "string",
+      "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
       "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI."
     },
     "reference": {
@@ -182,16 +168,33 @@
                 },
                 "name": {
                   "type": "string",
+                  "pattern": "[_a-zA-Z][_a-zA-Z0-9]*",
                   "description": "required if longflag is not specified)\nThe name of a command line argument. If name is not specified, longflag will be used (e.g. conductance, numberOfIterations). The name must be usable as a C++ variable. For example, it CANNOT have spaces or special characters and must start with a letter."
                 },
                 "flag": {
                   "description": "single character command line flag (e.g. s, W). Can provide \"alias\"'s (comma separated) if different flags can be used to activate the same parameter. Can provide \"deprecatedalias\"'s (comma separated) if different flags can be used to set the same parameter but the user should be notified of which \"updated\" flag to use. Parameters with flags are considered \"optional\" and do not have be specified or assigned. Parameters with flags allow one to override a default behavior.",
                   "oneOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "-?[a-zA-Z]"
                     },
                     {
-                      "$ref": "#/definitions/flag"
+                      "type": "object",
+                      "required": [
+                        "value"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string",
+                          "pattern": "-?[a-zA-Z]"
+                        },
+                        "alias": {
+                          "type": "string"
+                        },
+                        "decpreatedalias": {
+                          "type": "string"
+                        }
+                      }
                     }
                   ]
                 },
@@ -199,10 +202,26 @@
                   "description": "A command line flag (e.g. spacing, Watcher). Can provide \"alias\"'s (comma separated) if different long flags can be used to activate the same parameter. Can provide \"deprecatedalias\"'s (comma separated) if different long flags can be used to set the same parameter but the user should be notified of which \"updated\" long flag to use. Parameters with flags are considered \"optional\" and do not have be specified or assigned. Parameters with flags allow one to override a default behavior.\nNote: apparently you can't use hyphens in the longflag, so things like --my-option are not allows. -gcs",
                   "oneOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "-?-?[_a-zA-Z][_a-zA-Z0-9]*"
                     },
                     {
-                      "$ref": "#/definitions/flag"
+                      "type": "object",
+                      "required": [
+                        "value"
+                      ],
+                      "properties": {
+                        "value": {
+                          "type": "string",
+                          "pattern": "-?-?[_a-zA-Z][_a-zA-Z0-9]*"
+                        },
+                        "alias": {
+                          "type": "string"
+                        },
+                        "decpreatedalias": {
+                          "type": "string"
+                        }
+                      }
                     }
                   ]
                 },
@@ -668,6 +687,7 @@
                     "fileExtensions": {
                       "type": "string",
                       "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI.",
+                      "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
                       "default": ".tsv|.csv|.txt|.ctbl"
                     },
                     "reference": {
@@ -702,6 +722,7 @@
                     "fileExtensions": {
                       "type": "string",
                       "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI.",
+                      "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
                       "default": ".tfm,.h5,.hdf5,.mat,.txt"
                     },
                     "reference": {
