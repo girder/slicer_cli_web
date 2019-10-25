@@ -1,7 +1,13 @@
 import pytest
 import re
+import os
 
 from slicer_cli_web.models.parser import parse_xml_desc, parse_json_desc, parse_yaml_desc
+
+
+def read_file(name):
+    with open(os.path.join(os.path.dirname(__file__), 'data', name)) as f:
+        return f.read()
 
 
 def assert_string_equal(a, b):
@@ -41,41 +47,9 @@ def item(folder, admin):
 
 @pytest.mark.plugin('slicer_cli_web')
 class TestParserSimple:
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
-<executable>
-  <category>A</category>
-  <title>T</title>
-  <description>D</description>
-  <version>V</version>
-  <license>L</license>
-  <contributor>C</contributor>
-  <acknowledgements>A</acknowledgements>
-  <documentation-url>https://github.com</documentation-url>
-</executable>"""
-
-    json = """{
-    "$schema": "../../slicer_cli_web/models/schema.json",
-    "category": "A",
-    "title": "T",
-    "description": "D",
-    "version": "V",
-    "license": "L",
-    "contributor": "C",
-    "acknowledgements": "A",
-    "documentation_url": "https://github.com",
-    "parameter_groups": []
-}"""
-
-    yaml = """category: A
-title: T
-description: D
-version: V
-license: L
-contributor: C
-acknowledgements: A
-documentation_url: https://github.com
-parameter_groups: []
-"""
+    xml = read_file('parser_simple.xml')
+    json = read_file('parser_simple.json')
+    yaml = read_file('parser_simple.yaml')
 
     def verify(self, meta, item):
         from girder.models.item import Item
@@ -105,4 +79,26 @@ parameter_groups: []
 
     def test_yaml(self, admin, item):
         meta = parse_yaml_desc(item, dict(yaml=TestParserSimple.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+class TestParserParamsSimple:
+    xml = read_file('parser_params_simple.xml')
+    json = read_file('parser_params_simple.json')
+    yaml = read_file('parser_params_simple.yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserParamsSimple.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserParamsSimple.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserParamsSimple.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserParamsSimple.yaml), admin)
         self.verify(meta, item)

@@ -88,5 +88,5 @@ def json_to_xml(data):
             _convert_group(root, group)
 
     io = six.StringIO()
-    ElementTree(root).write(io, 'unicode', True)
+    ElementTree(root).write(io, 'unicode' if six.PY3 else None, True)
     return io.getvalue()
