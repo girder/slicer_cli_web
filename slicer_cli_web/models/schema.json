@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
   "required": [
-    "executable",
     "title",
     "description"
   ],
@@ -23,12 +22,58 @@
           "type": "string"
         }
       }
+    },
+    "xyz": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": {
+          "type": "number"
+        },"y": {
+          "type": "number"
+        },"z": {
+          "type": "number"
+        }
+      }
+    },
+    "coordinateSystem": {
+      "type": "string",
+      "enum": [
+        "lps",
+        "ras"
+      ]
+    },
+    "fileExtensions": {
+      "type": "string",
+      "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI."
+    },
+    "reference": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": " The attribute reference can mean different things based on the parameter type. If the parameter is a transform and the reference is transformable, then the transform hierarchy of the reference is manipulated such that the reference is under the transform. If the parameter is an image or a model, then the parameter is placed in subject hierarchy at the same level as the reference (note: not available in Slicer3). If the parameter is an image, reference will be used to initialize lookup table of the output image (note: not available in Slicer4)."
+        }, {
+          "type": "object",
+          "description": "A forward reference from the parameter to another parameter \"bar\" with the reference role \"foo\".",
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            },
+            "parameter": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     }
   },
   "properties": {
-    "executable": {
-      "type": "string"
-    },
     "category": {
       "type": "string",
       "description": "Classifies the executable (e.g. Filtering, Segmentation). Category can be a dot separated string. Multiple categories can be given and should be separated by a semicolon."
@@ -166,6 +211,9 @@
                     "input",
                     "output"
                   ]
+                },
+                "multiple": {
+                  "type": "boolean"
                 }
               },
               "oneOf": [
@@ -262,24 +310,357 @@
                 },
                 {
                   "type": "object",
-                  "required": ["channel"],
                   "properties": {
                     "type": {
                       "type": "string",
                       "enum": [
-                        "file",
-                        "directory",
-                        "image",
-                        "pointfile",
-                        "region",
-                        "table",
-                        "transform",
-                        "geometry",
-                        "point"
+                        "string-vector"
+                      ]
+                    },
+                    "default": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "integer-vector"
+                      ]
+                    },
+                    "default": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },{
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "float-vector",
+                        "double-vector"
+                      ]
+                    },
+                    "default": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["enumeration"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "string-enumeration"
                       ]
                     },
                     "default": {
                       "type": "string"
+                    },
+                    "enumeration": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "enumeration"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "integer-enumeration"
+                      ]
+                    },
+                    "default": {
+                      "type": "integer"
+                    },
+                    "enumeration": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "enumeration"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "float-enumeration",
+                        "double-enumeration"
+                      ]
+                    },
+                    "default": {
+                      "type": "number"
+                    },
+                    "enumeration": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "description": "parameter can be used to specify rectangular ROIs. The command-line syntax is --region X_center,Y_center,Z_center,X_radius,Y_Radius,Z_Radius.",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "region"
+                      ]
+                    },
+                    "default": {
+                      "type": "object",
+                      "required": ["center", "radius"],
+                      "properties": {
+                        "center": {
+                          "$ref": "#/definitions/xyz"
+                        },
+                        "radius": {
+                          "$ref": "#/definitions/xyz"
+                        }
+                      }
+                    },
+                    "coordinateSystem": {
+                      "$ref": "#/definitions/coordinateSystem"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "image"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "image_type": {
+                      "type": "string",
+                      "enum": [
+                        "scalar","label",
+                        "tensor",
+                        "diffusion-weighted",
+                        "vector",
+                        "model"
+                      ]
+                    },
+                    "fileExtensions": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
+                    "reference": {
+                      "$ref": "#/definitions/reference"
+                    }
+                  }
+                },
+
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "point"
+                      ]
+                    },
+                    "default": {
+                      "$ref": "#/definitions/xyz"
+                    },
+                    "coordinateSystem": {
+                      "$ref": "#/definitions/coordinateSystem"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "pointfile"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "coordinateSystem": {
+                      "$ref": "#/definitions/coordinateSystem"
+                    },
+                    "fileExtensions": {
+                      "$ref": "#/definitions/fileExtensions"
+                    }
+                  }
+                },
+
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "file"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "fileExtensions": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
+                    "reference": {}
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "directory"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "table"
+                      ]
+                    },
+                    "table_type": {
+                      "type": "string",
+                      "enum": [
+                        "color"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "geometry"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "geometry_type": {
+                      "type": "string",
+                      "enum": [
+                        "fiberbundle",
+                        "model"
+                      ]
+                    },
+                    "fileExtensions": {
+                      "type": "string",
+                      "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI.",
+                      "default": ".tsv|.csv|.txt|.ctbl"
+                    },
+                    "reference": {
+                      "$ref": "#/definitions/reference"
+                    }
+                  }
+                },
+
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "transform"
+                      ]
+                    },
+                    "transform_type": {
+                      "type": "string",
+                      "description": "If not specified then any transform is accepted (linear, non-linar, composite, ...). By specifying a type, accepted transforms can be limited to 'linear' = any linear transform; 'non-linear' = grid, displacement field; 'bspline' = b-spline transform.",
+                      "enum": [
+                        "linear",
+                        "nonlinear",
+                        "bspline"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "fileExtensions": {
+                      "type": "string",
+                      "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI.",
+                      "default": ".tfm,.h5,.hdf5,.mat,.txt"
+                    },
+                    "reference": {
+                      "$ref": "#/definitions/reference"
                     }
                   }
                 }
