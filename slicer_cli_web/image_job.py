@@ -300,7 +300,7 @@ def getCliData(name, client, jobModel, job):
             cli_dict = cli_dict.decode('utf8')
         cli_dict = json.loads(cli_dict)
 
-        for key, info in six.itervalues(cli_dict):
+        for key, info in six.iteritems(cli_dict):
             desc_type = info.get('desc-type', 'xml')
             cli_desc = getDockerOutput(name, '%s --%s' % (key, desc_type), client)
 

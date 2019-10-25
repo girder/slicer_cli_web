@@ -1,5 +1,5 @@
 import six
-from xml.etree.ElementTree import Element, SubElement, dump
+from xml.etree.ElementTree import Element, SubElement, ElementTree
 
 
 def _copy(parent, data, *keys, **kwargs):
@@ -86,4 +86,6 @@ def json_to_xml(data):
         for group in data['parameter_groups']:
             _convert_group(root, group)
 
-    return dump(root)
+    io = six.io.StringIO()
+    ElementTree(root).write(io, 'unicode', True)
+    return io.getvalue()
