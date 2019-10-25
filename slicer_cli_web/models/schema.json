@@ -1,4 +1,293 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema"
-
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "required": [
+    "executable",
+    "title",
+    "description"
+  ],
+  "definitions": {
+    "flag": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "decpreatedalias": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "properties": {
+    "executable": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "Classifies the executable (e.g. Filtering, Segmentation). Category can be a dot separated string. Multiple categories can be given and should be separated by a semicolon."
+    },
+    "title": {
+      "type": "string",
+      "description": "A word or two describing the executable (e.g. Median Filter, Anisotropic Diffusion"
+    },
+    "description": {
+      "type": "string",
+      "description": "A long description of the executable. Any double quotes will be converted to single quotes."
+    },
+    "version": {
+      "type": "string",
+      "description": "The version of the command line executable. A suggested format is:\n\nmajor.minor.patch.build.status\n\nwhere status is\n\nvc: version controlled (pre-alpha), build can be a serial revision number, if any (like svn might have).\na: alpha\nb: beta\nrc: release candidate\nfcs: first customer ship"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "The location of extended documentation for the executable, (e.g. http://www.na-mic.org/foo.html)."
+    },
+    "license": {
+      "type": "string",
+      "description": "The type of license or a url containing the license, (e.g. Berkeley, Apache, http://www.slicer.org/copyright/copyright.txt)."
+    },
+    "contributor": {
+      "type": "string",
+      "description": "The author(s) of the command line executable (e.g. Pieper, Jim Miller)."
+    },
+    "acknowledgements": {
+      "type": "string",
+      "description": " Acknowledgements for funding agency, employer, colleague, (e.g. This work is part of the National Alliance for Medical Image Computing NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149)."
+    },
+    "parameter_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "Starts a group of parameters.",
+        "required": [
+          "advanced",
+          "label",
+          "description",
+          "parameters"
+        ],
+        "properties": {
+          "advanced": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string",
+            "description": "A short string that summarizes a parameter group, (e.g. I/O, Diffusion)"
+          },
+          "description": {
+            "type": "string",
+            "description": "A short description of the parameter group, (e.g. Input/Output Parameters, Anitostropic Diffusion Parameters). Any double quotes will be converted to single quotes."
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "description"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "boolean",
+                    "integer",
+                    "float",
+                    "double",
+                    "integer-vector",
+                    "float-vector",
+                    "double-vector",
+                    "string-vector",
+                    "integer-enumeration",
+                    "float-enumeration",
+                    "double-enumeration",
+                    "string-enumeration",
+                    "file",
+                    "directory",
+                    "image",
+                    "geometry",
+                    "point",
+                    "pointfile",
+                    "region",
+                    "table",
+                    "transform"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "description": "A brief description of the parameter. Any double quotes will be converted to single quotes."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "A label for parameter (e.g. Dicom Directory, Conductance)."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "required if longflag is not specified)\nThe name of a command line argument. If name is not specified, longflag will be used (e.g. conductance, numberOfIterations). The name must be usable as a C++ variable. For example, it CANNOT have spaces or special characters and must start with a letter."
+                },
+                "flag": {
+                  "description": "single character command line flag (e.g. s, W). Can provide \"alias\"'s (comma separated) if different flags can be used to activate the same parameter. Can provide \"deprecatedalias\"'s (comma separated) if different flags can be used to set the same parameter but the user should be notified of which \"updated\" flag to use. Parameters with flags are considered \"optional\" and do not have be specified or assigned. Parameters with flags allow one to override a default behavior.",
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/definitions/flag"
+                    }
+                  ]
+                },
+                "longflag": {
+                  "description": "A command line flag (e.g. spacing, Watcher). Can provide \"alias\"'s (comma separated) if different long flags can be used to activate the same parameter. Can provide \"deprecatedalias\"'s (comma separated) if different long flags can be used to set the same parameter but the user should be notified of which \"updated\" long flag to use. Parameters with flags are considered \"optional\" and do not have be specified or assigned. Parameters with flags allow one to override a default behavior.\nNote: apparently you can't use hyphens in the longflag, so things like --my-option are not allows. -gcs",
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/definitions/flag"
+                    }
+                  ]
+                },
+                "index": {
+                  "type": "integer",
+                  "description": "An integer starting at 0, that specifies a command line argument that has no flags.\nNote: if you use index for, say, an image, the user must enter some input value into the GUI. If the user does not fill in a value, the plugin is not run at all. However, slicer will \"seem\" to run it, and no error message is given. -gcs",
+                  "minimum": 0
+                },
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "input",
+                    "output"
+                  ]
+                }
+              },
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "string"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "boolean"
+                      ]
+                    },
+                    "default": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["integer"]
+                    },
+                    "default": {
+                      "type": "integer"
+                    },
+                    "constraints": {
+                      "type": "object",
+                      "description": "Encloses constraints on the value of a non-vector, non-enumerated parameter.",
+                      "properties": {
+                        "minimum": {
+                          "type": "integer",
+                          "description": "The minimum allowed value for the parameter. If not specified, the minimum is the smallest possible value for the parameter type."
+                        },
+                        "maximum": {
+                          "type": "integer",
+                          "description": "The maximum allowed value for the parameter. If not specified, the maximum is the largest possible value for the parameter type."
+                        },
+                        "step": {
+                          "type": "integer",
+                          "description": "The increment for the parameter."
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "float",
+                        "double"
+                      ]
+                    },
+                    "default": {
+                      "type": "number"
+                    },
+                    "constraints": {
+                      "type": "object",
+                      "description": "Encloses constraints on the value of a non-vector, non-enumerated parameter.",
+                      "properties": {
+                        "minimum": {
+                          "type": "integer",
+                          "description": "The minimum allowed value for the parameter. If not specified, the minimum is the smallest possible value for the parameter type."
+                        },
+                        "maximum": {
+                          "type": "integer",
+                          "description": "The maximum allowed value for the parameter. If not specified, the maximum is the largest possible value for the parameter type."
+                        },
+                        "step": {
+                          "type": "integer",
+                          "description": "The increment for the parameter."
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["channel"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "file",
+                        "directory",
+                        "image",
+                        "pointfile",
+                        "region",
+                        "table",
+                        "transform",
+                        "geometry",
+                        "point"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
 }
