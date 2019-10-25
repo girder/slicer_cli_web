@@ -10,6 +10,11 @@ def read_file(name):
         return f.read()
 
 
+def read_example_file(example, suffix):
+    with open(os.path.join(os.path.dirname(__file__), '..', 'small-docker', example, '%s.%s' % (example, suffix))) as f:
+        return f.read()
+
+
 def assert_string_equal(a, b):
     """
     Assert equal ignoring withspaces
@@ -101,4 +106,70 @@ class TestParserParamsSimple:
 
     def test_yaml(self, admin, item):
         meta = parse_yaml_desc(item, dict(yaml=TestParserParamsSimple.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+class TestParserExample1:
+    xml = read_example_file('Example1', 'xml')
+    json = read_example_file('Example1', 'json')
+    yaml = read_example_file('Example1', 'yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserExample1.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserExample1.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserExample1.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserExample1.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+class TestParserExample2:
+    xml = read_example_file('Example2', 'xml')
+    json = read_example_file('Example2', 'json')
+    yaml = read_example_file('Example2', 'yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserExample2.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserExample2.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserExample2.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserExample2.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+class TestParserExample3:
+    xml = read_example_file('Example3', 'xml')
+    json = read_example_file('Example3', 'json')
+    yaml = read_example_file('Example3', 'yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserExample3.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserExample3.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserExample3.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserExample3.yaml), admin)
         self.verify(meta, item)

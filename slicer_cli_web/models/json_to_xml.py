@@ -33,6 +33,17 @@ def _convert_param(parent, param):
                image_type='type', table_type='type', geometry_type='type',
                transform_type='type')
 
+    for key in ['flag', 'longflag']:
+        if key not in param:
+            continue
+        val = param[key]
+        flag = SubElement(p, key)
+        if isinstance(val, dict):
+            _copy_attr(flag, val, 'alias', 'decpreatedalias')
+            flag.text = val['value']
+        else:
+            flag.text = val
+
     if 'default' in param:
         default_value = param['default']
         d = SubElement(p, 'default')
