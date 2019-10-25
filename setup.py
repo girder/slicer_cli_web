@@ -29,7 +29,7 @@ extras_require = {}
 
 # perform the install
 setup(
-    name='slicer-cli-web',
+    name='girder-slicer-cli-web',
     use_scm_version={'local_scheme': prerelease_local_scheme},
     setup_requires=['setuptools-scm'],
     description='A girder plugin for exposing slicer CLIs over the web',
