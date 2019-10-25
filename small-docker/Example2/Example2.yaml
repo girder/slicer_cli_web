@@ -9,6 +9,7 @@ parameter_groups:
   description: Input/output parameters.
   parameters:
   - type: image
+    name: ImageFile
     label: Input image
     channel: input
     description: Input image

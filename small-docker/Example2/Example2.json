@@ -13,6 +13,7 @@
       "parameters": [
         {
           "type": "image",
+          "name": "ImageFile",
           "label": "Input image",
           "channel": "input",
           "description": "Input image",
