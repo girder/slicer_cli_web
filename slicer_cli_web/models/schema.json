@@ -25,13 +25,19 @@
     },
     "xyz": {
       "type": "object",
-      "required": ["x", "y", "z"],
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
       "properties": {
         "x": {
           "type": "number"
-        },"y": {
+        },
+        "y": {
           "type": "number"
-        },"z": {
+        },
+        "z": {
           "type": "number"
         }
       }
@@ -52,7 +58,8 @@
         {
           "type": "string",
           "description": " The attribute reference can mean different things based on the parameter type. If the parameter is a transform and the reference is transformable, then the transform hierarchy of the reference is manipulated such that the reference is under the transform. If the parameter is an image or a model, then the parameter is placed in subject hierarchy at the same level as the reference (note: not available in Slicer3). If the parameter is an image, reference will be used to initialize lookup table of the output image (note: not available in Slicer4)."
-        }, {
+        },
+        {
           "type": "object",
           "description": "A forward reference from the parameter to another parameter \"bar\" with the reference role \"foo\".",
           "required": [
@@ -216,6 +223,23 @@
                   "type": "boolean"
                 }
               },
+              "allOf": [
+                {
+                  "required": [
+                    "index"
+                  ]
+                },
+                {
+                  "required": [
+                    "longflag"
+                  ]
+                },
+                {
+                  "required": [
+                    "flag"
+                  ]
+                }
+              ],
               "oneOf": [
                 {
                   "type": "object",
@@ -250,7 +274,9 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["integer"]
+                      "enum": [
+                        "integer"
+                      ]
                     },
                     "default": {
                       "type": "integer"
@@ -341,7 +367,8 @@
                       }
                     }
                   }
-                },{
+                },
+                {
                   "type": "object",
                   "properties": {
                     "type": {
@@ -361,7 +388,9 @@
                 },
                 {
                   "type": "object",
-                  "required": ["enumeration"],
+                  "required": [
+                    "enumeration"
+                  ],
                   "properties": {
                     "type": {
                       "type": "string",
@@ -427,7 +456,6 @@
                     }
                   }
                 },
-
                 {
                   "type": "object",
                   "required": [
@@ -443,7 +471,10 @@
                     },
                     "default": {
                       "type": "object",
-                      "required": ["center", "radius"],
+                      "required": [
+                        "center",
+                        "radius"
+                      ],
                       "properties": {
                         "center": {
                           "$ref": "#/definitions/xyz"
@@ -476,7 +507,8 @@
                     "image_type": {
                       "type": "string",
                       "enum": [
-                        "scalar","label",
+                        "scalar",
+                        "label",
                         "tensor",
                         "diffusion-weighted",
                         "vector",
@@ -491,7 +523,6 @@
                     }
                   }
                 },
-
                 {
                   "type": "object",
                   "required": [
@@ -535,7 +566,6 @@
                     }
                   }
                 },
-
                 {
                   "type": "object",
                   "required": [
@@ -629,7 +659,6 @@
                     }
                   }
                 },
-
                 {
                   "type": "object",
                   "required": [
