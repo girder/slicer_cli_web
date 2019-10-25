@@ -11,7 +11,8 @@ def read_file(name):
 
 
 def read_example_file(example, suffix):
-    with open(os.path.join(os.path.dirname(__file__), '..', 'small-docker', example, '%s.%s' % (example, suffix))) as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'small-docker', example,
+                           '%s.%s' % (example, suffix))) as f:
         return f.read()
 
 
