@@ -86,8 +86,6 @@ executors:
     docker:
       - image: girder/girder_test:latest-py3
       - image: circleci/mongo:3.4-ram
-        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
-        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
         command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
       - image: rabbitmq
 
@@ -99,7 +97,6 @@ jobs:
       - tox:
           env: flake8,lintclient
   py27:
-    working_directory: ~/project
     executor: py2
     steps:
       - checkout
@@ -107,7 +104,6 @@ jobs:
       - tox:
           env: py27
   py36:
-    working_directory: ~/project
     executor: py3
     steps:
       - checkout
@@ -115,7 +111,6 @@ jobs:
       - tox:
           env: py36
   py37:
-    working_directory: ~/project
     executor: py3
     steps:
       - checkout
