@@ -119,7 +119,6 @@
         "type": "object",
         "description": "Starts a group of parameters.",
         "required": [
-          "advanced",
           "label",
           "description",
           "parameters"
@@ -223,7 +222,7 @@
                   "type": "boolean"
                 }
               },
-              "allOf": [
+              "anyOf": [
                 {
                   "required": [
                     "index"
@@ -238,6 +237,20 @@
                   "required": [
                     "flag"
                   ]
+                },
+                {
+                  "required": [
+                    "name",
+                    "channel"
+                  ],
+                  "properties": {
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "output"
+                      ]
+                    }
+                  }
                 }
               ],
               "oneOf": [
@@ -265,7 +278,8 @@
                       ]
                     },
                     "default": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "default": false
                     }
                   }
                 },
