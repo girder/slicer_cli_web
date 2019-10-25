@@ -6,7 +6,7 @@ from slicer_cli_web.models.parser import parse_xml_desc, parse_json_desc, parse_
 
 def assert_string_equal(a, b):
     """
-    assert equal ignoring withspaces
+    Assert equal ignoring withspaces
 
     """
     if a == b:
@@ -46,6 +46,11 @@ class TestParserSimple:
   <category>A</category>
   <title>T</title>
   <description>D</description>
+  <version>V</version>
+  <license>L</license>
+  <contributor>C</contributor>
+  <acknowledgements>A</acknowledgements>
+  <documentation-url>https://github.com</documentation-url>
 </executable>"""
 
     json = """{
@@ -53,29 +58,51 @@ class TestParserSimple:
     "category": "A",
     "title": "T",
     "description": "D",
+    "version": "V",
+    "license": "L",
+    "contributor": "C",
+    "acknowledgements": "A",
+    "documentation_url": "https://github.com",
     "parameter_groups": []
 }"""
 
     yaml = """category: A
 title: T
 description: D
+version: V
+license: L
+contributor: C
+acknowledgements: A
+documentation_url: https://github.com
 parameter_groups: []
 """
 
-    def test_xml(self, admin, item):
-        meta = parse_xml_desc(item, dict(xml=TestParserSimple.xml), admin)
+    def verify(self, meta, item):
+        from girder.models.item import Item
+
         assert_string_equal(meta.get('xml'), TestParserSimple.xml)
         assert meta.get('category') == 'A'
+        assert meta.get('version') == 'V'
+        assert meta.get('license') == 'L'
+        assert meta.get('contributor') == 'C'
+        assert meta.get('acknowledgements') == 'A'
+
         assert item.get('description') == '**T**\n\nD'
+
+        files = list(Item().childFiles(item))
+        assert len(files) == 1
+        link = files[0]
+        assert link['name'] == 'Documentation'
+        assert link['linkUrl'] == 'https://github.com'
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserSimple.xml), admin)
+        self.verify(meta, item)
 
     def test_json(self, admin, item):
         meta = parse_json_desc(item, dict(json=TestParserSimple.json), admin)
-        assert_string_equal(meta.get('xml'), TestParserSimple.xml)
-        assert meta.get('category') == 'A'
-        assert item.get('description') == '**T**\n\nD'
+        self.verify(meta, item)
 
     def test_yaml(self, admin, item):
         meta = parse_yaml_desc(item, dict(yaml=TestParserSimple.yaml), admin)
-        assert_string_equal(meta.get('xml'), TestParserSimple.xml)
-        assert meta.get('category') == 'A'
-        assert item.get('description') == '**T**\n\nD'
+        self.verify(meta, item)

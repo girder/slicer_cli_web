@@ -80,12 +80,13 @@ def _convert_group(parent, group):
 def json_to_xml(data):
     root = Element('executable')
     _copy(root, data, 'category', 'title', 'description', 'version', 'license',
-          'contributor', 'documentation_url', 'acknowledgements')
+          'contributor', 'acknowledgements',
+          documentation_url='documentation-url')
 
     if 'parameter_groups' in data:
         for group in data['parameter_groups']:
             _convert_group(root, group)
 
-    io = six.io.StringIO()
+    io = six.StringIO()
     ElementTree(root).write(io, 'unicode', True)
     return io.getvalue()
