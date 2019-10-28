@@ -41,7 +41,7 @@ setup(
     author_email='kitware@kitware.com',
     license='Apache 2.0',
     classifiers=[
-        'Development Status :: 3 - Experimental',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
