@@ -106,6 +106,6 @@ class TestClass:
         print(kwargs)
 
         assert kwargs['image'] == 'dockerImage@sha256:abc'
-        assert kwargs['pull_image']
+        assert not kwargs['pull_image']
         container_args = kwargs['container_args']
         assert container_args[0] == 'data'
