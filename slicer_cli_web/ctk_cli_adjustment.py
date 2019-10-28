@@ -35,7 +35,7 @@ def _ctkCliParse(cls, elementTree):  # noqa
         elif key == 'coordinateSystem' and self.typ in ('point', 'pointfile', 'region'):
             self.coordinateSystem = value
         elif key == 'fileExtensions':
-            self.fileExtensions = [ext.strip() for ext in value.split(",")]
+            self.fileExtensions = [ext.strip() for ext in value.split(',')]
         elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table'):  # noqa
             self.reference = value
             ctk_cli.module.logger.warning("'reference' attribute of %r is not part of the spec yet (CTK issue #623)" % (ctk_cli.module._tag(elementTree), ))  # noqa
