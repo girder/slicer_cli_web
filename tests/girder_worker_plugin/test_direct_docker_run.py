@@ -1,47 +1,58 @@
-import mock
 import pytest
 from os.path import basename
+from girder_worker.app import app
 from slicer_cli_web.girder_worker_plugin.direct_docker_run import DirectGirderFileIdToVolume, run, \
     TEMP_VOLUME_DIRECT_MOUNT_PREFIX
 
+# run task locally
+app.conf.update(CELERY_TASK_ALWAYS_EAGER=True)
 
-class FakeAsyncResult(object):
-    def __init__(self):
-        self.task_id = 'fake_id'
+
+class MockedGirderClient:
+    def getFile(self, *args, **kwargs):
+        return dict(name='abc')
+
+    def downloadFile(self, file_id, file_path):
+        with open(file_path, 'w') as f:
+            f.write('dummy')
 
 
 @pytest.mark.plugin('slicer_cli_web')
-@mock.patch('celery.Celery')
-@mock.patch('girder_worker.docker.tasks._docker_run')
-@mock.patch('girder_client.GirderClient')
-def test_direct_docker_run(celery_mock, docker_run_mock, gc_mock, server, file):
+def test_direct_docker_run(mocker, server, adminToken, file):
     from girder.models.file import File
 
-    instance = celery_mock.return_value
-    instance.send_task.return_value = FakeAsyncResult()
+    docker_run_mock = mocker.patch('girder_worker.docker.tasks._docker_run')
     docker_run_mock.return_value = []
+
+    gc_mock = MockedGirderClient()
 
     path = File().getLocalFilePath(file)
 
-    run.delay(image='test', container_args=[DirectGirderFileIdToVolume(
+    run(image='test', container_args=[DirectGirderFileIdToVolume(
         file['_id'], filename=basename(path), direct_file_path=None, gc=gc_mock)])
-
     docker_run_mock.assert_called_once()
-    assert docker_run_mock.call_args.args[1] == 'test'
+    args = docker_run_mock.call_args[0]
+    # image
+    assert args[1] == 'test'
     # container args
-    assert docker_run_mock.call_args.args[4] == ['/mnt/girder_worker/%s' % basename(path)]
+    assert len(args[4]) == 1
+    assert args[4][0].endswith(basename(path))
     # volumes
-    assert len(docker_run_mock.call_args.args[5]) == 1
+    assert len(args[5]) == 2
 
     target_path = '%s/%s' % (TEMP_VOLUME_DIRECT_MOUNT_PREFIX, basename(path))
 
-    run.delay(image='test', container_args=[DirectGirderFileIdToVolume(
+    docker_run_mock.reset_mock()
+
+    run(image='test', container_args=[DirectGirderFileIdToVolume(
         file['_id'], direct_file_path=path, gc=gc_mock)])
 
     docker_run_mock.assert_called_once()
-    assert docker_run_mock.call_args.args[1] == 'test'
+    args = docker_run_mock.call_args[0]
+    # image
+    assert args[1] == 'test'
     # container args
-    assert docker_run_mock.call_args.args[4] == [target_path]
+    assert args[4] == [target_path]
     # volumes
-    assert len(docker_run_mock.call_args.args[5]) == 2
+    assert len(args[5]) == 3
 
