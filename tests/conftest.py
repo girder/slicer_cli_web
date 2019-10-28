@@ -1,4 +1,5 @@
 import pytest
+import six
 
 
 @pytest.fixture
@@ -18,8 +19,17 @@ def item(folder, admin):
 
 
 @pytest.fixture
-def file(item, admin, fsAssetstore):
-    from girder.models.file import File
-    f = File().createFile(admin, item, 'file', 7, fsAssetstore)
+def file(folder, admin, fsAssetstore):
+    from girder.models.upload import Upload
+    sampleData = b'Hello world'
+    f = Upload().uploadFromFile(
+        obj=six.BytesIO(sampleData), size=len(sampleData), name='Sample',
+        parentType='folder', parent=folder, user=admin)
 
     yield f
+
+
+@pytest.fixture
+def adminToken(admin):
+    from girder.models.token import Token
+    yield Token().createToken(admin)
