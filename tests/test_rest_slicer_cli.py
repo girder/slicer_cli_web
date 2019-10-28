@@ -82,7 +82,7 @@ class TestClass:
         resource = docker_resource.DockerResource('test')
         item = CLIItem(girderCLIItem)
         handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
-            'dockerImage', item, resource)
+            'dockerImage', 'dockerImage@sha256:abc', item, resource)
         assert handlerFunc is not None
 
         job = handlerFunc(params={
@@ -105,7 +105,7 @@ class TestClass:
 
         print(kwargs)
 
-        assert kwargs['image'] == 'dockerImage'
-        assert not kwargs['pull_image']
+        assert kwargs['image'] == 'dockerImage@sha256:abc'
+        assert kwargs['pull_image']
         container_args = kwargs['container_args']
         assert container_args[0] == 'data'
