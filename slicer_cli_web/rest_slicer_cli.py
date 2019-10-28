@@ -201,7 +201,7 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
             girder_job_type='Slicer CLI Task',
             girder_job_title=jobTitle,
             girder_result_hooks=result_hooks,
-            image=dockerImageDigest, pull_image=True,
+            image=dockerImageDigest, pull_image=False,
             container_args=container_args
         )
         return job.job
