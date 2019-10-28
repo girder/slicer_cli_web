@@ -130,7 +130,7 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       dataType='string', required=False)
 
 
-def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
+def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResource):
     """Generates a handler to run docker CLI using girder_worker
 
     Parameters
@@ -201,7 +201,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
             girder_job_type='Slicer CLI Task',
             girder_job_title=jobTitle,
             girder_result_hooks=result_hooks,
-            image=dockerImage, pull_image=False,
+            image=dockerImageDigest, pull_image=True,
             container_args=container_args
         )
         return job.job
@@ -277,13 +277,14 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
 
     dimg = docker_image.name
     restPath = docker_image.restPath
+    digest = docker_image.digest
 
     # Add REST end-point for each CLI
     for cli in docker_image.getCLIs():
         # create a POST REST route that runs the CLI
         try:
             cliRunHandler = genHandlerToRunDockerCLI(
-                dimg, cli, restResource)
+                dimg, digest, cli, restResource)
         except Exception:
             logger.exception('Failed to create REST endpoints for %r',
                              cli.name)
