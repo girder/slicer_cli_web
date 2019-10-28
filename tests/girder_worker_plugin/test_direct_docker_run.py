@@ -1,11 +1,7 @@
 import pytest
 from os.path import basename
-from girder_worker.app import app
 from slicer_cli_web.girder_worker_plugin.direct_docker_run import DirectGirderFileIdToVolume, run, \
     TEMP_VOLUME_DIRECT_MOUNT_PREFIX
-
-# run task locally
-app.conf.update(CELERY_TASK_ALWAYS_EAGER=True)
 
 
 class MockedGirderClient:
