@@ -185,13 +185,17 @@ class DockerImageItem(object):
         folderModel.setMetadata(tag, labels)
 
         folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
-        folderModel.clean(tag)
+        children = folderModel.childItems(tag, filters={'meta.slicerCLIType': 'task'})
+        existingItems = {item['name']: item for item in children}
 
         for cli, desc in six.iteritems(cli_dict):
             item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
             itemModel.setMetadata(item, dict(slicerCLIType='task'))
             itemModel.setMetadata(item, desc)
+
+            if cli in existingItems:
+                del existingItems[cli]
 
             if 'xml' not in desc:
                 continue
@@ -216,6 +220,10 @@ class DockerImageItem(object):
                 fileModel.createLinkFile('Documentation', item, 'item',
                                          clim.documentation_url,
                                          user, reuseExisting=True)
+
+        # delete superfluous items
+        for item in six.itervalues(existingItems):
+            itemModel.remove(item)
 
         return DockerImageItem(image, tag, user)
 
