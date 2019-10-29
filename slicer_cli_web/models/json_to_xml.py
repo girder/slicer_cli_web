@@ -39,7 +39,7 @@ def _convert_param(parent, param):
         val = param[key]
         flag = SubElement(p, key)
         if isinstance(val, dict):
-            _copy_attr(flag, val, 'alias', 'decpreatedalias')
+            _copy_attr(flag, val, 'alias', 'deprecatedalias')
             flag.text = val['value']
         else:
             flag.text = val

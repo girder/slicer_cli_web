@@ -191,7 +191,7 @@
                         "alias": {
                           "type": "string"
                         },
-                        "decpreatedalias": {
+                        "deprecatedalias": {
                           "type": "string"
                         }
                       }
@@ -218,7 +218,7 @@
                         "alias": {
                           "type": "string"
                         },
-                        "decpreatedalias": {
+                        "deprecatedalias": {
                           "type": "string"
                         }
                       }
