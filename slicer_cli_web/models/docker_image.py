@@ -185,6 +185,8 @@ class DockerImageItem(object):
             labels['author'] = docker_image.attrs['Author']
         if docker_image.attrs.get('RepoDigests', []):
             labels['digest'] = docker_image.attrs['RepoDigests'][0]
+        else:
+            labels['digest'] = None
         folderModel.setMetadata(tag, labels)
 
         folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
