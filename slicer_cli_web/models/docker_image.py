@@ -23,7 +23,7 @@ from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.file import File
-from ..cli_utils import as_model
+from .parser import parse_xml_desc, parse_yaml_desc, parse_json_desc
 
 
 def _split(name):
@@ -190,32 +190,19 @@ class DockerImageItem(object):
         for cli, desc in six.iteritems(cli_dict):
             item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
-            itemModel.setMetadata(item, dict(slicerCLIType='task'))
-            itemModel.setMetadata(item, desc)
+            meta_data = dict(slicerCLIType='task')
+            if 'type' in desc:
+                meta_data['type'] = desc['type']
+            desc_type = desc.get('desc-type', 'xml')
 
-            if 'xml' not in desc:
-                continue
+            if desc_type == 'xml':
+                meta_data.update(parse_xml_desc(item, desc, user))
+            elif desc_type == 'yaml':
+                meta_data.update(parse_yaml_desc(item, desc, user))
+            elif desc_type == 'json':
+                meta_data.update(parse_json_desc(item, desc, user))
 
-            # parse and inject advanced meta data and description
-            clim = as_model(desc['xml'])
-            item['description'] = '**%s**\n\n%s' % (clim.title, clim.description)
-            extras = {}
-            if clim.category:
-                extras['category'] = clim.category
-            if clim.version:
-                extras['version'] = clim.version
-            if clim.license:
-                extras['license'] = clim.license
-            if clim.contributor:
-                extras['contributor'] = clim.contributor
-            if clim.acknowledgements:
-                extras['acknowledgements'] = clim.acknowledgements
-            itemModel.setMetadata(item, extras)
-
-            if clim.documentation_url:
-                fileModel.createLinkFile('Documentation', item, 'item',
-                                         clim.documentation_url,
-                                         user, reuseExisting=True)
+            itemModel.setMetadata(item, meta_data)
 
         return DockerImageItem(image, tag, user)
 

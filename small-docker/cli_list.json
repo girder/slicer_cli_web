@@ -7,5 +7,15 @@
   },
   "Example3": {
     "type": "python"
+  },
+  "Example2json": {
+    "alias": "Example2",
+    "type": "python",
+    "desc-type": "json"
+  },
+  "Example2yaml": {
+    "alias": "Example2",
+    "type": "python",
+    "desc-type": "yaml"
   }
 }
