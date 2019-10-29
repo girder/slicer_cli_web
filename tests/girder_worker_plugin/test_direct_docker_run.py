@@ -51,4 +51,3 @@ def test_direct_docker_run(mocker, server, adminToken, file):
     assert args[4] == [target_path]
     # volumes
     assert len(args[5]) == 3
-
