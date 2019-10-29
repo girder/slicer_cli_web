@@ -95,6 +95,28 @@ class TestParserParamsSimple:
 
 
 @pytest.mark.plugin('slicer_cli_web')
+class TestParserParamsAdvanced:
+    xml = read_file('parser_params_advanced.xml')
+    json = read_file('parser_params_advanced.json')
+    yaml = read_file('parser_params_advanced.yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserParamsAdvanced.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserParamsAdvanced.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserParamsAdvanced.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserParamsAdvanced.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
 class TestParserExample1:
     xml = read_example_file('Example1', 'xml')
     json = read_example_file('Example1', 'json')
