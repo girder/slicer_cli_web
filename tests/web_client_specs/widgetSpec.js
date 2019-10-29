@@ -412,6 +412,8 @@ describe('control widget view', function () {
 
         w.$('input').val('4').trigger('change');
         expect(w.$('.form-group').hasClass('has-error')).toBe(false);
+
+        w.remove();
     });
 
     it('boolean', function () {
@@ -432,6 +434,8 @@ describe('control widget view', function () {
 
         w.$('input').click();
         expect(w.model.value()).toBe(true);
+
+        w.remove();
     });
 
     it('string', function () {
@@ -453,6 +457,8 @@ describe('control widget view', function () {
 
         w.$('input').val('new value').trigger('change');
         expect(w.model.value()).toBe('new value');
+
+        w.remove();
     });
 
     it('color', function () {
@@ -477,6 +483,8 @@ describe('control widget view', function () {
 
         w.$('input').val('#ffffff').trigger('change');
         expect(w.model.value()).toBe('#ffffff');
+
+        w.remove();
     });
 
     it('string-vector', function () {
@@ -497,6 +505,8 @@ describe('control widget view', function () {
 
         w.$('input').val('1,2,3').trigger('change');
         expect(w.model.value()).toEqual(['1', '2', '3']);
+
+        w.remove();
     });
 
     it('number-vector', function () {
@@ -517,6 +527,8 @@ describe('control widget view', function () {
 
         w.$('input').val('10,20,30').trigger('change');
         expect(w.model.value()).toEqual([10, 20, 30]);
+
+        w.remove();
     });
 
     it('string-enumeration', function () {
@@ -542,6 +554,8 @@ describe('control widget view', function () {
 
         w.$('select').val('value 3').trigger('change');
         expect(w.model.value()).toBe('value 3');
+
+        w.remove();
     });
 
     it('number-enumeration', function () {
@@ -567,6 +581,8 @@ describe('control widget view', function () {
 
         w.$('select').val('300').trigger('change');
         expect(w.model.value()).toBe(300);
+
+        w.remove();
     });
 
     it('item', function () {
@@ -644,6 +660,50 @@ describe('control widget view', function () {
         });
     });
 
+    it('file default', function () {
+        var w;
+        runs(function () {
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f' });
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (!opts.data.public) {
+                    // simulate no private
+                    return $.Deferred().resolve([]);
+                }
+                return $.Deferred().resolve([folder.toJSON()]);
+            });
+            spyOn(girder.auth, 'getCurrentUser').andCallFake(function () {
+                return admin;
+            });
+
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    extensions: '.png',
+                    required: true,
+                    channel: 'output'
+                }),
+                setDefaultOutput: 't'
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+        });
+        waitsFor(function () {
+            return w.model.value() && w.model.value().name().startsWith('t');
+        });
+        runs(function () {
+            expect(w.model.value().name()).toMatch(/t-Title-.*\.png/);
+            expect(w.model.get('parent').name()).toBe('f');
+            expect(w.model.get('path')).toEqual(['f', w.model.value().name()]);
+        });
+    });
+
     it('image', function () {
         var arg, item, file, w;
         runs(function () {
@@ -677,6 +737,8 @@ describe('control widget view', function () {
             w.$('.s-select-file-button').click();
             expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
+
+            w.remove();
         });
         waitsFor(function () {
             return w.model.value().name() === 'g';
@@ -741,6 +803,8 @@ describe('control widget view', function () {
         // reset the environment
         $modal.modal('hide');
         $modal.remove();
+
+        w.remove();
     });
     it('invalid', function () {
         var w = new slicer.views.ControlWidget({
