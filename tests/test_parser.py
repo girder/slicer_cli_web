@@ -35,22 +35,6 @@ def assert_string_equal(a, b):
     assert a_clean == b_clean
 
 
-@pytest.fixture
-def folder(admin):
-    from girder.models.folder import Folder
-    f = Folder().createFolder(admin, 'folder', parentType='user')
-
-    yield f
-
-
-@pytest.fixture
-def item(folder, admin):
-    from girder.models.item import Item
-    f = Item().createItem('item', admin, folder)
-
-    yield f
-
-
 @pytest.mark.plugin('slicer_cli_web')
 class TestParserSimple:
     xml = read_file('parser_simple.xml')
