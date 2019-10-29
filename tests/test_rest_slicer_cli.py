@@ -4,7 +4,7 @@ import json
 
 
 @pytest.mark.plugin('slicer_cli_web')
-def test_genHandlerToRunDockerCLI(self, admin, folder, file, adminToken, mocker):
+def test_genHandlerToRunDockerCLI(admin, folder, file, adminToken, mocker):
     mocker.patch('girder.api.rest.getCurrentToken').return_value = adminToken
     mocker.patch('girder.api.rest.getApiUrl').return_value = '/api/v1'
 
@@ -19,7 +19,7 @@ def test_genHandlerToRunDockerCLI(self, admin, folder, file, adminToken, mocker)
 
     girderCLIItem = Item().createItem('data', admin, folder)
     Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python',
-                                            xml=open(xmlpath, 'rb').read()))
+                                           xml=open(xmlpath, 'rb').read()))
 
     resource = docker_resource.DockerResource('test')
     item = CLIItem(girderCLIItem)
