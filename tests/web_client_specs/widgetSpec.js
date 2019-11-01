@@ -666,7 +666,7 @@ describe('control widget view', function () {
             folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f' });
 
             spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
-                if (!opts.data.public) {
+                if (opts.data.public === false) {
                     // simulate no private
                     return $.Deferred().resolve([]);
                 }
