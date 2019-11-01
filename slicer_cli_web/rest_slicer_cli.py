@@ -8,7 +8,7 @@ from girder import logger
 from girder.api.describe import Description, describeRoute
 
 from .cli_utils import as_model, generate_description, \
-    get_cli_parameters, is_on_girder, return_parameter_file_name
+    get_cli_parameters, return_parameter_file_name
 from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
 from .girder_worker_plugin.direct_docker_run import run
 from .models import CLIItem
