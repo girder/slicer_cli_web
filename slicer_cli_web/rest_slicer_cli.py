@@ -8,7 +8,7 @@ from girder import logger
 from girder.api.describe import Description, describeRoute
 
 from .cli_utils import as_model, generate_description, \
-    get_cli_parameters, return_parameter_file_name
+    get_cli_parameters, is_on_girder, return_parameter_file_name
 from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
 from .girder_worker_plugin.direct_docker_run import run
 from .models import CLIItem
@@ -149,10 +149,10 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
 
     """
 
-    cliName = os.path.normpath(cliItem.name).replace(os.sep, '.')
     itemId = cliItem._id
 
     clim = as_model(cliItem.xml)
+    cliTitle = clim.title
 
     # do stuff needed to create REST endpoint for cLI
     handlerDesc = Description(clim.title) \
@@ -189,16 +189,22 @@ def genHandlerToRunDockerCLI(dockerImage, cliItem, restResource):
         if not currentItem:
             raise RestException('Invalid CLI Item id (%s).' % (itemId))
         token = self.getCurrentToken()
-        jobTitle = '.'.join((restResource.resourceName, cliName))
-
         container_args = [currentItem.name]
-        args, result_hooks = prepare_task(params, user, token, index_params, opt_params,
-                                          has_simple_return_file)
+        args, result_hooks, primary_input_name = prepare_task(params, user, token,
+                                                              index_params, opt_params,
+                                                              has_simple_return_file)
         container_args.extend(args)
+
+        jobType = '%s#%s (Slicer CLI Task)' % (dockerImage, currentItem.name)
+
+        if primary_input_name:
+            jobTitle = '%s on %s' % (cliTitle, primary_input_name)
+        else:
+            jobTitle = cliTitle
 
         job = run.delay(
             girder_user=user,
-            girder_job_type='Slicer CLI Task',
+            girder_job_type=jobType,
             girder_job_title=jobTitle,
             girder_result_hooks=result_hooks,
             image=dockerImage, pull_image=False,
