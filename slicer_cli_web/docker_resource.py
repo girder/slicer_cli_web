@@ -24,14 +24,17 @@ import json
 from girder.api.v1.resource import Resource, RestException
 from girder import logger
 
+from girder.api.rest import \
+    setResponseHeader, setRawResponse
 from girder.api import access
 from girder.constants import AccessType
-from girder.api.describe import Description, describeRoute
+from girder.api.describe import autoDescribeRoute, Description, describeRoute
 from girder.utility.model_importer import ModelImporter
+from girder.models.item import Item
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
 from girder_jobs.constants import JobStatus
 
-from .models import DockerImageNotFoundError, DockerImageItem
+from .models import DockerImageNotFoundError, DockerImageItem, CLIItem
 from .config import PluginSettings
 
 
@@ -51,6 +54,11 @@ class DockerResource(Resource):
         self.route('PUT', (name, 'docker_image'), self.setImages)
         self.route('DELETE', (name, 'docker_image'), self.deleteImage)
         self.route('GET', (name, 'docker_image'), self.getDockerImages)
+
+        self.route('GET', (name, 'cli'), self.getItems)
+        self.route('GET', (name, 'cli', ':id',), self.getItem)
+        self.route('DELETE', (name, 'cli', ':id',), self.deleteItem)
+        self.route('GET', (name, 'cli', ':id', 'xml'), self.getItemXML)
 
     @access.user
     @describeRoute(
@@ -312,3 +320,60 @@ class DockerResource(Resource):
             self.deleteImageEndpoints()
             for image in images:
                 genRESTEndPointsForSlicerCLIsForImage(self, image)
+
+    def _dump(self, item, short=True):
+        r = {
+            '_id': item._id,
+            'name': item.name,
+            'type': item.type,
+            'description': item.item['description']
+        }
+        if short:
+            return r
+
+        r['xml'] = item.item['meta']['xml']
+        return r
+
+    @access.user
+    @autoDescribeRoute(
+        Description('List CLIs')
+        .errorResponse('You are not logged in.', 403)
+        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
+                    level=AccessType.WRITE, required=False)
+    )
+    def getItems(self, folder):
+        items = CLIItem.findAllItems(self.getCurrentUser(), baseFolder=folder)
+        return [self._dump(item) for item in items]
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Get a specific CLI')
+        .errorResponse('You are not logged in.', 403)
+        .modelParam('id', 'The task item', 'item',
+                    level=AccessType.READ)
+    )
+    def getItem(self, item):
+        return self._dump(CLIItem(item), False)
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Get a specific CLI')
+        .errorResponse('You are not logged in.', 403)
+        .modelParam('id', 'The task item', 'item',
+                    level=AccessType.WRITE)
+    )
+    def deleteItem(self, item):
+        Item().remove(item)
+        return dict(status='OK')
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Get a specific CLI')
+        .errorResponse('You are not logged in.', 403)
+        .modelParam('id', 'The task item', 'item',
+                    level=AccessType.READ)
+    )
+    def getItemXML(self, item):
+        setResponseHeader('Content-Type', 'application/xml')
+        setRawResponse()
+        return CLIItem(item).xml

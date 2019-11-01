@@ -55,6 +55,21 @@ class CLIItem(object):
             return None
         return CLIItem(item)
 
+    @staticmethod
+    def findAllItems(user=None, baseFolder=None):
+        itemModel = Item()
+        q = {'meta.slicerCLIType': 'task'}
+        # TODO find all recursively
+        if baseFolder:
+            q['parentId'] = baseFolder['_id']
+
+        if user:
+            items = itemModel.findWithPermissions(q, user=user, level=AccessType.READ)
+        else:
+            items = itemModel.find(q)
+
+        return [CLIItem(item) for item in items]
+
 
 class DockerImageItem(object):
     def __init__(self, imageFolder, tagFolder, user):
