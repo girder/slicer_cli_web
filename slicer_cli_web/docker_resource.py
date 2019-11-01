@@ -232,7 +232,7 @@ class DockerResource(Resource):
             function='jobPullAndLoad',
             kwargs={
                 'nameList': nameList,
-                'folder': baseFolder
+                'folder': baseFolder['_id'] if isinstance(baseFolder, dict) else baseFolder
             },
             title='Pulling and caching docker images',
             type=self.jobType,

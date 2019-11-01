@@ -185,7 +185,8 @@ class DockerImageItem(object):
         folderModel.setMetadata(tag, labels)
 
         folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
-        folderModel.clean(tag)
+        children = folderModel.childItems(tag, filters={'meta.slicerCLIType': 'task'})
+        existingItems = {item['name']: item for item in children}
 
         for cli, desc in six.iteritems(cli_dict):
             item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
@@ -203,6 +204,13 @@ class DockerImageItem(object):
                 meta_data.update(parse_json_desc(item, desc, user))
 
             itemModel.setMetadata(item, meta_data)
+
+            if cli in existingItems:
+                del existingItems[cli]
+
+        # delete superfluous items
+        for item in six.itervalues(existingItems):
+            itemModel.remove(item)
 
         return DockerImageItem(image, tag, user)
 
