@@ -73,7 +73,27 @@ class DirectDockerTask(DockerTask):
         super(DirectDockerTask, self).__call__(*args, **kwargs)
 
 
+def _has_image(image):
+    """
+    Pulls the specified Docker image onto this worker if not already present
+    """
+    import docker
+    from docker.errors import ImageNotFound
+
+    client = docker.from_env(version='auto')
+    try:
+        client.images.get(image)
+        return True
+    except ImageNotFound:
+        return False
+
+
 @app.task(base=DirectDockerTask)
-def run(*args, **kwargs):
+def run(**kwargs):
     """Wraps docker_run to support direct mount volumnes."""
-    return docker_run(*args, **kwargs)
+
+    pull_image = kwargs.get('pull_image')
+    if pull_image == 'if-not-present':
+        kwargs['pull_image'] = not _has_image(kwargs['image'])
+
+    return docker_run(**kwargs)
