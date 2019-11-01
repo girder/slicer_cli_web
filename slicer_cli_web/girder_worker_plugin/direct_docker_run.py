@@ -86,6 +86,9 @@ def _has_image(image):
         return True
     except ImageNotFound:
         return False
+    finally:
+        # close docker client to flush any caches
+        client.close()
 
 
 @app.task(base=DirectDockerTask)
