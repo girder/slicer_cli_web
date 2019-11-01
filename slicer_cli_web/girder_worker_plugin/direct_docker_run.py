@@ -4,7 +4,7 @@ from os.path import basename, isfile, abspath, join
 from girder_worker.app import app
 from girder_worker.docker.transforms import BindMountVolume
 from girder_worker.docker.transforms.girder import GirderFileIdToVolume
-from girder_worker.docker.tasks import docker_run, DockerTask
+from girder_worker.docker.tasks import _docker_run, DockerTask
 from girder_worker_utils import _walk_obj
 
 
@@ -91,12 +91,12 @@ def _has_image(image):
         client.close()
 
 
-@app.task(base=DirectDockerTask)
-def run(**kwargs):
+@app.task(base=DirectDockerTask, bind=True)
+def run(task, **kwargs):
     """Wraps docker_run to support direct mount volumnes."""
 
     pull_image = kwargs.get('pull_image')
     if pull_image == 'if-not-present':
         kwargs['pull_image'] = not _has_image(kwargs['image'])
 
-    return docker_run(**kwargs)
+    return _docker_run(task, **kwargs)
