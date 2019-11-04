@@ -125,8 +125,8 @@ def _add_indexed_input_param(param, args, user, token):
 
     if is_on_girder(param):
         # Bindings
-        return _to_file_volume(param, value)
-    return value
+        return _to_file_volume(param, value), value['name']
+    return value, None
 
 
 def _add_indexed_output_param(param, args, user, result_hooks):
@@ -147,6 +147,7 @@ def _add_indexed_output_param(param, args, user, result_hooks):
 def prepare_task(params, user, token, index_params, opt_params, has_simple_return_file):
     ca = []
     result_hooks = []
+    primary_input_name = None
 
     # optional params
     for param in opt_params:
@@ -179,6 +180,9 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
         if param.channel == 'output':
             ca.append(_add_indexed_output_param(param, params, user, result_hooks))
         else:
-            ca.append(_add_indexed_input_param(param, params, user, token))
+            arg, name = _add_indexed_input_param(param, params, user, token)
+            ca.append(arg)
+            if name and not primary_input_name:
+                primary_input_name = name
 
-    return ca, result_hooks
+    return ca, result_hooks, primary_input_name
