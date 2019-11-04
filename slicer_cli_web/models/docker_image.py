@@ -43,14 +43,14 @@ class CLIItem(object):
         self.name = item['name']
         meta = item['meta']
         self.type = meta['type']
-        self.image = meta.get('image', None)
+        self.image = meta.get('image', 'UNKNOWN')
         self.digest = meta.get('digest', self.image)
         self.xml = meta['xml']
         if isinstance(self.xml, six.text_type):
             self.xml = self.xml.encode('utf8')
 
-        base = self.image.replace(':', '_').replace('/', '_').replace('@', '_')
-        self.restPath = '%s/%s' % (base, self.name)
+        self.restBasePath = self.image.replace(':', '_').replace('/', '_').replace('@', '_')
+        self.restPath = '%s/%s' % (self.restBasePath, self.name)
 
     @staticmethod
     def find(itemId, user):

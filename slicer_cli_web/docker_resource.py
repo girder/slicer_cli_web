@@ -22,7 +22,6 @@ import six
 import json
 
 from girder.api.v1.resource import Resource, RestException
-from girder import logger
 
 from girder.api.rest import \
     setResponseHeader, setRawResponse
@@ -58,7 +57,17 @@ class DockerResource(Resource):
         self.route('GET', (name, 'cli'), self.getItems)
         self.route('GET', (name, 'cli', ':id',), self.getItem)
         self.route('DELETE', (name, 'cli', ':id',), self.deleteItem)
+        # run is generated per item for better validation
         self.route('GET', (name, 'cli', ':id', 'xml'), self.getItemXML)
+
+        # sort by name and creation date desc
+        items = sorted(CLIItem.findAllItems(), key=lambda x: (x.restPath, x.item['created']), reverse=True)
+
+        seen = set()
+        for item in items:
+            # default if not seen yet
+            genRESTEndPointsForSlicerCLIsForItem(self, item, item.restPath not in seen)
+            seen.add(item.restPath)
 
     @access.user
     @describeRoute(
@@ -70,7 +79,7 @@ class DockerResource(Resource):
         for image in DockerImageItem.findAllImages(self.getCurrentUser()):
             imgData = {}
             for cli in image.getCLIs():
-                basePath = '/%s/%s' % (self.resourceName, cli.restPath)
+                basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
                 imgData[cli.name] = {
                     'type': cli.type,
                     'xml': basePath + '/xml',
@@ -222,7 +231,7 @@ class DockerResource(Resource):
         jobModel.scheduleJob(job)
         return job
 
-    def storeEndpoints(self, imgName, cli, operation, argList):
+    def storeEndpoints(self, imgName, cliName, undoFunction):
         """
         Information on each rest endpoint is saved so they can be
         deleted when docker images are removed or loaded.
@@ -231,41 +240,21 @@ class DockerResource(Resource):
             This name must match exactly with the name the command
             docker images displays in the console
         :type imgName: string
-        :param cli: The name of the cli whose rest endpoint is being stored. The
+        :param cliName: The name of the cli whose rest endpoint is being stored. The
             cli must match exactly with what teh docker image returns when
             running <docker image> --list_cli
-        :type cli: string
-        :param operation: The action the rest endpoint will execute run or
-            xmlspec
-        :type operation: string
-        :argList:list of details for a specific endpoint. The arglist should
-            contain [method,route_tuple,endpoint_method_handler_name].  The
-            route tuple should consist of the docker image name, the cli name
-            and the operation. Since this tuple forms the rest route, the exact
-            docker image name may not be used due to ':' used in docker image
-            names. As a result the docker name and cli name used in the rest
-            route do not have to match the actual docker name and cli name
+        :type cliName: string
         """
         img = self.currentEndpoints.setdefault(imgName, {})
-        c = img.setdefault(cli, {})
-        c[operation] = argList
+        img[cliName] = undoFunction
 
     def deleteImageEndpoints(self, imageList=None):
 
         if imageList is None:
             imageList = six.iterkeys(self.currentEndpoints)
         for imageName in list(imageList):
-            if imageName in self.currentEndpoints:
-                for val in six.itervalues(
-                        self.currentEndpoints[imageName]):
-                    for endpoint in six.itervalues(val):
-                        try:
-                            self.removeRoute(endpoint[0], endpoint[1],
-                                             getattr(self, endpoint[2]))
-                            delattr(self, endpoint[2])
-                        except Exception:
-                            logger.exception('Failed to remove route')
-            del self.currentEndpoints[imageName]
+            for undoFunction in six.itervalues(self.currentEndpoints.pop(imageName, {})):
+                undoFunction()
 
     def addRestEndpoints(self, event):
         """

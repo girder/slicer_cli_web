@@ -130,17 +130,12 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       dataType='string', required=False)
 
 
-def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResource):
+def genHandlerToRunDockerCLI(cliItem):
     """Generates a handler to run docker CLI using girder_worker
 
     Parameters
     ----------
-    dockerImage : str
-        Docker image in which the CLI resides
     cliItem : CLIItem
-    restResource : girder.api.rest.Resource
-        The object of a class derived from girder.api.rest.Resource to which
-        this handler will be attached
 
     Returns
     -------
@@ -179,10 +174,6 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
     if has_simple_return_file:
         _addReturnParameterFileParamToHandler(handlerDesc)
 
-    # define CLI handler function
-    @boundHandler(restResource)
-    @access.user
-    @describeRoute(handlerDesc)
     def cliHandler(self, params):
         user = self.getCurrentUser()
         currentItem = CLIItem.find(itemId, user)
@@ -195,7 +186,7 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
                                                               has_simple_return_file)
         container_args.extend(args)
 
-        jobType = '%s#%s' % (dockerImage, currentItem.name)
+        jobType = '%s#%s' % (currentItem.image, currentItem.name)
 
         if primary_input_name:
             jobTitle = '%s on %s' % (cliTitle, primary_input_name)
@@ -207,16 +198,16 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
             girder_job_type=jobType,
             girder_job_title=jobTitle,
             girder_result_hooks=result_hooks,
-            image=dockerImageDigest,
+            image=currentItem.digest,
             pull_image='if-not-present',
             container_args=container_args
         )
         return job.job
 
-    return cliHandler
+    return handlerDesc, cliHandler
 
 
-def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
+def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRoute=False):
     """Generates REST end points for slicer CLIs placed in subdirectories of a
     given root directory and attaches them to a REST resource with the given
     name.
@@ -234,7 +225,7 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
     ----------
     restResource : a dockerResource
         REST resource to which the end-points should be attached
-    docker_image : DockerImageItem
+    cliItem : CliItem
 
     """
 
@@ -242,59 +233,41 @@ def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
     if not isinstance(restResource, Resource):
         raise Exception('restResource must be a Docker Resource')
 
-    dimg = docker_image.name
-    restPath = docker_image.restPath
-    digest = docker_image.digest
+    try:
+        handlerDesc, handler = genHandlerToRunDockerCLI(cliItem)
 
-    # Add REST end-point for each CLI
-    for cli in docker_image.getCLIs():
-        # create a POST REST route that runs the CLI
-        try:
-            cliRunHandler = genHandlerToRunDockerCLI(
-                dimg, digest, cli, restResource)
-        except Exception:
-            logger.exception('Failed to create REST endpoints for %r',
-                             cli.name)
-            continue
+        # define CLI handler function
+        @boundHandler(restResource)
+        @access.user
+        @describeRoute(handlerDesc)
+        def cliRunHandler(self, params):
+            return handler(self, params)
 
-        cliSuffix = os.path.normpath(cli.name).replace(os.sep, '_')
-
-        cliRunHandlerName = restPath + '_run_' + cliSuffix
+        cliRunHandlerName = 'run_%s' % cliItem._id
         setattr(restResource, cliRunHandlerName, cliRunHandler)
-        restResource.route('POST',
-                           (restPath, cli.name, 'run'),
-                           getattr(restResource, cliRunHandlerName))
+
+        restRunPath = ('slicer_cli_web', 'cli', str(cliItem._id), 'run')
+        restResource.route('POST', restRunPath, cliRunHandler)
+
+        if registerNamedRoute:
+            restNamedRunPath = (cliItem.restBasePath, cliItem.name, 'run')
+            restResource.route('POST', restNamedRunPath, cliRunHandler)
+
+        def undoFunction():
+            try:
+                restResource.removeRoute('POST', restRunPath, cliRunHandler)
+                if registerNamedRoute:
+                    restResource.removeRoute('POST', restNamedRunPath, cliRunHandler)
+                delattr(restResource, cliRunHandlerName)
+            except Exception:
+                logger.exception('Failed to remove route')
 
         # store new rest endpoint
-        restResource.storeEndpoints(
-            dimg, cli.name, 'run', ['POST', (restPath, cli.name, 'run'),
-                                    cliRunHandlerName])
+        restResource.storeEndpoints(cliItem.image, cliItem.name, undoFunction)
 
-        # create GET REST route that returns the xml of the CLI
-        try:
-            cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
-                cli._id, cli.name,
-                restResource)
-        except Exception:
-            logger.exception('Failed to create REST endpoints for %s',
-                             cli.name)
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            logger.error('%r', [exc_type, fname, exc_tb.tb_lineno])
-            continue
-
-        cliGetXMLSpecHandlerName = restPath + '_get_xml_' + cliSuffix
-        setattr(restResource,
-                cliGetXMLSpecHandlerName,
-                cliGetXMLSpecHandler)
-        restResource.route('GET',
-                           (restPath, cli.name, 'xmlspec',),
-                           getattr(restResource, cliGetXMLSpecHandlerName))
-
-        restResource.storeEndpoints(
-            dimg, cli.name, 'xmlspec',
-            ['GET', (restPath, cli.name, 'xmlspec'),
-                cliGetXMLSpecHandlerName])
-        logger.debug('Created REST endpoints for %s', cli.name)
+        logger.debug('Created REST endpoints for %s', cliItem.name)
+    except Exception:
+        logger.exception('Failed to create REST endpoints for %r',
+                         cliItem.name)
 
     return restResource
