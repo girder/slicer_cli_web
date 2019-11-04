@@ -65,6 +65,7 @@ class DockerImageItem(object):
         self.tagFolder = tagFolder
         self._id = self.tagFolder['_id']
         self.user = user
+        self.digest = tagFolder['meta'].get('digest', self.name)
 
         self.restPath = self.name.replace(':', '_').replace('/', '_').replace('@', '_')
 
@@ -182,6 +183,10 @@ class DockerImageItem(object):
         labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
         if 'Author' in docker_image.attrs:
             labels['author'] = docker_image.attrs['Author']
+        if docker_image.attrs.get('RepoDigests', []):
+            labels['digest'] = docker_image.attrs['RepoDigests'][0]
+        else:
+            labels['digest'] = None
         folderModel.setMetadata(tag, labels)
 
         folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
