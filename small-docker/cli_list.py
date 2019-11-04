@@ -22,6 +22,8 @@ def processCLI(filename):
 
     cli = os.path.normpath(sys.argv[1])
 
+    cli = list_spec[cli].get('alias', cli)
+
     if list_spec[cli]['type'] == 'python':
         script_file = os.path.join(cli, os.path.basename(cli) + '.py')
         # python <cli-rel-path>/<cli-name>.py [<args>]

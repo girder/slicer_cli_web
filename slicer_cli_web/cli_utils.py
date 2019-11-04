@@ -2,7 +2,7 @@
 import io
 import six
 
-from ctk_cli import CLIModule
+from .ctk_cli_adjustment import CLIModule
 
 
 return_parameter_file_name = 'returnparameterfile'

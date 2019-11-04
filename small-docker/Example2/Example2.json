@@ -1,0 +1,41 @@
+{
+  "$schema": "../../slicer_cli_web/models/schema.json",
+  "category": "Example",
+  "title": "Simple Example",
+  "description": "Report on a few input parameters.",
+  "version": "0.1.0",
+  "license": "Apache 2.0",
+  "contributor": "David Manthey (Kitware)",
+  "parameter_groups": [
+    {
+      "label": "IO",
+      "description": "Input/output parameters.",
+      "parameters": [
+        {
+          "type": "image",
+          "name": "ImageFile",
+          "label": "Input image",
+          "channel": "input",
+          "description": "Input image",
+          "index": 0
+        },
+        {
+          "type": "double-vector",
+          "name": "Color1",
+          "label": "RGB Color",
+          "channel": "input",
+          "description": "An RGB Color Vector",
+          "index": 1
+        },
+        {
+          "type": "double-vector",
+          "name": "Color2",
+          "label": "YCbCr Color",
+          "channel": "input",
+          "description": "An YCbCr Color Vector",
+          "index": 2
+        }
+      ]
+    }
+  ]
+}
