@@ -60,15 +60,7 @@ class DockerResource(Resource):
         # run is generated per item for better validation
         self.route('GET', (name, 'cli', ':id', 'xml'), self.getItemXML)
 
-        # sort by name and creation date desc
-        items = sorted(CLIItem.findAllItems(), key=lambda x: (x.restPath, x.item['created']),
-                       reverse=True)
-
-        seen = set()
-        for item in items:
-            # default if not seen yet
-            genRESTEndPointsForSlicerCLIsForItem(self, item, item.restPath not in seen)
-            seen.add(item.restPath)
+        self._generateAllItemEndPoints()
 
     @access.user
     @describeRoute(
@@ -257,6 +249,17 @@ class DockerResource(Resource):
             for undoFunction in six.itervalues(self.currentEndpoints.pop(imageName, {})):
                 undoFunction()
 
+    def _generateAllItemEndPoints(self):
+        # sort by name and creation date desc
+        items = sorted(CLIItem.findAllItems(), key=lambda x: (x.restPath, x.item['created']),
+                       reverse=True)
+
+        seen = set()
+        for item in items:
+            # default if not seen yet
+            genRESTEndPointsForSlicerCLIsForItem(self, item, item.restPath not in seen)
+            seen.add(item.restPath)
+
     def addRestEndpoints(self, event):
         """
         Determines if the job event being triggered is due to the caching of
@@ -270,8 +273,7 @@ class DockerResource(Resource):
 
         if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
             self.deleteImageEndpoints()
-            for item in CLIItem.findAllItems():
-                genRESTEndPointsForSlicerCLIsForItem(self, item)
+            self._generateAllItemEndPoints()
 
     def _dump(self, item, details=False):
         r = {
