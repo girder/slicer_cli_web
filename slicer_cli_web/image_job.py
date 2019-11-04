@@ -45,6 +45,7 @@ def deleteImage(job):
         log='Started to Delete Docker images\n',
         status=JobStatus.RUNNING,
     )
+    docker_client = None
     try:
         deleteList = job['kwargs']['deleteList']
         error = False
@@ -98,6 +99,9 @@ def deleteImage(job):
             status=JobStatus.ERROR,
 
         )
+    finally:
+        if docker_client:
+            docker_client.close()
 
 
 def findLocalImage(client, name):
@@ -300,11 +304,14 @@ def getCliData(name, client, jobModel, job):
             cli_dict = cli_dict.decode('utf8')
         cli_dict = json.loads(cli_dict)
 
-        for key in six.iterkeys(cli_dict):
-            cli_xml = getDockerOutput(name, '%s --xml' % key, client)
-            if isinstance(cli_xml, six.binary_type):
-                cli_xml = cli_xml.decode('utf8')
-            cli_dict[key]['xml'] = cli_xml
+        for key, info in six.iteritems(cli_dict):
+            desc_type = info.get('desc-type', 'xml')
+            cli_desc = getDockerOutput(name, '%s --%s' % (key, desc_type), client)
+
+            if isinstance(cli_desc, six.binary_type):
+                cli_desc = cli_desc.decode('utf8')
+
+            cli_dict[key][desc_type] = cli_desc
             jobModel.updateJob(
                 job,
                 log='Got image %s, cli %s metadata\n' % (name, key),

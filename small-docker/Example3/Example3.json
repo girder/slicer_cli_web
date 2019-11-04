@@ -1,0 +1,29 @@
+{
+  "$schema": "../../slicer_cli_web/models/schema.json",
+  "category": "Example",
+  "title": "Example with missing default",
+  "description": "This will fail to create a REST endpoint, but it still will report that it exists as a CLI.",
+  "version": "0.1.0",
+  "license": "Apache 2.0",
+  "contributor": "David Manthey (Kitware)",
+  "parameter_groups": [
+    {
+      "label": "IO",
+      "description": "Input/output parameters.",
+      "parameters": [
+        {
+          "type": "float",
+          "name": "x",
+          "label": "Coordinate",
+          "flag": "x",
+          "description": "A floating point number between 0 and 1",
+          "channel": "input",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      ]
+    }
+  ]
+}

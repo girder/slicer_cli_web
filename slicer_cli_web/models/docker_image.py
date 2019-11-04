@@ -23,7 +23,7 @@ from girder.constants import AccessType
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.file import File
-from ..cli_utils import as_model
+from .parser import parse_xml_desc, parse_yaml_desc, parse_json_desc
 
 
 def _split(name):
@@ -65,6 +65,7 @@ class DockerImageItem(object):
         self.tagFolder = tagFolder
         self._id = self.tagFolder['_id']
         self.user = user
+        self.digest = tagFolder['meta'].get('digest', self.name)
 
         self.restPath = self.name.replace(':', '_').replace('/', '_').replace('@', '_')
 
@@ -182,6 +183,10 @@ class DockerImageItem(object):
         labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
         if 'Author' in docker_image.attrs:
             labels['author'] = docker_image.attrs['Author']
+        if docker_image.attrs.get('RepoDigests', []):
+            labels['digest'] = docker_image.attrs['RepoDigests'][0]
+        else:
+            labels['digest'] = None
         folderModel.setMetadata(tag, labels)
 
         folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
@@ -191,35 +196,22 @@ class DockerImageItem(object):
         for cli, desc in six.iteritems(cli_dict):
             item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
-            itemModel.setMetadata(item, dict(slicerCLIType='task'))
-            itemModel.setMetadata(item, desc)
+            meta_data = dict(slicerCLIType='task')
+            if 'type' in desc:
+                meta_data['type'] = desc['type']
+            desc_type = desc.get('desc-type', 'xml')
+
+            if desc_type == 'xml':
+                meta_data.update(parse_xml_desc(item, desc, user))
+            elif desc_type == 'yaml':
+                meta_data.update(parse_yaml_desc(item, desc, user))
+            elif desc_type == 'json':
+                meta_data.update(parse_json_desc(item, desc, user))
+
+            itemModel.setMetadata(item, meta_data)
 
             if cli in existingItems:
                 del existingItems[cli]
-
-            if 'xml' not in desc:
-                continue
-
-            # parse and inject advanced meta data and description
-            clim = as_model(desc['xml'])
-            item['description'] = '**%s**\n\n%s' % (clim.title, clim.description)
-            extras = {}
-            if clim.category:
-                extras['category'] = clim.category
-            if clim.version:
-                extras['version'] = clim.version
-            if clim.license:
-                extras['license'] = clim.license
-            if clim.contributor:
-                extras['contributor'] = clim.contributor
-            if clim.acknowledgements:
-                extras['acknowledgements'] = clim.acknowledgements
-            itemModel.setMetadata(item, extras)
-
-            if clim.documentation_url:
-                fileModel.createLinkFile('Documentation', item, 'item',
-                                         clim.documentation_url,
-                                         user, reuseExisting=True)
 
         # delete superfluous items
         for item in six.itervalues(existingItems):
