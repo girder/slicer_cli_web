@@ -1,0 +1,268 @@
+{
+  "$schema": "../../slicer_cli_web/models/schema.json",
+  "category": "Developer Tools",
+  "title": "Execution Model Tour",
+  "description": "Shows one of each type of parameter that slicer_cli_web can handle.",
+  "version": "0.1.0.$Revision$(alpha)",
+  "documentation_url": "http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/ExecutionModelTour",
+  "contributor": "Daniel Blezek (GE), Bill Lorensen (GE)",
+  "acknowledgements": "This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  I thas been modified for slicer_cli_web.",
+  "parameter_groups": [
+    {
+      "label": "Scalar Parameters",
+      "description": "Variations on scalar parameters",
+      "parameters": [
+        {
+          "type": "integer",
+          "name": "integerVariable",
+          "flag": "-i",
+          "longflag": "--integer",
+          "description": "An integer without constraints",
+          "label": "Integer Parameter",
+          "default": 30
+        },
+        {
+          "type": "double",
+          "name": "doubleVariable",
+          "flag": "-d",
+          "longflag": "--double",
+          "description": "A double with constraints",
+          "label": "Double Parameter",
+          "default": 30,
+          "constraints": {
+            "minimum": 0,
+            "maximum": 1000,
+            "step": 10
+          }
+        }
+      ]
+    },
+    {
+      "label": "Vector Parameters",
+      "description": "Variations on vector parameters",
+      "parameters": [
+        {
+          "type": "float-vector",
+          "flag": "f",
+          "description": "A vector of floats",
+          "label": "Float Vector Parameter",
+          "default": [
+            1.3,
+            2,
+            -14
+          ]
+        },
+        {
+          "type": "string-vector",
+          "longflag": "string_vector",
+          "description": "A vector of strings",
+          "label": "String Vector Parameter",
+          "default": [
+            "foo",
+            "bar",
+            "foobar"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Enumeration Parameters",
+      "description": "Variations on enumeration parameters",
+      "parameters": [
+        {
+          "type": "string-enumeration",
+          "name": "stringChoice",
+          "flag": "e",
+          "longflag": "enumeration",
+          "description": "An enumeration of strings",
+          "label": "String Enumeration Parameter",
+          "default": "Bill",
+          "enumeration": [
+            "Bill",
+            "Ron",
+            "Eric",
+            "Bill",
+            "Ross",
+            "Steve",
+            "Will"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Boolean Parameters",
+      "description": "Variations on boolean parameters",
+      "parameters": [
+        {
+          "type": "boolean",
+          "name": "boolean1",
+          "longflag": "boolean1",
+          "description": "A boolean default true",
+          "label": "Boolean Default true",
+          "default": true
+        },
+        {
+          "type": "boolean",
+          "name": "boolean2",
+          "longflag": "boolean2",
+          "description": "A boolean default false",
+          "label": "Boolean Default false",
+          "default": false
+        },
+        {
+          "type": "boolean",
+          "name": "boolean3",
+          "longflag": "boolean3",
+          "description": "A boolean with no default, should be defaulting to false",
+          "label": "Boolean No Default"
+        }
+      ]
+    },
+    {
+      "label": "File, Directory and Image Parameters",
+      "description": "Parameters that describe files and direcories.",
+      "parameters": [
+        {
+          "type": "file",
+          "fileExtensions": ".png,.jpg,.jpeg,.bmp,.tif,.tiff,.gipl,.dcm,.dicom,.nhdr,.nrrd,.mhd,.mha,.mask,.hdr,.nii,.nii.gz,.hdr.gz,.pic,.lsm,.spr,.vtk,.vtkp,.vtki,.stl,.csv,.txt,.xml,.html",
+          "name": "file1",
+          "longflag": "file1",
+          "description": "An input file",
+          "label": "Input file",
+          "channel": "input"
+        },
+        {
+          "type": "file",
+          "fileExtensions": ".png,.jpg,.jpeg,.bmp,.tif,.tiff,.gipl,.dcm,.dicom,.nhdr,.nrrd,.mhd,.mha,.mask,.hdr,.nii,.nii.gz,.hdr.gz,.pic,.lsm,.spr,.vtk,.vtkp,.vtki,.stl,.csv,.txt,.xml,.html",
+          "name": "files",
+          "longflag": "files",
+          "description": "Multiple input files",
+          "label": "Input Files",
+          "channel": "input",
+          "multiple": true
+        },
+        {
+          "type": "directory",
+          "name": "directory1",
+          "longflag": "directory1",
+          "description": "An input directory. If no default is specified, the current directory is used,",
+          "label": "Input directory",
+          "channel": "input"
+        },
+        {
+          "type": "image",
+          "name": "image1",
+          "longflag": "image1",
+          "description": "An input image",
+          "label": "Input image",
+          "channel": "input"
+        },
+        {
+          "type": "image",
+          "name": "image2",
+          "longflag": "image2",
+          "description": "An output image",
+          "label": "Output image",
+          "channel": "output"
+        }
+      ]
+    },
+    {
+      "label": "Index Parameters",
+      "description": "Variations on parameters that use index rather than flags.",
+      "parameters": [
+        {
+          "type": "image",
+          "name": "arg0",
+          "channel": "input",
+          "index": 0,
+          "description": "First index argument is an image",
+          "label": "First index argument"
+        },
+        {
+          "type": "image",
+          "name": "arg1",
+          "channel": "output",
+          "index": 1,
+          "description": "Second index argument is an image",
+          "label": "Second index argument"
+        }
+      ]
+    },
+    {
+      "label": "Simple return types",
+      "description": "?",
+      "parameters": [
+        {
+          "type": "integer",
+          "name": "anintegerreturn",
+          "label": "An integer return value",
+          "channel": "output",
+          "default": 5,
+          "description": "An example of an integer return type"
+        },
+        {
+          "type": "boolean",
+          "name": "abooleanreturn",
+          "label": "An boolean return value",
+          "channel": "output",
+          "default": false,
+          "description": "An example of an boolean return type"
+        },
+        {
+          "type": "float",
+          "name": "afloatreturn",
+          "label": "An floating return value",
+          "channel": "output",
+          "default": 7.0,
+          "description": "An example of an float return type"
+        },
+        {
+          "type": "double",
+          "name": "adoublereturn",
+          "label": "An double point return value",
+          "channel": "output",
+          "default": 14.0,
+          "description": "An example of an double return type"
+        },
+        {
+          "type": "string",
+          "name": "astringreturn",
+          "label": "An string point return value",
+          "channel": "output",
+          "default": "Hello",
+          "description": "An example of an string return type"
+        },
+        {
+          "type": "integer-vector",
+          "name": "anintegervectorreturn",
+          "label": "An integer vector return value",
+          "channel": "output",
+          "default": [
+            1,
+            2,
+            3
+          ],
+          "description": "An example of an integer vector return type"
+        },
+        {
+          "type": "string-enumeration",
+          "name": "astringchoicereturn",
+          "channel": "output",
+          "description": "An enumeration of strings as a return type",
+          "label": "An string enumeration return value",
+          "default": "Bill",
+          "enumeration": [
+            "Bill",
+            "Ron",
+            "Eric",
+            "Bill",
+            "Ross",
+            "Steve",
+            "Will"
+          ]
+        }
+      ]
+    }
+  ]
+}
