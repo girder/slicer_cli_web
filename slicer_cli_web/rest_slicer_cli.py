@@ -195,7 +195,7 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
                                                               has_simple_return_file)
         container_args.extend(args)
 
-        jobType = '%s#%s (Slicer CLI Task)' % (dockerImage, currentItem.name)
+        jobType = '%s#%s' % (dockerImage, currentItem.name)
 
         if primary_input_name:
             jobTitle = '%s on %s' % (cliTitle, primary_input_name)
