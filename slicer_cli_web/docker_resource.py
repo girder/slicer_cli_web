@@ -61,7 +61,8 @@ class DockerResource(Resource):
         self.route('GET', (name, 'cli', ':id', 'xml'), self.getItemXML)
 
         # sort by name and creation date desc
-        items = sorted(CLIItem.findAllItems(), key=lambda x: (x.restPath, x.item['created']), reverse=True)
+        items = sorted(CLIItem.findAllItems(), key=lambda x: (x.restPath, x.item['created']),
+                       reverse=True)
 
         seen = set()
         for item in items:

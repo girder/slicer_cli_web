@@ -1,8 +1,5 @@
-import os
-import sys
-
 from girder.api.rest import Resource, boundHandler, \
-    setResponseHeader, setRawResponse, RestException
+    RestException
 from girder.api import access
 from girder import logger
 from girder.api.describe import Description, describeRoute
@@ -174,12 +171,14 @@ def genHandlerToRunDockerCLI(cliItem):
     if has_simple_return_file:
         _addReturnParameterFileParamToHandler(handlerDesc)
 
-    def cliHandler(self, params):
-        user = self.getCurrentUser()
+    @access.user
+    @describeRoute(handlerDesc)
+    def cliHandler(resource, params):
+        user = resource.getCurrentUser()
         currentItem = CLIItem.find(itemId, user)
         if not currentItem:
             raise RestException('Invalid CLI Item id (%s).' % (itemId))
-        token = self.getCurrentToken()
+        token = resource.getCurrentToken()
         container_args = [currentItem.name]
         args, result_hooks, primary_input_name = prepare_task(params, user, token,
                                                               index_params, opt_params,
@@ -204,7 +203,7 @@ def genHandlerToRunDockerCLI(cliItem):
         )
         return job.job
 
-    return handlerDesc, cliHandler
+    return cliHandler
 
 
 def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRoute=False):
@@ -234,14 +233,10 @@ def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRou
         raise Exception('restResource must be a Docker Resource')
 
     try:
-        handlerDesc, handler = genHandlerToRunDockerCLI(cliItem)
+        handler = genHandlerToRunDockerCLI(cliItem)
 
         # define CLI handler function
-        @boundHandler(restResource)
-        @access.user
-        @describeRoute(handlerDesc)
-        def cliRunHandler(self, params):
-            return handler(self, params)
+        cliRunHandler = boundHandler(restResource)(handler)
 
         cliRunHandlerName = 'run_%s' % cliItem._id
         setattr(restResource, cliRunHandlerName, cliRunHandler)

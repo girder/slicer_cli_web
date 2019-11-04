@@ -109,7 +109,6 @@ class CLIItem(object):
         ])
 
         leaves = next(r)['leaves']
-        print(leaves)
 
         return CLIItem._findAllItemImpl(user, {
             'folderId': {'$in': [baseFolder['_id']] + leaves}
@@ -257,7 +256,8 @@ class DockerImageItem(object):
         existingItems = {item['name']: item for item in children}
 
         for cli, desc in six.iteritems(cli_dict):
-            item = itemModel.createItem(cli, user, image.tagFolder, 'Slicer CLI generated CLI command item',
+            item = itemModel.createItem(cli, user, image.tagFolder,
+                                        'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
             meta_data = dict(slicerCLIType='task', type=desc.get('type', 'Unknown'))
 
