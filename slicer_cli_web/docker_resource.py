@@ -80,10 +80,10 @@ class DockerResource(Resource):
         for image in DockerImageItem.findAllImages(self.getCurrentUser()):
             imgData = {}
             for cli in image.getCLIs():
-                basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
+                basePath = '/%s/slicer_cli_web/cli/%s' % (self.resourceName, cli._id)
                 imgData[cli.name] = {
                     'type': cli.type,
-                    'xml': basePath + '/xml',
+                    'xmlspec': basePath + '/xml',
                     'run': basePath + '/run'
                 }
             data.setdefault(image.image, {})[image.tag] = imgData
@@ -278,6 +278,7 @@ class DockerResource(Resource):
             '_id': item._id,
             'name': item.name,
             'type': item.type,
+            'image': item.image,
             'description': item.item['description']
         }
         if details:
