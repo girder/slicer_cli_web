@@ -19,9 +19,6 @@ wrap(ItemView, 'render', function (render) {
         if (this.model.get('meta').slicerCLIType !== 'task') {
             return;
         }
-        if (!this.model.parent || !this.model.parent.get('meta').slicerCLIRestPath) {
-            return;
-        }
         this.slicerCLIPanel = new SlicerUI({
             el: $('<div>', { class: 'g-item-slicer-ui' })
                 .insertAfter(this.$('.g-item-info')),
@@ -42,7 +39,6 @@ const SlicerUI = View.extend({
         this._panelViews = {};
 
         this.taskModel = settings.taskModel;
-        this.restPath = `${this.taskModel.parent.get('meta').slicerCLIRestPath}/${this.taskModel.get('name')}`;
 
         this.loadModel();
     },
@@ -133,7 +129,7 @@ const SlicerUI = View.extend({
 
         // post the job to the server
         restRequest({
-            url: `slicer_cli_web/${this.restPath}/run`,
+            url: `slicer_cli_web/slicer_cli_web/cli/${this.taskModel.id}/run`,
             method: 'POST',
             data: params
         }).then((data) => {
