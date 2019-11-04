@@ -45,6 +45,7 @@ def deleteImage(job):
         log='Started to Delete Docker images\n',
         status=JobStatus.RUNNING,
     )
+    docker_client = None
     try:
         deleteList = job['kwargs']['deleteList']
         error = False
@@ -98,6 +99,9 @@ def deleteImage(job):
             status=JobStatus.ERROR,
 
         )
+    finally:
+        if docker_client:
+            docker_client.close()
 
 
 def findLocalImage(client, name):

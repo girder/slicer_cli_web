@@ -24,7 +24,7 @@ def test_genHandlerToRunDockerCLI(admin, folder, file, adminToken, mocker):
     resource = docker_resource.DockerResource('test')
     item = CLIItem(girderCLIItem)
     handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
-        'dockerImage', item, resource)
+        'dockerImage', 'dockerImage@sha256:abc', item, resource)
     assert handlerFunc is not None
 
     job = handlerFunc(params={
@@ -45,7 +45,7 @@ def test_genHandlerToRunDockerCLI(admin, folder, file, adminToken, mocker):
     assert 'image' in kwargs
     assert 'pull_image' in kwargs
 
-    assert kwargs['image'] == 'dockerImage'
-    assert not kwargs['pull_image']
+    assert kwargs['image'] == 'dockerImage@sha256:abc'
+    assert kwargs['pull_image'] == 'if-not-present'
     container_args = kwargs['container_args']
     assert container_args[0] == 'data'
