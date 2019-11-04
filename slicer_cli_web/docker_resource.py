@@ -31,7 +31,7 @@ from girder.constants import AccessType
 from girder.api.describe import autoDescribeRoute, Description, describeRoute
 from girder.utility.model_importer import ModelImporter
 from girder.models.item import Item
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
 from girder_jobs.constants import JobStatus
 
 from .models import DockerImageNotFoundError, DockerImageItem, CLIItem
@@ -68,45 +68,16 @@ class DockerResource(Resource):
     def getDockerImages(self, params):
         data = {}
         for image in DockerImageItem.findAllImages(self.getCurrentUser()):
-            name, tag, imgData = self.createRestDataForImageVersion(image)
-            data.setdefault(name, {})[tag] = imgData
+            imgData = {}
+            for cli in image.getCLIs():
+                basePath = '/%s/%s' % (self.resourceName, cli.restPath)
+                imgData[cli.name] = {
+                    'type': cli.type,
+                    'xml': basePath + '/xml',
+                    'run': basePath + '/run'
+                }
+            data.setdefault(image.image, {})[image.tag] = imgData
         return data
-
-    def createRestDataForImageVersion(self, dockerImage):
-        """
-        Creates a dictionary with rest endpoint information for the given
-        DockerImage object
-
-        :param dockerImage: DockerImage object
-        :type dockerImage: DockerImageItem
-
-        :returns: structured dictionary documenting clis and rest
-            endpoints for this image version
-        """
-
-        name = dockerImage.name
-        endpointData = self.currentEndpoints.setdefault(name, {})
-
-        userAndRepo = dockerImage.image
-        tag = dockerImage.tag
-
-        data = {}
-
-        for cli in dockerImage.getCLIs():
-            if cli.name not in endpointData:
-                logger.warning('"%s" not present in endpoint data.' % cli.name)
-                continue
-            data[cli.name] = {}
-
-            data[cli.name]['type'] = cli.type
-            cli_endpoints = endpointData[cli.name]
-
-            for (operation, endpointRoute) in six.iteritems(cli_endpoints):
-                cli_list = endpointRoute[1]
-                if cli.name in cli_list:
-                    data[cli.name][operation] = '/' + self.resourceName + \
-                                                '/' + '/'.join(cli_list)
-        return userAndRepo, tag, data
 
     @access.admin
     @describeRoute(
@@ -275,17 +246,9 @@ class DockerResource(Resource):
             names. As a result the docker name and cli name used in the rest
             route do not have to match the actual docker name and cli name
         """
-        if imgName in self.currentEndpoints:
-            if cli in self.currentEndpoints[imgName]:
-                self.currentEndpoints[imgName][cli][operation] = argList
-            else:
-                self.currentEndpoints[imgName][cli] = {}
-                self.currentEndpoints[imgName][cli][operation] = argList
-
-        else:
-            self.currentEndpoints[imgName] = {}
-            self.currentEndpoints[imgName][cli] = {}
-            self.currentEndpoints[imgName][cli][operation] = argList
+        img = self.currentEndpoints.setdefault(imgName, {})
+        c = img.setdefault(cli, {})
+        c[operation] = argList
 
     def deleteImageEndpoints(self, imageList=None):
 
@@ -316,29 +279,26 @@ class DockerResource(Resource):
         job = event.info['job']
 
         if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
-            images = DockerImageItem.findAllImages()
             self.deleteImageEndpoints()
-            for image in images:
-                genRESTEndPointsForSlicerCLIsForImage(self, image)
+            for item in CLIItem.findAllItems():
+                genRESTEndPointsForSlicerCLIsForItem(self, item)
 
-    def _dump(self, item, short=True):
+    def _dump(self, item, details=False):
         r = {
             '_id': item._id,
             'name': item.name,
             'type': item.type,
             'description': item.item['description']
         }
-        if short:
-            return r
-
-        r['xml'] = item.item['meta']['xml']
+        if details:
+            r['xml'] = item.item['meta']['xml']
         return r
 
     @access.user
     @autoDescribeRoute(
         Description('List CLIs')
         .errorResponse('You are not logged in.', 403)
-        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
+        .modelParam('folder', 'The base folder to look for tasks', 'folder', paramType='query',
                     level=AccessType.WRITE, required=False)
     )
     def getItems(self, folder):
@@ -353,7 +313,7 @@ class DockerResource(Resource):
                     level=AccessType.READ)
     )
     def getItem(self, item):
-        return self._dump(CLIItem(item), False)
+        return self._dump(CLIItem(item), True)
 
     @access.user
     @autoDescribeRoute(

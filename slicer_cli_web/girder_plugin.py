@@ -23,9 +23,9 @@ from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForImage
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
 from .docker_resource import DockerResource
-from .models import DockerImageItem
+from .models import DockerImageItem, CLIItem
 
 
 def _onUpload(event):
@@ -60,8 +60,8 @@ class SlicerCLIWebPlugin(GirderPlugin):
         resource = DockerResource('slicer_cli_web')
         info['apiRoot'].slicer_cli_web = resource
 
-        for image in DockerImageItem.findAllImages():
-            genRESTEndPointsForSlicerCLIsForImage(resource, image)
+        for item in CLIItem.findAllItems():
+            genRESTEndPointsForSlicerCLIsForItem(resource, item)
 
         ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
             'slicerCLIBindings'})

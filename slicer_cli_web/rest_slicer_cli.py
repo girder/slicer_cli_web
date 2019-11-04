@@ -210,46 +210,6 @@ def genHandlerToRunDockerCLI(dockerImage, dockerImageDigest, cliItem, restResour
     return cliHandler
 
 
-def genHandlerToGetDockerCLIXmlSpec(itemId, name, restResource):
-    """Generates a handler that returns the XML spec of the docker CLI
-
-    Parameters
-    ----------
-    itemId : str
-        Girder Item Id
-    name : str
-        Relative path of the CLI which is needed to run the CLI by running
-        the command docker run `dockerImage` `name`
-    cliXML: str
-        value of clispec stored in settings
-    restResource : girder.api.rest.Resource
-        The object of a class derived from girder.api.rest.Resource to which
-        this handler will be attached
-
-    Returns
-    -------
-    function
-        Returns a function that returns the xml spec of the CLI
-
-    """
-
-    # define the handler that returns the CLI's xml spec
-    @boundHandler(restResource)
-    @access.user
-    @describeRoute(
-        Description('Get XML spec of %s CLI' % name).produces('application/xml')
-    )
-    def getXMLSpecHandler(self, *args, **kwargs):
-        item = CLIItem.find(itemId, self.getCurrentUser())
-        if not item:
-            raise RestException('Invalid CLI Item id (%s).' % (itemId))
-        setResponseHeader('Content-Type', 'application/xml')
-        setRawResponse()
-        return item.xml
-
-    return getXMLSpecHandler
-
-
 def genRESTEndPointsForSlicerCLIsForImage(restResource, docker_image):
     """Generates REST end points for slicer CLIs placed in subdirectories of a
     given root directory and attaches them to a REST resource with the given
