@@ -104,6 +104,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: Install Python headers
+          command: |
+            sudo apt-get install python-dev
       - tox:
           env: py27
   py36:
@@ -111,6 +115,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: Install Python headers
+          command: |
+            sudo apt-get install python3-dev
       - tox:
           env: py36
   py37:
@@ -118,6 +126,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: Install Python headers
+          command: |
+            sudo apt-get install python3-dev
       - tox:
           env: py37
       - upload:
