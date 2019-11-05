@@ -35,22 +35,6 @@ def assert_string_equal(a, b):
     assert a_clean == b_clean
 
 
-@pytest.fixture
-def folder(admin):
-    from girder.models.folder import Folder
-    f = Folder().createFolder(admin, 'folder', parentType='user')
-
-    yield f
-
-
-@pytest.fixture
-def item(folder, admin):
-    from girder.models.item import Item
-    f = Item().createItem('item', admin, folder)
-
-    yield f
-
-
 @pytest.mark.plugin('slicer_cli_web')
 class TestParserSimple:
     xml = read_file('parser_simple.xml')
@@ -107,6 +91,28 @@ class TestParserParamsSimple:
 
     def test_yaml(self, admin, item):
         meta = parse_yaml_desc(item, dict(yaml=TestParserParamsSimple.yaml), admin)
+        self.verify(meta, item)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+class TestParserParamsAdvanced:
+    xml = read_file('parser_params_advanced.xml')
+    json = read_file('parser_params_advanced.json')
+    yaml = read_file('parser_params_advanced.yaml')
+
+    def verify(self, meta, item):
+        assert_string_equal(meta.get('xml'), TestParserParamsAdvanced.xml)
+
+    def test_xml(self, admin, item):
+        meta = parse_xml_desc(item, dict(xml=TestParserParamsAdvanced.xml), admin)
+        self.verify(meta, item)
+
+    def test_json(self, admin, item):
+        meta = parse_json_desc(item, dict(json=TestParserParamsAdvanced.json), admin)
+        self.verify(meta, item)
+
+    def test_yaml(self, admin, item):
+        meta = parse_yaml_desc(item, dict(yaml=TestParserParamsAdvanced.yaml), admin)
         self.verify(meta, item)
 
 
