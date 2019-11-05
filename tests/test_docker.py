@@ -33,14 +33,6 @@ from pytest_girder.utils import getResponseBody
 TIMEOUT = 180
 
 
-@pytest.fixture
-def folder(db, admin):
-    from girder.models.folder import Folder
-    f = Folder().createFolder(admin, 'folder', parentType='user')
-
-    yield f
-
-
 def splitName(name):
     if ':' in name:
         imageAndTag = name.split(':')
