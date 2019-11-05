@@ -179,6 +179,7 @@ def genHandlerToRunDockerCLI(cliItem):
         if not currentItem:
             raise RestException('Invalid CLI Item id (%s).' % (itemId))
         token = resource.getCurrentToken()
+
         container_args = [currentItem.name]
         args, result_hooks, primary_input_name = prepare_task(params, user, token,
                                                               index_params, opt_params,
