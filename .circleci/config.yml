@@ -66,6 +66,9 @@ commands:
         type: string
     steps:
       - run:
+          name: Upgrade Pip
+          command: pip install -U pip
+      - run:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
           # consume the exit code
