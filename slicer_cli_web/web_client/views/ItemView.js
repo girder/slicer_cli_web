@@ -129,7 +129,7 @@ const SlicerUI = View.extend({
 
         // post the job to the server
         restRequest({
-            url: `slicer_cli_web/slicer_cli_web/cli/${this.taskModel.id}/run`,
+            url: `slicer_cli_web/cli/${this.taskModel.id}/run`,
             method: 'POST',
             data: params
         }).then((data) => {

@@ -50,15 +50,15 @@ class DockerResource(Resource):
         self.currentEndpoints = {}
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
-        self.route('PUT', (name, 'docker_image'), self.setImages)
-        self.route('DELETE', (name, 'docker_image'), self.deleteImage)
-        self.route('GET', (name, 'docker_image'), self.getDockerImages)
+        self.route('PUT', ('docker_image',), self.setImages)
+        self.route('DELETE', ('docker_image',), self.deleteImage)
+        self.route('GET', ('docker_image',), self.getDockerImages)
 
-        self.route('GET', (name, 'cli'), self.getItems)
-        self.route('GET', (name, 'cli', ':id',), self.getItem)
-        self.route('DELETE', (name, 'cli', ':id',), self.deleteItem)
+        self.route('GET', ('cli',), self.getItems)
+        self.route('GET', ('cli', ':id',), self.getItem)
+        self.route('DELETE', ('cli', ':id',), self.deleteItem)
         # run is generated per item for better validation
-        self.route('GET', (name, 'cli', ':id', 'xml'), self.getItemXML)
+        self.route('GET', ('cli', ':id', 'xml'), self.getItemXML)
 
         self._generateAllItemEndPoints()
 
@@ -72,7 +72,7 @@ class DockerResource(Resource):
         for image in DockerImageItem.findAllImages(self.getCurrentUser()):
             imgData = {}
             for cli in image.getCLIs():
-                basePath = '/%s/slicer_cli_web/cli/%s' % (self.resourceName, cli._id)
+                basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
                 imgData[cli.name] = {
                     'type': cli.type,
                     'xmlspec': basePath + '/xml',

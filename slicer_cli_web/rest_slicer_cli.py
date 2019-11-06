@@ -242,7 +242,7 @@ def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRou
         cliRunHandlerName = 'run_%s' % cliItem._id
         setattr(restResource, cliRunHandlerName, cliRunHandler)
 
-        restRunPath = ('slicer_cli_web', 'cli', str(cliItem._id), 'run')
+        restRunPath = ('cli', str(cliItem._id), 'run')
         restResource.route('POST', restRunPath, cliRunHandler)
 
         if registerNamedRoute:
