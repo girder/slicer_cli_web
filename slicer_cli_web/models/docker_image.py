@@ -41,11 +41,16 @@ class CLIItem(object):
         self.item = item
         self._id = item['_id']
         self.name = item['name']
-        desc = item['meta']
-        self.type = desc['type']
-        self.xml = desc['xml']
+        meta = item['meta']
+        self.type = meta['type']
+        self.image = meta.get('image', 'UNKNOWN')
+        self.digest = meta.get('digest', self.image)
+        self.xml = meta['xml']
         if isinstance(self.xml, six.text_type):
             self.xml = self.xml.encode('utf8')
+
+        self.restBasePath = self.image.replace(':', '_').replace('/', '_').replace('@', '_')
+        self.restPath = '%s/%s' % (self.restBasePath, self.name)
 
     @staticmethod
     def find(itemId, user):
@@ -54,6 +59,60 @@ class CLIItem(object):
         if not item:
             return None
         return CLIItem(item)
+
+    @staticmethod
+    def _findAllItemImpl(user=None, extraQuery=None):
+        itemModel = Item()
+        q = {'meta.slicerCLIType': 'task'}
+
+        if extraQuery:
+            q.update(extraQuery)
+
+        if user:
+            items = itemModel.findWithPermissions(q, user=user, level=AccessType.READ)
+        else:
+            items = itemModel.find(q)
+
+        return [CLIItem(item) for item in items]
+
+    @staticmethod
+    def findAllItems(user=None, baseFolder=None):
+        if not baseFolder:
+            return CLIItem._findAllItemImpl(user)
+
+        folderModel = Folder()
+        graphLookup = {
+            'from': 'folder',
+            'startWith': '$_id',
+            'connectFromField': '_id',
+            'connectToField': 'parentId',
+            'as': 'children'
+        }
+
+        if user and not user['admin']:
+            graphLookup['restrictSearchWithMatch'] = folderModel.permissionClauses(user,
+                                                                                   AccessType.READ)
+
+        # see https://docs.mongodb.com/manual/reference/operator/aggregation/graphLookup
+        r = folderModel.collection.aggregate([
+            {
+                '$match': dict(_id=baseFolder['_id'])
+            },
+            {
+                '$graphLookup': graphLookup
+            },
+            {
+                '$project': {
+                    'leaves': '$children._id',
+                }
+            }
+        ])
+
+        leaves = next(r)['leaves']
+
+        return CLIItem._findAllItemImpl(user, {
+            'folderId': {'$in': [baseFolder['_id']] + leaves}
+        })
 
 
 class DockerImageItem(object):
@@ -65,9 +124,8 @@ class DockerImageItem(object):
         self.tagFolder = tagFolder
         self._id = self.tagFolder['_id']
         self.user = user
+        self.name = '%s:%s' % (self.image, self.tag)
         self.digest = tagFolder['meta'].get('digest', self.name)
-
-        self.restPath = self.name.replace(':', '_').replace('/', '_').replace('@', '_')
 
     def getCLIs(self):
         itemModel = Item()
@@ -150,17 +208,11 @@ class DockerImageItem(object):
         return removed
 
     @staticmethod
-    def saveImage(name, cli_dict, docker_image, user, baseFolder):
-        """
-        :param baseFolder
-        :type Folder
-        """
+    def _create(name, docker_image, user, baseFolder):
         folderModel = Folder()
-        itemModel = Item()
         fileModel = File()
 
         imageName, tagName = _split(name)
-        restPath = name.replace(':', '_').replace('/', '_').replace('@', '_')
 
         image = folderModel.createFolder(baseFolder, imageName,
                                          'Slicer CLI generated docker image folder',
@@ -183,22 +235,36 @@ class DockerImageItem(object):
         labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
         if 'Author' in docker_image.attrs:
             labels['author'] = docker_image.attrs['Author']
+
+        digest = None
         if docker_image.attrs.get('RepoDigests', []):
-            labels['digest'] = docker_image.attrs['RepoDigests'][0]
-        else:
-            labels['digest'] = None
+            digest = docker_image.attrs['RepoDigests'][0]
+
+        labels['digest'] = digest
         folderModel.setMetadata(tag, labels)
 
-        folderModel.setMetadata(tag, dict(slicerCLIType='tag', slicerCLIRestPath=restPath))
-        children = folderModel.childItems(tag, filters={'meta.slicerCLIType': 'task'})
+        folderModel.setMetadata(tag, dict(slicerCLIType='tag'))
+
+        return DockerImageItem(image, tag, user)
+
+    @staticmethod
+    def _syncItems(image, cli_dict, user):
+        folderModel = Folder()
+        itemModel = Item()
+
+        children = folderModel.childItems(image.tagFolder, filters={'meta.slicerCLIType': 'task'})
         existingItems = {item['name']: item for item in children}
 
         for cli, desc in six.iteritems(cli_dict):
-            item = itemModel.createItem(cli, user, tag, 'Slicer CLI generated CLI command item',
+            item = itemModel.createItem(cli, user, image.tagFolder,
+                                        'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
-            meta_data = dict(slicerCLIType='task')
-            if 'type' in desc:
-                meta_data['type'] = desc['type']
+            meta_data = dict(slicerCLIType='task', type=desc.get('type', 'Unknown'))
+
+            # copy some things from the image to be independent
+            meta_data['image'] = image.name
+            meta_data['digest'] = image.digest if image.name != image.digest else None
+
             desc_type = desc.get('desc-type', 'xml')
 
             if desc_type == 'xml':
@@ -217,7 +283,17 @@ class DockerImageItem(object):
         for item in six.itervalues(existingItems):
             itemModel.remove(item)
 
-        return DockerImageItem(image, tag, user)
+    @staticmethod
+    def saveImage(name, cli_dict, docker_image, user, baseFolder):
+        """
+        :param baseFolder
+        :type Folder
+        """
+
+        image = DockerImageItem._create(name, docker_image, user, baseFolder)
+        DockerImageItem._syncItems(image, cli_dict, user)
+
+        return image
 
     @staticmethod
     def prepare():

@@ -56,7 +56,7 @@ class ImageHelper(object):
             assert key not in obj
 
     def getEndpoint(self):
-        resp = self.server.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
+        resp = self.server.request(path='/slicer_cli_web/docker_image',
                                    user=self.admin)
         assertStatus(resp, 200)
 
@@ -129,7 +129,7 @@ class ImageHelper(object):
             events.bind('jobs.job.update.after', 'slicer_cli_web_del',
                         self.delHandler)
 
-        resp = self.server.request(path='/slicer_cli_web/slicer_cli_web/docker_image',
+        resp = self.server.request(path='/slicer_cli_web/docker_image',
                                    user=self.admin, method='DELETE',
                                    params={'name': json.dumps(name),
                                            'delete_from_local_repo':
@@ -183,7 +183,7 @@ class ImageHelper(object):
                         'slicer_cli_web_add', self.addHandler)
 
         resp = self.server.request(
-            path='/slicer_cli_web/slicer_cli_web/docker_image',
+            path='/slicer_cli_web/docker_image',
             user=self.admin, method='PUT', params={'name': json.dumps(name),
                                                    'folder': self.folder['_id']},
             isJson=initialStatus == 200)
@@ -233,7 +233,7 @@ def testDockerAdd(images):
 def testDockerAddBadParam(server, admin, folder):
     # test sending bad parameters to the PUT endpoint
     kwargs = {
-        'path': '/slicer_cli_web/slicer_cli_web/docker_image',
+        'path': '/slicer_cli_web/docker_image',
         'user': admin,
         'method': 'PUT',
         'params': {'name': json.dumps(6), 'folder': folder['_id']}

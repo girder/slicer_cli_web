@@ -19,15 +19,15 @@ def test_genHandlerToRunDockerCLI(admin, folder, file, adminToken, mocker):
 
     girderCLIItem = Item().createItem('data', admin, folder)
     Item().setMetadata(girderCLIItem, dict(slicerCLIType='task', type='python',
+                                           image='dockerImage', digest='dockerImage@sha256:abc',
                                            xml=open(xmlpath, 'rb').read()))
 
     resource = docker_resource.DockerResource('test')
     item = CLIItem(girderCLIItem)
-    handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(
-        'dockerImage', 'dockerImage@sha256:abc', item, resource)
+    handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(item)
     assert handlerFunc is not None
 
-    job = handlerFunc(params={
+    job = handlerFunc(resource, params={
         'inputImageFile': str(file['_id']),
         'secondImageFile': str(file['_id']),
         'outputStainImageFile_1_folder': str(folder['_id']),

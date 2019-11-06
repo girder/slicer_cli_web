@@ -58,7 +58,7 @@ const UploadImageDialog = View.extend({
         const name = data.get('name').split(',').map((d) => d.trim()).filter((d) => d.length > 0);
         return restRequest({
             type: 'PUT',
-            url: 'slicer_cli_web/slicer_cli_web/docker_image',
+            url: 'slicer_cli_web/docker_image',
             data: {
                 name: JSON.stringify(name)
             },
