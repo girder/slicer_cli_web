@@ -2,11 +2,14 @@ from os import access, R_OK
 from os.path import basename, isfile, abspath, join
 
 from girder_worker.app import app
-from girder_worker.docker.transforms import BindMountVolume
+from girder_worker.docker.transforms import BindMountVolume, ContainerStdOut
+from girder_worker.docker.io import FDReadStreamConnector
 from girder_worker.docker.transforms.girder import GirderFileIdToVolume
 from girder_worker.docker.tasks import _docker_run, DockerTask
 from girder_worker_utils import _walk_obj
 from girder_worker_utils.transforms.girder_io import GirderClientTransform
+
+from .cli_progress import CLIProgressCLIWriter
 
 
 def _get_basename(filename, direct_path):
@@ -109,5 +112,12 @@ def run(task, **kwargs):
     pull_image = kwargs.get('pull_image')
     if pull_image == 'if-not-present':
         kwargs['pull_image'] = not _has_image(kwargs['image'])
+
+    if hasattr(task, 'job_manager'):
+        stream_connectors = kwargs.setdefault('stream_connectors', [])
+        stream_connectors.append(FDReadStreamConnector(
+            input=ContainerStdOut(),
+            output=CLIProgressCLIWriter(task.job_manager)
+        ))
 
     return _docker_run(task, **kwargs)
