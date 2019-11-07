@@ -1,20 +1,9 @@
 import argparse
 import os
 from time import sleep
-import pprint
 import sys
 
 from progress_helper import ProgressHelper
-
-
-def main(args):
-    with ProgressHelper('main', 'test') as p:
-        p.progress(0.1)
-        print('>> parsed arguments')
-        for i in range(10):
-            sleep(2)
-            p.progress(i / 10.)
-        pprint.pprint(vars(args))
 
 
 if __name__ == '__main__':
