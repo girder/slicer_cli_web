@@ -27,7 +27,7 @@ wrap(HierarchyWidget, 'render', function (render) {
                     el: $('#g-dialog-container')
                 }).render();
             });
-    }
+    };
 
     if ((this.parentView instanceof CollectionView && this.parentModel.get('_modelType') === 'folder')) {
         ConfigView.getSettings().then((settings) => {

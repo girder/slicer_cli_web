@@ -205,7 +205,7 @@ const PanelGroup = View.extend({
             this._submit = `${path}/run`;
             this._schema(xml);
             events.trigger('h:analysis', path, xml);
-        }
+        };
         if (xml) {
             return process(xml);
         }
@@ -251,7 +251,7 @@ const PanelGroup = View.extend({
      * Generate panels from a json schema.
      */
     _json(spec, outputs) {
-        if (typeof spec === 'string') {
+        if (_.isString(spec)) {
             spec = JSON.parse(spec);
         }
         this._gui = spec;

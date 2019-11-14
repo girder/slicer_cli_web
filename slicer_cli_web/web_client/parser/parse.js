@@ -23,7 +23,7 @@ import panel from './panel';
  * @returns {object}
  */
 export default function parse(spec, opts = {}) {
-    if (typeof spec === 'string') {
+    if (_.isString(spec)) {
         spec = $.parseXML(spec);
     }
 

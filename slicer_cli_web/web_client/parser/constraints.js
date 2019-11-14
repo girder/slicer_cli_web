@@ -22,4 +22,3 @@ export default function constraints(type, constraintsTag) {
     }
     return spec;
 }
-
