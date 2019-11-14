@@ -3,12 +3,9 @@ import convert from './convert';
 /**
  * Parse a `default` tag returning an empty object when no default is given.
  */
-function defaultValue(type, value) {
-    var output = {};
-    if (value.length) {
-        output = {value: convert(type, value.text())};
+export default function defaultValue(type, value) {
+    if (value.length > 0) {
+        return {value: convert(type, value.text())};
     }
-    return output;
+    return {};
 }
-
-export default defaultValue;

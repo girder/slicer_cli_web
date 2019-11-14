@@ -4,27 +4,27 @@ import View from '@girder/core/views/View';
 import panel from '../templates/panel.pug';
 import '../stylesheets/panel.styl';
 
-var Panel = View.extend({
+const Panel = View.extend({
     events: {
         'show.bs.collapse': 'expand',
         'hide.bs.collapse': 'collapse',
         'click .s-panel-title-container': '_handleTitleClick'
     },
-    initialize: function (settings) {
+    initialize(settings) {
         this.spec = settings.spec;
     },
-    render: function () {
+    render() {
         this.$el.html(panel(this.spec));
         this.$('.s-panel-content').collapse({toggle: false});
         return this;
     },
-    expand: function () {
+    expand() {
         this.$('.icon-down-open').attr('class', 'icon-up-open');
     },
-    collapse: function () {
+    collapse() {
         this.$('.icon-up-open').attr('class', 'icon-down-open');
     },
-    _handleTitleClick: function (e) {
+    _handleTitleClick(e) {
         if (!$(e.target).hasClass('s-remove-panel')) {
             e.stopImmediatePropagation();
             this.$('.s-panel-content').collapse('toggle');

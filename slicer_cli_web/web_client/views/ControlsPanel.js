@@ -4,8 +4,8 @@ import ControlWidget from './ControlWidget';
 import controlsPanel from '../templates/controlsPanel.pug';
 import '../stylesheets/controlsPanel.styl';
 
-var ControlsPanel = Panel.extend({
-    initialize: function (settings) {
+const ControlsPanel = Panel.extend({
+    initialize(settings) {
         this._controlWidgetSettings = settings.controlWidget || {};
 
         this.title = settings.title || '';
@@ -15,7 +15,7 @@ var ControlsPanel = Panel.extend({
         this.listenTo(this.collection, 'remove', this.removeWidget);
     },
 
-    render: function () {
+    render() {
         this.$el.html(controlsPanel({
             title: this.title,
             collapsed: this.advanced,
@@ -25,20 +25,20 @@ var ControlsPanel = Panel.extend({
         this.$('.s-panel-content').collapse({toggle: false});
     },
 
-    addOne: function (model) {
-        var view = new ControlWidget(Object.assign({
+    addOne(model) {
+        const view = new ControlWidget(Object.assign({
             model: model,
             parentView: this
         }, this._controlWidgetSettings));
         this.$('form').append(view.render().el);
     },
 
-    addAll: function () {
+    addAll() {
         this.$('form').children().remove();
         this.collection.each(this.addOne, this);
     },
 
-    removeWidget: function (model) {
+    removeWidget(model) {
         model.destroy();
     }
 });

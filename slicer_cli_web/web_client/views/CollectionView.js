@@ -13,7 +13,7 @@ import '@girder/core/utilities/jquery/girderModal';
 wrap(HierarchyWidget, 'render', function (render) {
     render.call(this);
 
-    function injectUploadImageButton() {
+    const injectUploadImageButton = () => {
         const button = this.$('.g-upload-here-button');
         if (button.length === 0) {
             return;
@@ -32,7 +32,7 @@ wrap(HierarchyWidget, 'render', function (render) {
     if ((this.parentView instanceof CollectionView && this.parentModel.get('_modelType') === 'folder')) {
         ConfigView.getSettings().then((settings) => {
             if (settings.task_folder === this.parentModel.id) {
-                injectUploadImageButton.call(this);
+                injectUploadImageButton();
             }
             return null;
         });

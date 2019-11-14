@@ -12,9 +12,7 @@ export function showJobSuccessAlert(job) {
     $('#g-alerts-container').append(el);
     el.fadeIn(500);
 
-    window.setTimeout(function () {
-        el.fadeOut(750, function () {
-            $(this).remove();
-        });
+    window.setTimeout(() => {
+        el.fadeOut(750, () => el.remove());
     }, 20000);
 }

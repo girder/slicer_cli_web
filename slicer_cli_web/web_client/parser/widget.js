@@ -3,8 +3,8 @@
  * @param {XML} param The full xml parameter spec
  * @return {string} The widget type
  */
-function widget(param) {
-    var typeMap = {
+export default function widget(param) {
+    const typeMap = {
         integer: 'number',
         float: 'number',
         double: 'number',
@@ -26,5 +26,3 @@ function widget(param) {
     };
     return typeMap[param.tagName];
 }
-
-export default widget;

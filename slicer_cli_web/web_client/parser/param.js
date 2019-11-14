@@ -11,15 +11,15 @@ import constraints from './constraints';
  * @param {XML} param The parameter spec
  * @returns {object}
  */
-function param(paramTag, opts = {}) {
-    var $param = $(paramTag);
-    var type = widget(paramTag);
-    var values = {};
-    var channel = $param.find('channel');
-    var id = $param.find('name').text() || $param.find('longflag').text();
-    var extra = {};
+export default function param(paramTag, opts = {}) {
+    const $param = $(paramTag);
+    let type = widget(paramTag);
+    let values = {};
+    let channel = $param.find('channel');
+    const id = $param.find('name').text() || $param.find('longflag').text();
+    const extra = {};
 
-    if (channel.length) {
+    if (channel.length > 0) {
         channel = channel.text();
     } else {
         channel = 'input';
@@ -65,5 +65,3 @@ function param(paramTag, opts = {}) {
         extra
     );
 }
-
-export default param;

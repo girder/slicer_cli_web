@@ -10,12 +10,12 @@ import { restRequest } from '@girder/core/rest';
 
 import itemSelectorWidget from '../templates/itemSelectorWidget.pug';
 
-var ItemSelectorWidget = View.extend({
+const ItemSelectorWidget = View.extend({
     events: {
         'submit .s-new-file-select-form': '_selectButton'
     },
 
-    initialize: function (settings) {
+    initialize(settings) {
         if (!this.model) {
             this.model = new ItemModel();
         }
@@ -37,7 +37,7 @@ var ItemSelectorWidget = View.extend({
         }
     },
 
-    render: function () {
+    render() {
         this.$el.html(
             itemSelectorWidget(this.model.toJSON())
         ).girderModal(this);
@@ -45,7 +45,7 @@ var ItemSelectorWidget = View.extend({
         return this;
     },
 
-    _renderHierarchyView: function () {
+    _renderHierarchyView() {
         if (this._hierarchyView) {
             this.stopListening(this._hierarchyView);
             this._hierarchyView.off();
@@ -64,12 +64,12 @@ var ItemSelectorWidget = View.extend({
             showMetadata: false,
             downloadLinks: false,
             viewLinks: false,
-            onItemClick: _.bind(this._selectItem, this)
+            onItemClick: this._selectItem.bind(this)
         });
         this._hierarchyView.setElement(this.$('.s-hierarchy-widget-container')).render();
     },
 
-    _renderRootSelection: function () {
+    _renderRootSelection() {
         if (this._rootSelectionView) {
             this._rootSelectionView.setElement(this.$('.s-hierarchy-root-container')).render();
         }
@@ -79,10 +79,8 @@ var ItemSelectorWidget = View.extend({
     /**
      * Get the currently displayed path in the hierarchy view.
      */
-    _path: function () {
-        var path = this._hierarchyView.breadcrumbs.map(function (d) {
-            return d.get('name');
-        });
+    _path() {
+        let path = this._hierarchyView.breadcrumbs.map((d) => d.get('name'));
 
         if (this.model.get('type') === 'directory') {
             path = _.initial(path);
@@ -90,9 +88,7 @@ var ItemSelectorWidget = View.extend({
         return path;
     },
 
-    _selectItem: function (item) {
-        var image, file;
-
+    _selectItem(item) {
         switch (this.model.get('type')) {
             case 'item':
                 this.model.set({
@@ -103,28 +99,28 @@ var ItemSelectorWidget = View.extend({
                 this.$el.modal('hide');
                 break;
             case 'file':
-                restRequest({url: '/item/' + item.id + '/files', data: {limit: 1}}).done((resp) => {
+                restRequest({url: `/item/${item.id}/files`, data: {limit: 1}}).done((resp) => {
                     if (!resp.length) {
                         this.$('.s-modal-error').removeClass('hidden')
                             .text('Please select a item with at least one file.');
                         return;
                     }
-                    file = new FileModel({_id: resp[0]._id});
-                    file.once('g:fetched', _.bind(function () {
+                    const file = new FileModel({_id: resp[0]._id});
+                    file.once('g:fetched', () => {
                         this.model.set({
                             path: this._path(),
                             value: file
                         });
                         this.trigger('g:saved');
-                    }, this)).fetch();
+                    }).fetch();
                     this.$el.modal('hide');
                 }).fail(() => {
                     this.$('.s-modal-error').removeClass('hidden')
                         .text('There was an error listing files for the selected item.');
                 });
                 break;
-            case 'image':
-                image = item.get('largeImage');
+            case 'image': {
+                const image = item.get('largeImage');
 
                 if (!image) {
                     this.$('.s-modal-error').removeClass('hidden')
@@ -133,28 +129,29 @@ var ItemSelectorWidget = View.extend({
                 }
 
                 // Prefer the large_image fileId
-                file = new FileModel({_id: image.fileId || image.originalId});
-                file.once('g:fetched', _.bind(function () {
+                const file = new FileModel({ _id: image.fileId || image.originalId });
+                file.once('g:fetched', () => {
                     this.model.set({
                         path: this._path(),
                         value: file
                     });
                     this.trigger('g:saved');
-                }, this)).fetch();
+                }).fetch();
                 this.$el.modal('hide');
                 break;
+            }
         }
     },
 
-    _selectButton: function (e) {
+    _selectButton(e) {
         e.preventDefault();
 
-        var inputEl = this.$('#s-new-file-name');
-        var inputElGroup =  inputEl.parent();
-        var fileName = inputEl.val();
-        var type = this.model.get('type');
-        var parent = this._hierarchyView.parentModel;
-        var errorEl = this.$('.s-modal-error').addClass('hidden');
+        const inputEl = this.$('#s-new-file-name');
+        const inputElGroup =  inputEl.parent();
+        const fileName = inputEl.val();
+        const type = this.model.get('type');
+        const parent = this._hierarchyView.parentModel;
+        const errorEl = this.$('.s-modal-error').addClass('hidden');
 
         inputElGroup.removeClass('has-error');
 

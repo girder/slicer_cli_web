@@ -22,31 +22,26 @@ import panel from './panel';
  *     the outputs of the spec.
  * @returns {object}
  */
-function parse(spec, opts = {}) {
-    var gui, $spec;
-
-    if (_.isString(spec)) {
+export default function parse(spec, opts = {}) {
+    if (typeof spec === 'string') {
         spec = $.parseXML(spec);
     }
 
-    $spec = $(spec).find('executable:first');
+    const $spec = $(spec).find('executable:first');
 
     // top level metadata
-    gui = {
+    const gui = {
         title: $spec.find('executable > title').text(),
         description: $spec.find('executable > description').text()
     };
 
     // optional metadata
-    _.each(
-        ['version', 'documentation-url', 'license', 'contributor', 'acknowledgements'],
-        function (key) {
-            var val = $spec.find('executable > ' + key + ':first');
-            if (val.length) {
-                gui[key] = val.text();
-            }
+    ['version', 'documentation-url', 'license', 'contributor', 'acknowledgements'].forEach((key) => {
+        const val = $spec.find(`executable > ${key}:first`);
+        if (val.length > 0) {
+            gui[key] = val.text();
         }
-    );
+    });
 
     gui.panels = _.filter(
         _.map($spec.find('executable > parameters'), (p) => panel(p, opts)),
@@ -55,5 +50,3 @@ function parse(spec, opts = {}) {
 
     return gui;
 }
-
-export default parse;
