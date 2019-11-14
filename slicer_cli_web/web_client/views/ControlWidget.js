@@ -24,7 +24,7 @@ import 'bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css';
 import 'bootstrap-slider/dist/bootstrap-slider';
 import 'bootstrap-slider/dist/css/bootstrap-slider.css';
 
-var ControlWidget = View.extend({
+const ControlWidget = View.extend({
     events: {
         'change input,select': '_input',
         changeColor: '_input',
@@ -32,7 +32,7 @@ var ControlWidget = View.extend({
         'click .s-select-region-button': '_selectRegion'
     },
 
-    initialize: function (settings) {
+    initialize(settings) {
         this._disableRegionSelect = settings.disableRegionSelect === true;
         this._rootPath = settings.rootPath;
         this.listenTo(this.model, 'change', this.change);
@@ -105,7 +105,7 @@ var ControlWidget = View.extend({
         return this.model.collection.find((d) => d.get('id') === ref);
     },
 
-    render: function (_, options) {
+    render(_, options) {
         this.$('.form-group').removeClass('has-error');
         this.model.isValid();
         if (options && options.norender) {
@@ -121,14 +121,14 @@ var ControlWidget = View.extend({
         return this;
     },
 
-    change: function () {
-        events.trigger('s:widgetChanged:' + this.model.get('type'), this.model);
+    change() {
+        events.trigger(`s:widgetChanged:${this.model.get('type')}`, this.model);
         events.trigger('s:widgetChanged', this.model);
         this.render.apply(this, arguments);
     },
 
-    remove: function () {
-        events.trigger('s:widgetRemoved:' + this.model.get('type'), this.model);
+    remove() {
+        events.trigger(`s:widgetRemoved:${this.model.get('type')}`, this.model);
         events.trigger('s:widgetRemoved', this.model);
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker('destroy');
         this.$('.s-control-item[data-type="range"] input').slider('destroy');
@@ -139,8 +139,8 @@ var ControlWidget = View.extend({
      * Set classes on the input element to indicate to the user that the current value
      * is invalid.  This is automatically triggered by the model's "invalid" event.
      */
-    invalid: function () {
-        events.trigger('s:widgetInvalid:' + this.model.get('type'), this.model);
+    invalid() {
+        events.trigger(`s:widgetInvalid:${this.model.get('type')}`, this.model);
         events.trigger('s:widgetInvalid', this.model);
         this.$('.form-group').addClass('has-error');
     },
@@ -204,9 +204,9 @@ var ControlWidget = View.extend({
     /**
      * Get the appropriate template for the model type.
      */
-    template: function () {
-        var type = this.model.get('type');
-        var def = this._typedef[type];
+    template() {
+        const type = this.model.get('type');
+        let def = this._typedef[type];
 
         if (def === undefined) {
             console.warn('Invalid widget type "' + type + '"'); // eslint-disable-line no-console
@@ -218,11 +218,9 @@ var ControlWidget = View.extend({
     /**
      * Get the current value from an input (or select) element.
      */
-    _input: function (evt) {
-        var $el, val;
-
-        $el = $(evt.target);
-        val = $el.val();
+    _input(evt) {
+        const $el = $(evt.target);
+        let val = $el.val();
 
         if ($el.attr('type') === 'checkbox') {
             val = $el.get(0).checked;
@@ -236,8 +234,8 @@ var ControlWidget = View.extend({
      * Get the value from a file selection modal and set the text in the widget's
      * input element.
      */
-    _selectFile: function () {
-        var modal = new ItemSelectorWidget({
+    _selectFile() {
+        const modal = new ItemSelectorWidget({
             el: $('#g-dialog-container'),
             parentView: this,
             model: this.model,
@@ -279,7 +277,7 @@ var ControlWidget = View.extend({
      * Trigger a global event to initiate rectangle drawing mode to whoever
      * might be listening.
      */
-    _selectRegion: function () {
+    _selectRegion() {
         events.trigger('s:widgetDrawRegion', this.model);
     }
 });

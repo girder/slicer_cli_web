@@ -1,5 +1,1 @@
-import WidgetModel from './WidgetModel';
-
-export {
-    WidgetModel
-};
+export { default as WidgetModel } from './WidgetModel';

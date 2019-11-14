@@ -5,7 +5,7 @@ import tinycolor from 'tinycolor2';
 /**
  * A backbone model controlling the behavior and rendering of widgets.
  */
-var WidgetModel = Backbone.Model.extend({
+const WidgetModel = Backbone.Model.extend({
     defaults: {
         type: '', // The specific widget type
         title: '', // The label to display with the widget
@@ -27,15 +27,15 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * Sets initial model attributes with normalization.
      */
-    initialize: function (model) {
+    initialize(model) {
         this.set(_.defaults(model || {}, this.defaults));
     },
 
     /**
      * Override Model.set for widget specific bahavior.
      */
-    set: function (hash, options) {
-        var key, value;
+    set(hash, options) {
+        let key, value;
 
         // handle set(key, value) calling
         if (_.isString(hash)) {
@@ -70,7 +70,7 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * Coerce a value into a normalized native type.
      */
-    normalize: function (value) {
+    normalize(value) {
         if (this.isVector()) {
             return this._normalizeVector(value);
         }
@@ -80,16 +80,16 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * Coerce a vector of values into normalized native types.
      */
-    _normalizeVector: function (value) {
+    _normalizeVector(value) {
         if (value === '') {
             value = [];
         } else if (_.isString(value)) {
             value = value.split(',');
         }
-        return _.map(value, _.bind(this._normalizeValue, this));
+        return value.map((v) => this._normalizeValue(v));
     },
 
-    _normalizeValue: function (value) {
+    _normalizeValue(value) {
         if (this.isNumeric()) {
             value = parseFloat(value);
         } else if (this.isInteger()) {
@@ -97,7 +97,7 @@ var WidgetModel = Backbone.Model.extend({
         } else if (this.isBoolean()) {
             value = !!value;
         } else if (this.isColor()) {
-            if (_.isArray(value)) {
+            if (Array.isArray(value)) {
                 value = {r: value[0], g: value[1], b: value[2]};
             }
             value = tinycolor(value).toHexString();
@@ -110,7 +110,7 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * Validate the model attributes.  Returns undefined upon successful validation.
      */
-    validate: function (model) {
+    validate(model) {
         if (!_.contains(this.types, model.type)) {
             return 'Invalid type, "' + model.type + '"';
         }
@@ -127,8 +127,8 @@ var WidgetModel = Backbone.Model.extend({
      * Validate a potential value for the current widget type and properties.
      * This method is called once for each component for vector types.
      */
-    _validateValue: function (value) {
-        var out;
+    _validateValue(value) {
+        let out;
         if (this.isNumeric()) {
             out = this._validateNumeric(value);
         } else if (this.isInteger()) {
@@ -143,11 +143,10 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * Validate a potential vector value.  Calls _validateValue internally.
      */
-    _validateVector: function (vector) {
-        var val;
+    _validateVector(vector) {
         vector = this.normalize(vector);
 
-        val = _.chain(vector)
+        let val = _.chain(vector)
             .map(_.bind(this._validateValue, this))
             .reject(_.isUndefined)
             .value();
@@ -167,11 +166,11 @@ var WidgetModel = Backbone.Model.extend({
      * @param {*} value The value to validate
      * @returns {undefined|string} An error message or null
      */
-    _validateNumeric: function (value) {
-        var min = parseFloat(this.get('min'));
-        var max = parseFloat(this.get('max'));
-        var step = parseFloat(this.get('step'));
-        var mod, eps = 1e-6;
+    _validateNumeric(value) {
+        let min = parseFloat(this.get('min'));
+        const max = parseFloat(this.get('max'));
+        const step = parseFloat(this.get('step'));
+        const eps = 1e-6;
 
         // make sure it is a valid number
         if (!isFinite(value)) {
@@ -186,7 +185,7 @@ var WidgetModel = Backbone.Model.extend({
         // make sure value is approximately an integer number
         // of "steps" larger than "min"
         min = min || 0;
-        mod = (value - min) / step;
+        const mod = (value - min) / step;
         if (step > 0 && Math.abs(Math.round(mod) - mod) > eps) {
             return 'Value does not satisfy step "' + step + '"';
         }
@@ -197,10 +196,10 @@ var WidgetModel = Backbone.Model.extend({
      * @param {*} value The value to validate
      * @returns {undefined|string} An error message or undefined
      */
-    _validateInteger: function (value) {
-        var min = parseInt(this.get('min'));
-        var max = parseInt(this.get('max'));
-        var step = parseInt(this.get('step'));
+    _validateInteger(value) {
+        let min = parseInt(this.get('min'));
+        const max = parseInt(this.get('max'));
+        const step = parseInt(this.get('step'));
 
         // make sure it is a valid number
         if (!isFinite(value)) {
@@ -225,8 +224,7 @@ var WidgetModel = Backbone.Model.extend({
      * @note This method is synchronous, so it cannot validate
      * the model on the server.
      */
-    _validateGirderModel: function (model) {
-        var parent;
+    _validateGirderModel(model) {
         if (!model.value || !model.value.get('name')) {
             if (this.get('type') === 'new-file' && !this.get('required')) {
                 return;
@@ -236,8 +234,7 @@ var WidgetModel = Backbone.Model.extend({
 
         switch (this.get('type')) {
             case 'new-file':
-                parent = model.parent;
-                if (!parent || parent.resourceName !== 'folder') {
+                if (!model.parent || model.parent.resourceName !== 'folder') {
                     return 'Invalid parent model';
                 }
                 break;
@@ -248,7 +245,7 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * True if the value should be coerced as a number.
      */
-    isNumeric: function () {
+    isNumeric() {
         return _.contains(
             ['range', 'number', 'number-vector', 'number-enumeration', 'region'],
             this.get('type')
@@ -258,21 +255,21 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * True if the value should be coerced as an integer.
      */
-    isInteger: function () {
+    isInteger() {
         return this.get('type') === 'integer';
     },
 
     /**
      * True if the value should be coerced as a boolean.
      */
-    isBoolean: function () {
+    isBoolean() {
         return this.get('type') === 'boolean';
     },
 
     /**
      * True if the value is a 3 component vector.
      */
-    isVector: function () {
+    isVector() {
         return _.contains(
             ['number-vector', 'string-vector', 'region'],
             this.get('type')
@@ -282,14 +279,14 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * True if the value should be coerced as a color.
      */
-    isColor: function () {
+    isColor() {
         return this.get('type') === 'color';
     },
 
     /**
      * True if the value should be chosen from one of several "values".
      */
-    isEnumeration: function () {
+    isEnumeration() {
         return _.contains(
             ['number-enumeration', 'string-enumeration'],
             this.get('type')
@@ -300,7 +297,7 @@ var WidgetModel = Backbone.Model.extend({
      * True if the value represents a model stored in a girder
      * collection/folder/item hierarchy.
      */
-    isGirderModel: function () {
+    isGirderModel() {
         return _.contains(
             ['directory', 'file', 'item', 'new-file', 'image'],
             this.get('type')
@@ -310,21 +307,21 @@ var WidgetModel = Backbone.Model.extend({
     /**
      * True if the value represents a file stored in girder.
      */
-    isFile: function () {
+    isFile() {
         return this.get('type') === 'file';
     },
 
     /**
      * True if the value represents an item stored in girder.
      */
-    isItem: function () {
+    isItem() {
         return this.get('type') === 'item';
     },
 
     /**
      * Get a normalized representation of the widget's value.
      */
-    value: function () {
+    value() {
         return this.get('value');
     },
 

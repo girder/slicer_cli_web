@@ -15,7 +15,7 @@ import '../stylesheets/slicerUI.styl';
 import { showJobSuccessAlert } from './utils';
 
 wrap(ItemView, 'render', function (render) {
-    this.once('g:rendered', function () {
+    this.once('g:rendered', () => {
         if (this.model.get('meta').slicerCLIType !== 'task') {
             return;
         }

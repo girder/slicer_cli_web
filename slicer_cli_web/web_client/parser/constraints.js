@@ -5,12 +5,12 @@ import convert from './convert';
 /**
  * Parse a `contraints` tag.
  */
-function constraints(type, constraintsTag) {
-    var $c = $(constraintsTag);
-    var spec = {};
-    var min = $c.find('minimum').text();
-    var max = $c.find('maximum').text();
-    var step = $c.find('step').text();
+export default function constraints(type, constraintsTag) {
+    const $c = $(constraintsTag);
+    const spec = {};
+    const min = $c.find('minimum').text();
+    const max = $c.find('maximum').text();
+    const step = $c.find('step').text();
     if (min) {
         spec.min = convert(type, min);
     }
@@ -22,5 +22,3 @@ function constraints(type, constraintsTag) {
     }
     return spec;
 }
-
-export default constraints;

@@ -1,19 +1,8 @@
-import constraints from './constraints';
-import convert from './convert';
-import defaultValue from './defaultValue';
-import group from './group';
-import panel from './panel';
-import param from './param';
-import parse from './parse';
-import widget from './widget';
-
-export {
-    constraints,
-    convert,
-    defaultValue,
-    group,
-    panel,
-    param,
-    parse,
-    widget
-};
+export { default as constraints } from './constraints';
+export { default as convert } from './convert';
+export { default as defaultValue } from './defaultValue';
+export { default as group } from './group';
+export { default as panel } from './panel';
+export { default as param } from './param';
+export { default as parse } from './parse';
+export { default as widget } from './widget';

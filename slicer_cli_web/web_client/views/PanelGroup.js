@@ -15,13 +15,13 @@ import ControlsPanel from './ControlsPanel';
 import panelGroup from '../templates/panelGroup.pug';
 import '../stylesheets/panelGroup.styl';
 
-var PanelGroup = View.extend({
+const PanelGroup = View.extend({
     events: {
         'click .s-info-panel-reload': 'reload',
         'click .s-info-panel-submit': 'submit',
         'click .s-remove-panel': 'removePanel'
     },
-    initialize: function (settings) {
+    initialize(settings) {
         this.panels = [];
         this._panelViews = {};
         this._closeButton = (settings || {}).closeButton;
@@ -36,7 +36,7 @@ var PanelGroup = View.extend({
 
         this.listenTo(events, 'query:analysis', this.setAnalysis);
     },
-    render: function () {
+    render() {
         this.$el.html(panelGroup({
             info: this._gui,
             panels: this.panels,
@@ -48,7 +48,7 @@ var PanelGroup = View.extend({
         });
         this._panelViews = {};
         this._jobsPanelView.setElement(this.$('.s-jobs-panel')).render();
-        _.each(this.panels, _.bind(function (panel) {
+        _.each(this.panels, (panel) => {
             this.$el.removeClass('hidden');
             this._panelViews[panel.id] = new ControlsPanel({
                 parentView: this,
@@ -59,7 +59,7 @@ var PanelGroup = View.extend({
             });
 
             this._panelViews[panel.id].render();
-        }, this));
+        });
 
         events.trigger('h:analysis:rendered', this);
         return this;
@@ -68,12 +68,10 @@ var PanelGroup = View.extend({
     /**
      * Submit the current values to the server.
      */
-    submit: function () {
-        var params, invalid = false;
+    submit() {
+        const invalid = this.invalidModels();
 
-        invalid = this.invalidModels();
-
-        if (invalid.length) {
+        if (invalid.length > 0) {
             girderEvents.trigger('g:alert', {
                 icon: 'attention',
                 text: 'Please enter a valid value for: ' + invalid.map((m) => m.get('title')).join(', '),
@@ -82,9 +80,9 @@ var PanelGroup = View.extend({
             return;
         }
 
-        params = this.parameters();
+        const params = this.parameters();
         _.each(params, function (value, key) {
-            if (_.isArray(value)) {
+            if (Array.isArray(value)) {
                 params[key] = JSON.stringify(value);
             }
         });
@@ -94,7 +92,7 @@ var PanelGroup = View.extend({
             url: this._submit,
             method: 'POST',
             data: params
-        }).then(function (data) {
+        }).then((data) => {
             events.trigger('h:submit', data);
             return null;
         });
@@ -104,13 +102,11 @@ var PanelGroup = View.extend({
      * Get the current values of all of the parameters contained in the gui.
      * Returns an object that maps each parameter id to it's value.
      */
-    parameters: function () {
+    parameters() {
         return _.chain(this._panelViews)
             .pluck('collection')
             .invoke('values')
-            .reduce(function (a, b) {
-                return _.extend(a, b);
-            }, {})
+            .reduce((a, b) => _.extend(a, b), {})
             .value();
     },
 
@@ -118,12 +114,10 @@ var PanelGroup = View.extend({
      * Return an array of all widget models optionally filtered by the given panel id
      * and model filtering function.
      */
-    models: function (panelId, modelFilter) {
+    models(panelId, modelFilter) {
         modelFilter = modelFilter || _.constant(true);
         return _.chain(this._panelViews)
-            .filter(function (v, i) {
-                return panelId === undefined || panelId === i;
-            })
+            .filter((_, i) => panelId === undefined || panelId === i)
             .pluck('collection')
             .pluck('models')
             .flatten()
@@ -134,37 +128,37 @@ var PanelGroup = View.extend({
     /**
      * Return an array of all invalid models.  Optionally filter by the given panel id.
      */
-    invalidModels: function (panelId) {
-        return this.models(panelId, function (m) { return !m.isValid(); });
+    invalidModels(panelId) {
+        return this.models(panelId, (m) => !m.isValid());
     },
 
     /**
      * Return true if all parameters are set and valid.  Also triggers 'invalid'
      * events on each of the invalid models as a byproduct.
      */
-    validate: function () {
+    validate() {
         return !this.invalidModels().length;
     },
 
     /**
      * Remove a panel after confirmation from the user.
      */
-    removePanel: function (e) {
+    removePanel(e) {
         confirm({
             text: 'Are you sure you want to remove this panel?',
-            confirmCallback: _.bind(function () {
-                var el = $(e.currentTarget).data('target');
-                var id = $(el).attr('id');
+            confirmCallback: () => {
+                const el = $(e.currentTarget).data('target');
+                const id = $(el).attr('id');
                 this.panels = _.reject(this.panels, _.matcher({id: id}));
                 this.render();
-            }, this)
+            }
         });
     },
 
     /**
      * Remove all panels.
      */
-    reset: function () {
+    reset() {
         this.panels = [];
         this._gui = null;
         this._submit = null;
@@ -174,15 +168,15 @@ var PanelGroup = View.extend({
     /**
      * Restore all panels to the default state.
      */
-    reload: function () {
+    reload() {
         if (!this._gui) {
             return this;
         }
 
         // Create a panel for each "group" in the schema, and copy
         // the advanced property from the parent panel.
-        this.panels = _.chain(this._gui.panels).map(function (panel) {
-            return _.map(panel.groups, function (group) {
+        this.panels = _.chain(this._gui.panels).map((panel) => {
+            return panel.groups.map((group) => {
                 group.advanced = !!panel.advanced;
                 group.id = _.uniqueId('panel-');
                 return group;
@@ -202,32 +196,31 @@ var PanelGroup = View.extend({
      * This code will fetch the actual schema from `path + '/xmlschema'`
      * and cause submissions to post to `path + '/run'`.
      */
-    setAnalysis: function (path, xml) {
+    setAnalysis(path, xml) {
         if (!path) {
             this.reset();
             return $.when();
         }
-        function process(xml) {
-            this._submit = path + '/run';
+        const process = (xml) => {
+            this._submit = `${path}/run`;
             this._schema(xml);
             events.trigger('h:analysis', path, xml);
-        }
+        };
         if (xml) {
-            return process.call(this, xml);
+            return process(xml);
         }
         return restRequest({
             url: path + '/xmlspec',
             dataType: 'xml'
-        }).then(_.bind(process, this));
+        }).then(process);
     },
 
     /**
      * Generate panels from a slicer XML schema.
      */
-    _schema: function (xml) {
-        var fail = false;
-        var opts = {};
-        var json;
+    _schema(xml) {
+        let fail = false;
+        const opts = {};
 
         // clear the view on null
         if (xml === null) {
@@ -235,7 +228,7 @@ var PanelGroup = View.extend({
         }
 
         try {
-            json = parse(xml, opts);
+            const json = parse(xml, opts);
             this._json(json, opts.output);
         } catch (e) {
             fail = true;
@@ -257,7 +250,7 @@ var PanelGroup = View.extend({
     /**
      * Generate panels from a json schema.
      */
-    _json: function (spec, outputs) {
+    _json(spec, outputs) {
         if (_.isString(spec)) {
             spec = JSON.parse(spec);
         }
@@ -272,8 +265,8 @@ var PanelGroup = View.extend({
     /**
      * Add an output file for storing parameter outputs.
      */
-    _addParamFileOutput: function () {
-        this._gui.panels.splice(0, 0, {
+    _addParamFileOutput() {
+        this._gui.panels.unshift({
             groups: [{
                 label: 'Parameter outputs',
                 parameters: [{

@@ -6,14 +6,14 @@ import group from './group';
 /**
  * Parse a <parameters> tag into a "panel" object.
  */
-function panel(panelTag, opts = {}) {
-    var $panel = $(panelTag);
-    var groups = _.filter(
+export default function panel(panelTag, opts = {}) {
+    const $panel = $(panelTag);
+    const groups = _.filter(
         _.map($panel.find('parameters > label'), (g) => group(g, opts)),
         _.isObject
     );
 
-    if (!groups.length) {
+    if (groups.length === 0) {
         return null;
     }
 
@@ -22,5 +22,3 @@ function panel(panelTag, opts = {}) {
         groups
     };
 }
-
-export default panel;

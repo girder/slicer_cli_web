@@ -1,5 +1,1 @@
-import WidgetCollection from './WidgetCollection';
-
-export {
-    WidgetCollection
-};
+export { default as WidgetCollection } from './WidgetCollection';

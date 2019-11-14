@@ -38,7 +38,7 @@ const ConfigView = View.extend({
             titleText: 'Task Upload Folder',
             helpText: 'Browse to a location to select it as the upload folder.',
             submitText: 'Select Folder',
-            validate: function (model) {
+            validate(model) {
                 const isValid = $.Deferred();
                 if (!model) {
                     isValid.reject('Please select a valid root.');

@@ -2,16 +2,16 @@ import Backbone from 'backbone';
 
 import WidgetModel from '../models/WidgetModel';
 
-var WidgetCollection = Backbone.Collection.extend({
+const WidgetCollection = Backbone.Collection.extend({
     model: WidgetModel,
 
     /**
      * Get an object containing all of the current parameter values as
      *   modelId -> value
      */
-    values: function () {
-        var params = {};
-        this.each(function (m) {
+    values() {
+        const params = {};
+        this.each((m) => {
             // apply special handling for certain parameter types
             // https://github.com/DigitalSlideArchive/slicer/blob/9e5112ab3444ad8c699d70452a5fe4a74ebbc778/server/__init__.py#L44-L46
             switch (m.get('type')) {
