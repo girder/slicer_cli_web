@@ -66,7 +66,7 @@ class DockerImageManagementTest(base.TestCase):
 
     def testDockerAdd(self):
         # try to cache a good image to the mongo database
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -98,7 +98,7 @@ class DockerImageManagementTest(base.TestCase):
 
     def testDockerAddList(self):
         # try to cache a good image to the mongo database
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.assertNoImages()
         self.addImage([img_name], JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -113,7 +113,7 @@ class DockerImageManagementTest(base.TestCase):
     def testDockerDelete(self):
         # just delete the metadata in the mongo database
         # don't delete the docker image
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -124,7 +124,7 @@ class DockerImageManagementTest(base.TestCase):
     def testDockerDeleteFull(self):
         # attempt to delete docker image metadata and the image off the local
         # machine
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
@@ -160,7 +160,7 @@ class DockerImageManagementTest(base.TestCase):
     def testXmlEndpoint(self):
         # loads an image and attempts to run an arbitrary xml endpoint
 
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.testDockerAdd()
 
         name, tag = self.splitName(img_name)
@@ -179,7 +179,7 @@ class DockerImageManagementTest(base.TestCase):
                     self.assertNotEqual(xmlString, '')
 
     def testEndpointDeletion(self):
-        img_name = 'girder/slicer_cli_web:small'
+        img_name = 'girder/slicer_cli_web:small-2.x'
         self.testXmlEndpoint()
         data = self.getEndpoint()
         self.deleteImage(img_name, True)
