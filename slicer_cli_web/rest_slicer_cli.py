@@ -181,9 +181,14 @@ def genHandlerToRunDockerCLI(cliItem):
         token = resource.getCurrentToken()
 
         container_args = [currentItem.name]
-        args, result_hooks, primary_input_name = prepare_task(params, user, token,
-                                                              index_params, opt_params,
-                                                              has_simple_return_file)
+        reference = {'slicer_cli_web': {
+            'title': cliTitle,
+            'image': currentItem.image,
+            'name': currentItem.name,
+        }}
+        args, result_hooks, primary_input_name = prepare_task(
+            params, user, token, index_params, opt_params,
+            has_simple_return_file, reference)
         container_args.extend(args)
 
         jobType = '%s#%s' % (currentItem.image, currentItem.name)
@@ -213,7 +218,7 @@ def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRou
     name.
 
     For each CLI, it creates:
-    * a GET Route (<apiURL>/`restResourceName`/<cliRelativePath>/xmlspec)
+    * a GET Route (<apiURL>/`restResourceName`/<cliRelativePath>/xml)
     that returns the xml spec of the CLI
     * a POST Route (<apiURL>/`restResourceName`/<cliRelativePath>/run)
     that runs the CLI

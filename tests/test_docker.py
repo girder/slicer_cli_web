@@ -117,8 +117,8 @@ class ImageHelper(object):
             def tempListener(self, girderEvent):
                 job = girderEvent.info['job']
 
-                if (job['type'] == 'slicer_cli_web_job'
-                        and job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                if (job['type'] == 'slicer_cli_web_job' and
+                        job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                     assert job['status'] == status, 'The status of the job should match'
                     events.unbind('jobs.job.update.after', 'slicer_cli_web_del')
                     job_status[0] = job['status']
@@ -166,8 +166,8 @@ class ImageHelper(object):
         def tempListener(self, girderEvent):
             job = girderEvent.info['job']
 
-            if (job['type'] == 'slicer_cli_web_job'
-                    and job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+            if (job['type'] == 'slicer_cli_web_job' and
+                    job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                 assert job['status'] == status, 'The status of the job should match'
                 job_status[0] = job['status']
 

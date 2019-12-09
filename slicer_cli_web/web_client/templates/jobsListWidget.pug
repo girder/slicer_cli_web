@@ -1,7 +1,7 @@
 table.g-jobs-list-table
   tbody
     each job in jobs
-      - var title = job.title.replace(/^HistomicsTK\./, '');
+      - var title = job.title
       - var created = new Date(job.created);
       tr(data-job-id=job._id)
         td.g-status-icon-container(status=job.status)
