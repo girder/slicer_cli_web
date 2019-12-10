@@ -34,7 +34,7 @@ const PanelGroup = View.extend({
             }
         });
 
-        this.listenTo(events, 'query:analysis', this.setAnalysis);
+        this.listenTo(events, 'query:analysis', (path, query) => this.setAnalysis(path));
     },
     render() {
         this.$el.html(panelGroup({
@@ -191,9 +191,9 @@ const PanelGroup = View.extend({
      * Set the panel group according to the given schema path.
      * This should be a url fragment such as
      *
-     *   path = `HistomicsTK/dsarchive_histomicstk_v0.1.3`
+     *   path = `/slicer_cli_web/cli/<id>`
      *
-     * This code will fetch the actual schema from `path + '/xmlschema'`
+     * This code will fetch the actual schema from `path + '/xml'`
      * and cause submissions to post to `path + '/run'`.
      */
     setAnalysis(path, xml) {
@@ -210,7 +210,7 @@ const PanelGroup = View.extend({
             return process(xml);
         }
         return restRequest({
-            url: path + '/xmlspec',
+            url: path + '/xml',
             dataType: 'xml'
         }).then(process);
     },

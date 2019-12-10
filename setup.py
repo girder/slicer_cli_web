@@ -52,6 +52,7 @@ setup(
         'Programming Language :: Python :: 3.6'
     ],
     include_package_data=True,
+    package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},
     packages=find_packages(exclude=['test', 'test.*']),
     zip_safe=False,
     extras_require=extras_require,

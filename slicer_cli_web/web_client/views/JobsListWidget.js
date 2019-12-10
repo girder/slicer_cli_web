@@ -46,7 +46,7 @@ const JobsListWidget = View.extend({
 
     render() {
         const jobs = this.collection.filter((job, index) => {
-            return index < 10 && job.get('title').match(/HistomicsTK\./);
+            return index < 10 && (job.get('kwargs') || {}).image && (job.get('kwargs') || {}).container_args;
         }).map((job) => {
             // make an async request to add output parameter information
             // to the job model

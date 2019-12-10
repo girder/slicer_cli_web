@@ -234,7 +234,7 @@ class DockerResource(Resource):
             docker images displays in the console
         :type imgName: string
         :param cliName: The name of the cli whose rest endpoint is being stored. The
-            cli must match exactly with what teh docker image returns when
+            cli must match exactly with what the docker image returns when
             running <docker image> --list_cli
         :type cliName: string
         """
