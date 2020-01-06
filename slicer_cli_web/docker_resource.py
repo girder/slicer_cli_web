@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###############################################################################
@@ -18,23 +17,21 @@
 ###############################################################################
 
 
-import six
 import json
+import six
 
-from girder.api.v1.resource import Resource, RestException
-
-from girder.api.rest import \
-    setResponseHeader, setRawResponse
 from girder.api import access
-from girder.constants import AccessType
 from girder.api.describe import autoDescribeRoute, Description, describeRoute
-from girder.utility.model_importer import ModelImporter
+from girder.api.rest import setResponseHeader, setRawResponse
+from girder.api.v1.resource import Resource, RestException
+from girder.constants import AccessType
 from girder.models.item import Item
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
+from girder.utility.model_importer import ModelImporter
 from girder_jobs.constants import JobStatus
 
-from .models import DockerImageNotFoundError, DockerImageItem, CLIItem
 from .config import PluginSettings
+from .models import DockerImageNotFoundError, DockerImageItem, CLIItem
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
 
 
 class DockerResource(Resource):
@@ -189,7 +186,7 @@ class DockerResource(Resource):
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
         .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
-                    level=AccessType.WRITE, required=not PluginSettings.has_task_folder())
+                    level=AccessType.WRITE, required=False)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
