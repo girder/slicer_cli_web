@@ -1,6 +1,13 @@
 import ctk_cli
 
 
+# Allow all parameters of constraints to be optional.
+ctk_cli.module.CLIConstraints.OPTIONAL_ELEMENTS = (
+    ctk_cli.module.CLIConstraints.OPTIONAL_ELEMENTS +
+    ctk_cli.module.CLIConstraints.REQUIRED_ELEMENTS)
+ctk_cli.module.CLIConstraints.REQUIRED_ELEMENTS = ()
+
+
 # This is copied from ctk_cli/module.py with a few changes
 @classmethod  # noqa
 def _ctkCliParse(cls, elementTree):  # noqa
@@ -38,7 +45,7 @@ def _ctkCliParse(cls, elementTree):  # noqa
             self.fileExtensions = [ext.strip() for ext in value.split(',')]
         elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table'):  # noqa
             self.reference = value
-            ctk_cli.module.logger.warning("'reference' attribute of %r is not part of the spec yet (CTK issue #623)" % (ctk_cli.module._tag(elementTree), ))  # noqa
+            # ctk_cli.module.logger.warning("'reference' attribute of %r is not part of the spec yet (CTK issue #623)" % (ctk_cli.module._tag(elementTree), ))  # noqa
         elif key == 'type':
             self.subtype = value
         elif key != 'hidden':
@@ -58,7 +65,8 @@ def _ctkCliParse(cls, elementTree):  # noqa
         else:
             ctk_cli.module.logger.warning("Element %r within %r not parsed" % (ctk_cli.module._tag(n), ctk_cli.module._tag(elementTree)))  # noqa
 
-    if not self.flag and not self.longflag and self.index is None:
+    if (not self.flag and not self.longflag and self.index is None and
+            (self.channel != 'output' or self.isExternalType())):
         ctk_cli.module.logger.warning("Parameter %s cannot be passed (missing one of flag, longflag, or index)!" % (  # noqa
             self.identifier(), ))
 
