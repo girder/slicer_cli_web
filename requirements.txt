@@ -3,7 +3,7 @@ six
 jsonschema>=2.5.1
 ctk_cli
 pyyaml>=5.1.2
-python-dateutil==2.8.0
+python-dateutil
 
 girder>=3.0.3
 girder-jobs>=3.0.3
