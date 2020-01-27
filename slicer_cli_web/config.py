@@ -38,7 +38,7 @@ class PluginSettings(object):
         folder = Setting().get(PluginSettings.SLICER_CLI_WEB_TASK_FOLDER)
         if not folder:
             return None
-        return Folder().load(folder, level=AccessType.WRITE, user=getCurrentUser())
+        return Folder().load(folder, level=AccessType.READ, user=getCurrentUser())
 
 
 @setting_utilities.validator({
@@ -47,7 +47,9 @@ class PluginSettings(object):
 def validateFolder(doc):
     if not doc['value']:
         return
-    folder = Folder().load(doc['value'], level=AccessType.WRITE, user=getCurrentUser())
+    # We should only be able to change settings with admin privilege, so we
+    # don't need to check folder access here.
+    folder = Folder().load(doc['value'], force=True)
     if not folder:
         raise ValidationException('invalid folder selected')
 
