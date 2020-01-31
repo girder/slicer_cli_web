@@ -39,12 +39,15 @@ def _ctkCliParse(cls, elementTree):  # noqa
     for key, value in elementTree.items():
         if key == 'multiple':
             self.multiple = ctk_cli.module._parseBool(value)
+        # Added region (slicer_cli_web)
         elif key == 'coordinateSystem' and self.typ in ('point', 'pointfile', 'region'):
             self.coordinateSystem = value
         elif key == 'fileExtensions':
             self.fileExtensions = [ext.strip() for ext in value.split(',')]
+        # Added file (slicer_cli_web)
         elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table'):  # noqa
             self.reference = value
+            # Suppressed warning (slicer_cli_web)
             # ctk_cli.module.logger.warning("'reference' attribute of %r is not part of the spec yet (CTK issue #623)" % (ctk_cli.module._tag(elementTree), ))  # noqa
         elif key == 'type':
             self.subtype = value
@@ -65,6 +68,7 @@ def _ctkCliParse(cls, elementTree):  # noqa
         else:
             ctk_cli.module.logger.warning("Element %r within %r not parsed" % (ctk_cli.module._tag(n), ctk_cli.module._tag(elementTree)))  # noqa
 
+    # Added channel and external type checks (slicer_cli_web)
     if (not self.flag and not self.longflag and self.index is None and
             (self.channel != 'output' or self.isExternalType())):
         ctk_cli.module.logger.warning("Parameter %s cannot be passed (missing one of flag, longflag, or index)!" % (  # noqa
