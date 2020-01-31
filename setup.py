@@ -22,11 +22,6 @@ def prerelease_local_scheme(version):
 with open('README.rst') as f:
     readme = f.read()
 
-with open('requirements.txt') as f:
-    install_reqs = f.readlines()
-
-extras_require = {}
-
 # perform the install
 setup(
     name='girder-slicer-cli-web',
@@ -53,10 +48,26 @@ setup(
     ],
     include_package_data=True,
     package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},
-    packages=find_packages(exclude=['test', 'test.*']),
+    packages=find_packages(exclude=['tests', 'test.*']),
     zip_safe=False,
-    extras_require=extras_require,
-    install_requires=install_reqs,
+    install_requires=[
+        'ctk_cli',
+        'jsonschema>=2.5.1',
+        'pyyaml>=5.1.2',
+        'six',
+    ],
+    extras_require={
+        'girder': [
+            'docker>=2.6.0',
+            'girder>=3.0.3',
+            'girder-jobs>=3.0.3',
+            'girder-worker[girder]>=0.6.0',
+        ],
+        'worker': [
+            'docker>=2.6.0',
+            'girder-worker[worker]>=0.6.0',
+        ]
+    },
     entry_points={
         'girder.plugin': [
             'slicer_cli_web = slicer_cli_web.girder_plugin:SlicerCLIWebPlugin'

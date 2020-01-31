@@ -1,4 +1,0 @@
-# External dependencies
-pip
-tox
-virtualenv
