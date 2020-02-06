@@ -107,7 +107,7 @@
       <name>files</name>
       <longflag>files</longflag>
       <description><![CDATA[Multiple input files]]></description>
-      <label>Input Files</label>
+      <label>Input files</label>
       <channel>input</channel>
     </file>
     <directory>
