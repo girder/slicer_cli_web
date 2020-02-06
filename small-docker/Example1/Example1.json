@@ -137,7 +137,7 @@
           "name": "files",
           "longflag": "files",
           "description": "Multiple input files",
-          "label": "Input Files",
+          "label": "Input files",
           "channel": "input",
           "multiple": true
         },
