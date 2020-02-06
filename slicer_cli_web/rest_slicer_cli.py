@@ -1,13 +1,13 @@
-from girder.api.rest import Resource, boundHandler, \
-    RestException
-from girder.api import access
 from girder import logger
+from girder.api import access
 from girder.api.describe import Description, describeRoute
+from girder.api.rest import Resource, boundHandler, RestException, getCurrentToken
+from girder.models.token import Token
 
-from .cli_utils import as_model, generate_description, \
-    get_cli_parameters, return_parameter_file_name
-from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
+from .cli_utils import as_model, generate_description, get_cli_parameters, \
+    return_parameter_file_name
 from .models import CLIItem
+from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
 
 
 _return_parameter_file_desc = """
@@ -179,7 +179,13 @@ def genHandlerToRunDockerCLI(cliItem):
         currentItem = CLIItem.find(itemId, user)
         if not currentItem:
             raise RestException('Invalid CLI Item id (%s).' % (itemId))
-        token = resource.getCurrentToken()
+        # Create a new token for this job; otherwise, the user could log out
+        # and the job would fail to finish.  We may want to override the
+        # duration of this token (it defaults to the setting for cookie
+        # lifetime).
+        token = Token().createToken(user=user)
+        if hasattr(getCurrentToken, 'set'):
+            getCurrentToken.set(token)
 
         container_args = [currentItem.name]
         reference = {'slicer_cli_web': {
