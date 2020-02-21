@@ -6,8 +6,8 @@ version: 0.1.0
 license: Apache 2.0
 contributor: David Manthey (Kitware)
 parameter_groups:
-- label: IO
-  description: Input/output parameters.
+- description: Input/output parameters.
+  label: IO
   parameters:
   - type: float
     name: x
@@ -16,5 +16,5 @@ parameter_groups:
     description: A floating point number between 0 and 1
     channel: input
     constraints:
-      minimum: 0
-      maximum: 1
+      minimum: 0.0
+      maximum: 1.0
