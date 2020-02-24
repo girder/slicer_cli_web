@@ -1,5 +1,5 @@
 {
-  "$schema": "../../slicer_cli_web/models/schema.json",
+  "$schema": "slicer_cli_web/models/schema.json",
   "category": "Example",
   "title": "Example with missing default",
   "description": "This will fail to create a REST endpoint, but it still will report that it exists as a CLI.",
@@ -19,8 +19,8 @@
           "description": "A floating point number between 0 and 1",
           "channel": "input",
           "constraints": {
-            "minimum": 0,
-            "maximum": 1
+            "minimum": 0.0,
+            "maximum": 1.0
           }
         }
       ]

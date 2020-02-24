@@ -83,7 +83,7 @@
       "type": "string",
       "description": "The version of the command line executable. A suggested format is:\n\nmajor.minor.patch.build.status\n\nwhere status is\n\nvc: version controlled (pre-alpha), build can be a serial revision number, if any (like svn might have).\na: alpha\nb: beta\nrc: release candidate\nfcs: first customer ship"
     },
-    "documentation_url": {
+    "documentation-url": {
       "type": "string",
       "description": "The location of extended documentation for the executable, (e.g. http://www.na-mic.org/foo.html)."
     },

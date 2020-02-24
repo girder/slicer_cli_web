@@ -7,7 +7,7 @@
   <documentation-url>http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/ExecutionModelTour</documentation-url>
   <license/>
   <contributor>Daniel Blezek (GE), Bill Lorensen (GE)</contributor>
-  <acknowledgements><![CDATA[This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  I thas been modified for slicer_cli_web.]]></acknowledgements>
+  <acknowledgements><![CDATA[This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  It has been modified for slicer_cli_web.]]></acknowledgements>
   <parameters>
     <label>Scalar Parameters</label>
     <description><![CDATA[Variations on scalar parameters]]></description>
@@ -152,6 +152,7 @@
   </parameters>
   <parameters>
     <label>Simple return types</label>
+    <description>Simple outputs</description>
     <integer>
       <name>anintegerreturn</name>
       <label>An integer return value</label>
