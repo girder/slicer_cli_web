@@ -49,7 +49,7 @@ $(function () {
             waitsFor(function () {
                 var resp = girder.rest.restRequest({
                     url: 'system/setting',
-                    type: 'GET',
+                    method: 'GET',
                     data: {
                         list: JSON.stringify(['slicer_cli_web.task_folder'])
                     },

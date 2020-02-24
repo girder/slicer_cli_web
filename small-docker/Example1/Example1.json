@@ -38,6 +38,21 @@
       ]
     },
     {
+      "advanced": true,
+      "label": "Advanced Parameters",
+      "description": "Parameters that are advanced",
+      "parameters": [
+        {
+          "type": "integer",
+          "name": "advancedIntegerVariable",
+          "longflag": "--advinteger",
+          "description": "An integer without constraints",
+          "label": "Advanced Integer Parameter",
+          "default": 35
+        }
+      ]
+    },
+    {
       "label": "Vector Parameters",
       "description": "Variations on vector parameters",
       "parameters": [
