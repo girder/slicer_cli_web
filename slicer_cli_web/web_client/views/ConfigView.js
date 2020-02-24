@@ -26,7 +26,9 @@ const ConfigView = View.extend({
         'submit #g-slicer-cli-web-upload-form'(event) {
             event.preventDefault();
             this.$('#g-slicer-cli-web-error-upload-message').empty();
-            this._uploadImage(new FormData(event.currentTarget));
+            this._uploadImage(
+                $('#g-slicer-cli-web-image').val(),
+                $('#g-slicer-cli-web-folder').val());
         },
         'click .g-open-browser': '_openBrowser',
         'click .g-open-local-browser': '_openLocalBrowser'
@@ -79,15 +81,15 @@ const ConfigView = View.extend({
         return this;
     },
 
-    _uploadImage(data) {
+    _uploadImage(imagename, folderid) {
         /* Now submit */
-        const name = data.get('name').split(',').map((d) => d.trim()).filter((d) => d.length > 0);
+        const name = imagename.split(',').map((d) => d.trim()).filter((d) => d.length > 0);
         return restRequest({
-            type: 'PUT',
+            method: 'PUT',
             url: 'slicer_cli_web/docker_image',
             data: {
                 name: JSON.stringify(name),
-                folder: data.get('folder')
+                folder: folderid
             },
             error: null
         }).done((job) => {
@@ -111,7 +113,7 @@ const ConfigView = View.extend({
     _saveSettings(settings) {
         /* Now save the settings */
         return restRequest({
-            type: 'PUT',
+            method: 'PUT',
             url: 'system/setting',
             data: {
                 list: JSON.stringify(settings)
@@ -140,7 +142,7 @@ const ConfigView = View.extend({
             return ConfigView.settings;
         }
         ConfigView.settings = restRequest({
-            type: 'GET',
+            method: 'GET',
             url: 'system/setting',
             data: {
                 list: JSON.stringify(['slicer_cli_web.task_folder'])

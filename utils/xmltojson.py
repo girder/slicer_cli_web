@@ -35,8 +35,13 @@ if __name__ == '__main__':  # noqa
         paramgroups = [paramgroups]
     data['parameter_groups'] = []
     for ingroup in paramgroups:
-        copylabels = {'label', 'description'}
+        copylabels = {'label', 'description', 'advanced'}
         group = {k: v for k, v in ingroup.items() if k in copylabels}
+        for (k, kcast) in {
+            'advanced': lambda x: str(x).lower() == 'true',
+        }.items():
+            if k in group:
+                group[k] = kcast(group[k])
         group['parameters'] = []
         for key, params in ingroup.items():
             if key not in copylabels:

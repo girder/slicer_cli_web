@@ -29,6 +29,16 @@ parameter_groups:
       minimum: 0.0
       maximum: 1000.0
       step: 10.0
+- advanced: true
+  description: Parameters that are advanced
+  label: Advanced Parameters
+  parameters:
+  - type: integer
+    name: advancedIntegerVariable
+    longflag: --advinteger
+    description: An integer without constraints
+    label: Advanced Integer Parameter
+    default: 35
 - description: Variations on vector parameters
   label: Vector Parameters
   parameters:

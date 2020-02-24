@@ -33,6 +33,17 @@
       </constraints>
     </double>
   </parameters>
+  <parameters advanced="true">
+    <label>Advanced Parameters</label>
+    <description>Parameters that are advanced</description>
+    <integer>
+      <name>advancedIntegerVariable</name>
+      <longflag>--advinteger</longflag>
+      <description>An integer without constraints</description>
+      <label>Advanced Integer Parameter</label>
+      <default>35</default>
+    </integer>
+  </parameters>
   <parameters>
     <label>Vector Parameters</label>
     <description><![CDATA[Variations on vector parameters]]></description>
