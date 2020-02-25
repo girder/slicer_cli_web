@@ -25,7 +25,7 @@ const Panel = View.extend({
         this.$('.icon-up-open').attr('class', 'icon-down-open');
     },
     _handleTitleClick(e) {
-        if (!$(e.target).hasClass('s-remove-panel')) {
+        if (!$(e.target).closest('.s-no-panel-toggle').length) {
             e.stopImmediatePropagation();
             this.$('.s-panel-content').collapse('toggle');
         }

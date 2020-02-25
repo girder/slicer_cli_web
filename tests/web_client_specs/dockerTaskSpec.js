@@ -137,8 +137,20 @@ $(function () {
         it('check that the expected controls are present', function () {
             runs(function () {
                 expect($('.s-panel-title-container').length >= 6).toBe(true);
-                // Add more tests here
             });
         });
+        it('A panel can be toggled', function () {
+            runs(function () {
+                expect($('#integerVariable:visible').length).toBe(1);
+                $('.s-panel-title:contains("Scalar Parameters")').trigger('click');
+            });
+            waitsFor(function () {
+                return $('#integerVariable:visible').length === 0;
+            });
+            runs(function () {
+                expect($('#integerVariable:visible').length).toBe(0);
+            });
+        });
+        // Add more tests here
     });
 });
