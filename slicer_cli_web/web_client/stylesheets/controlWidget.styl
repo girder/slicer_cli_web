@@ -9,3 +9,17 @@
 .s-control-item
   input.form-control
     height auto
+  
+    
+.has-error
+  .control-label::before 
+    font-family: "Glyphicons Halflings";
+    content: "\e101";
+    color: #a94442;
+    margin-right: 5px;
+    vertical-align: text-top;
+  .form-control
+    background-color: #f2dede
+    border-color: #ebccd1
+    ::placeholder
+      color:#a94442 
