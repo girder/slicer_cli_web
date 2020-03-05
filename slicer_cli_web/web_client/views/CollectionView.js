@@ -29,14 +29,16 @@ wrap(HierarchyWidget, 'render', function (render) {
             });
     };
 
-    if ((getCurrentUser() || {}).get('admin') === true) {
-        if (this.parentModel.get('_modelType') === 'folder') {
-            ConfigView.getSettings().then((settings) => {
-                if (settings.task_folder === this.parentModel.id) {
-                    injectUploadImageButton();
-                }
-                return null;
-            });
+    if (getCurrentUser()) {
+        if (getCurrentUser().get('admin') === true){
+            if (this.parentModel.get('_modelType') === 'folder') {
+                ConfigView.getSettings().then((settings) => {
+                    if (settings.task_folder === this.parentModel.id) {
+                        injectUploadImageButton();
+                    }
+                    return null;
+                });
+            }
         }
     }
 });
