@@ -89,8 +89,8 @@ function navigateToCollectionsFolder(collectionName, folderName) {
 
 describe('UploadDockerImages button and functionality', function () {
     it('login, setup collection/folder and navigate to it', function () {
-        it('Login as admin', girderTest.login('admin', 'Admin', 'Admin', 'password'));
-        createDefaultTaskFolder('Tasks', 'Default Tasks', true, 'Slicer CLI Web Tasks');
+        girderTest.login('admin', 'Admin', 'Admin', 'password')();
+        createDefaultTaskFolder('Tasks', 'Default Tasks', 'Slicer CLI Web Tasks');
         navigateToCollectionsFolder('Tasks', 'Slicer CLI Web Tasks');
     });
 
