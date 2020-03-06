@@ -27,9 +27,8 @@ function login(user, password) {
     girderTest.waitForLoad('login wait 3');
 }
 
-
-
-function createCollection(name, description, public, folder){
+//Creates container and Default Task Folder and sets it in the settings using REST
+function createDefaultTaskFolder(name, description, public, folder){
     var collectionID = false;
     waitsFor(function () {
         var resp = girder.rest.restRequest({
@@ -47,9 +46,6 @@ function createCollection(name, description, public, folder){
 
     }, "Creating Collection");
 
-
-    console.log("CollectionId: " + collectionID);
-    //Okay now lets take that collectionID and use it to create a sub folder
     var folderID = false;
     waitsFor(function () {
         var resp = girder.rest.restRequest({
@@ -68,8 +64,6 @@ function createCollection(name, description, public, folder){
 
     }, "Creating SubFolder");
 
-
-    //Finally we set the default Task folder to the current folder
     waitsFor(function () {
         var resp = girder.rest.restRequest({
             url: '/system/setting',
@@ -83,96 +77,87 @@ function createCollection(name, description, public, folder){
         return resp && resp.responseJSON;
     }, "Setting Default Task Folder");    
 }
+
+function navigateToCollectionsFolder(collectionName, folderName)
+{
+    waitsFor(function () {
+        return $('a.g-nav-link[g-target="collections"]').length > 0;
+    }, 'collection list link to load');
+    runs(function () {
+        $('a.g-nav-link[g-target="collections"]').click();
+    });
+    waitsFor(function () {
+        return $('.g-collection-create-button').length > 0;
+    }, 'collection list screen to load');
+
+    girderTest.waitForLoad();
+    waitsFor(function () {
+        return $('.g-collection-list-entry').length > 0;
+    }, 'collection list to load');
+
+    //NOTE: This is equivalent to indexOf, can have multiple matches
+    runs(function () {
+        $('.g-collection-link:contains('+collectionName+')').first().click();
+    });
+
+    girderTest.waitForLoad();
+    waitsFor(function () {
+        return $('.g-folder-list-link').length > 0;
+    }, 'the folder list to load');
+    runs(function () {
+        $('.g-folder-list-link:contains('+folderName+')').first().click();
+    });   
+    girderTest.waitForLoad();
+}
+
 $(function () {
     describe('UploadDockerImages button and functionality', function () {
        
-        it('Navigate to Tasks', function () {
+        it('login, setup collection/folder and navigate to it', function () {
+            
             login('admin', 'password');
-            createCollection("Tasks","Default Tasks", true, "Slicer CLI Web Tasks");
-            waitsFor(function () {
-                return $('a.g-nav-link[g-target="collections"]').length > 0;
-            }, 'collection list link to load');
-            runs(function () {
-                $('a.g-nav-link[g-target="collections"]').click();
-            });
-            waitsFor(function () {
-                return $('.g-collection-create-button').length > 0;
-            }, 'collection list screen to load');
+            createDefaultTaskFolder("Tasks","Default Tasks", true, "Slicer CLI Web Tasks");
+            navigateToCollectionsFolder("Tasks","Slicer CLI Web Tasks");
+        });
 
-            girderTest.waitForLoad();
-            waitsFor(function () {
-                return $('.g-collection-list-entry').length > 0;
-            }, 'collection list to load');
-
-            runs(function () {
-                $('.g-collection-link').first().click();
-            });
-            girderTest.waitForLoad();
-            waitsFor(function () {
-                return $('.g-folder-list-link').length > 0;
-            }, 'the folder list to load');
-            runs(function () {
-                $('.g-folder-list-link').first().click();
-            });
-            girderTest.waitForLoad();
+        it('check docker task image upload button', function () {
+            waitsFor(function () {                
+                return ($('.g-upload-slicer-cli-task-button').length > 0);
+            }, "upload docker image button to be visible");
             runs(function () {                
                 expect($('.g-upload-slicer-cli-task-button').length > 0);
-                $('.g-upload-slicer-cli-task-button').click();
             });
-            girderTest.waitForLoad();
-
         });
+
         it('test the upload docker image button', function () {
+            runs(function () {
+                $('.g-upload-slicer-cli-task-button').click();
+            })
             waitsFor(function () {
-                return $('#g-slicer-cli-web-image').length > 0;
+                return ($('#g-slicer-cli-web-image').length > 0);
+            })
+            girderTest.waitForDialog();
+            runs(function () {
+                expect($('#g-slicer-cli-web-image').length > 0);
             }, 'the modal dialog to load');
-
             runs(function () {
-                $('#g-slicer-cli-web-image').val('girder/slicer_cli_web:small');
-                $('.btn[value="Import Image"]').trigger('click');
-            });
-            waitsFor(function () {
-                var resp = girder.rest.restRequest({
-                    url: 'resource/lookup',
-                    method: 'GET',
-                    data: {path: '/user/admin/Public/girder\\/slicer_cli_web/small/Example1'},
-                    async: false
-                });
-                return resp && resp.responseJSON && resp.responseJSON['_id'];
-            }, 'Wait for Example1 to be imported.');
-        });
-        it('import the small docker', function () {
-            runs(function () {
-                $('#g-slicer-cli-web-image').val('girder/slicer_cli_web:small');
-                $('.btn[value="Import Image"]').trigger('click');
-            });
-            /*
-            waitsFor(function () {
-                var resp = girder.rest.restRequest({
-                    url: 'resource/lookup',
-                    method: 'GET',
-                    data: {path: '/user/admin/Public/girder\\/slicer_cli_web/small/Example1'},
-                    async: false
-                });
-                return resp && resp.responseJSON && resp.responseJSON['_id'];
-            }, 'Wait for Example1 to be imported.');
-                //The folder may be loaded but you need to refresh back to get the new items
-            runs(function () {
-                expect($('.g-breakcrumb-link').length).toBe(0);
-                $('.g-breakcrumb-link').last().trigger('click');
-            });
-            girderTest.waitForLoad();
-            waitsFor(function () {
-                return $('g-collection-list-entry').length > 0;
-            }, 'collection list to load');
-            runs(function () {
-                $('.g-collection-link').first().click();
-            });
-            girderTest.waitForLoad();
-            waitsFor(function () {
-                expect($('a.g-folder-list-link:contains("girder/slicer_cli_web")').length).toBe(1);
-            });
-            */
-        });
+                $("#g-slicer-cli-web-upload-form button.close").click();
+            }, "wait for dialog to close");
+        });      
+  
+        //Now lets test to make sure a standard user without admin privileges can't view the button
+        it('logout from admin account', girderTest.logout());
+        it('register a (normal user)',
+        girderTest.createUser('johndoe',
+            'john.doe@girder.test',
+            'John',
+            'Doe',
+            'password!'));
+        it('navigate to task folder and check icon',function () {
+            navigateToCollectionsFolder("Tasks","Slicer CLI Web Tasks");
+            runs(function () {                
+                expect($('.g-upload-slicer-cli-task-button').length === 0);
+            });            
+        });               
     })
 });
