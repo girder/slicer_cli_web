@@ -89,8 +89,7 @@ function navigateToCollectionsFolder(collectionName, folderName)
     waitsFor(function () {
         return $('.g-collection-create-button').length > 0;
     }, 'collection list screen to load');
-
-    girderTest.waitForLoad();
+    girderTest.waitForLoad();    
     waitsFor(function () {
         return $('.g-collection-list-entry').length > 0;
     }, 'collection list to load');
@@ -99,8 +98,8 @@ function navigateToCollectionsFolder(collectionName, folderName)
     runs(function () {
         $('.g-collection-link:contains('+collectionName+')').first().click();
     });
-
     girderTest.waitForLoad();
+
     waitsFor(function () {
         return $('.g-folder-list-link').length > 0;
     }, 'the folder list to load');
@@ -111,10 +110,8 @@ function navigateToCollectionsFolder(collectionName, folderName)
 }
 
 $(function () {
-    describe('UploadDockerImages button and functionality', function () {
-       
-        it('login, setup collection/folder and navigate to it', function () {
-            
+    describe('UploadDockerImages button and functionality', function () {       
+        it('login, setup collection/folder and navigate to it', function () {            
             login('admin', 'password');
             createDefaultTaskFolder("Tasks","Default Tasks", true, "Slicer CLI Web Tasks");
             navigateToCollectionsFolder("Tasks","Slicer CLI Web Tasks");
@@ -144,8 +141,7 @@ $(function () {
                 $("#g-slicer-cli-web-upload-form button.close").click();
             }, "wait for dialog to close");
         });      
-  
-        //Now lets test to make sure a standard user without admin privileges can't view the button
+          
         it('logout from admin account', girderTest.logout());
         it('register a (normal user)',
         girderTest.createUser('johndoe',
