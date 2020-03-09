@@ -2,8 +2,8 @@ import $ from 'jquery';
 import { wrap } from '@girder/core/utilities/PluginUtils';
 import { restRequest } from '@girder/core/rest';
 import View from '@girder/core/views/View';
-import CollectionView from '@girder/core/views/body/CollectionView';
 import HierarchyWidget from '@girder/core/views/widgets/HierarchyWidget';
+import { getCurrentUser } from '@girder/core/auth';
 
 import UploadImageDialogTemplate from '../templates/uploadImageDialog.pug';
 import { showJobSuccessAlert } from './utils';
@@ -29,13 +29,15 @@ wrap(HierarchyWidget, 'render', function (render) {
             });
     };
 
-    if ((this.parentView instanceof CollectionView && this.parentModel.get('_modelType') === 'folder')) {
-        ConfigView.getSettings().then((settings) => {
-            if (settings.task_folder === this.parentModel.id) {
-                injectUploadImageButton();
-            }
-            return null;
-        });
+    if (getCurrentUser() && getCurrentUser().get('admin')) {
+        if (this.parentModel.get('_modelType') === 'folder') {
+            ConfigView.getSettings().then((settings) => {
+                if (settings.task_folder === this.parentModel.id) {
+                    injectUploadImageButton();
+                }
+                return null;
+            });
+        }
     }
 });
 

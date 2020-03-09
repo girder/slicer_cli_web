@@ -6,6 +6,7 @@ from pytest_girder.web_client import runWebClientTest
 @pytest.mark.plugin('slicer_cli_web')
 @pytest.mark.parametrize('spec', (
     'configViewSpec.js',
+    'containerViewSpec.js',
     'dockerTaskSpec.js',
     'panelGroupSpec.js',
     'parseSpec.js',
