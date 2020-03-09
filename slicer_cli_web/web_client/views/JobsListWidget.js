@@ -53,10 +53,16 @@ const JobsListWidget = View.extend({
             this._paramFile(job);
             return _.extend({paramFile: paramFiles[job.id]}, job.attributes);
         });
+        let root = '/static/built';
+        try {
+            root = __webpack_public_path__ || root; // eslint-disable-line
+        } catch (err) { }
+        root = root.replace(/\/$/, '').replace(/\/[^/]+$/, '').replace(/\/[^/]+$/, '');
 
         this.$el.html(jobListWidget({
             jobs,
-            JobStatus
+            JobStatus,
+            rootLink: root
         }));
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
