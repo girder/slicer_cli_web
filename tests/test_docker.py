@@ -218,13 +218,17 @@ def testAddNonExistentImage(images):
 
 
 @pytest.mark.plugin('slicer_cli_web')
-def testDockerAdd(images):
+def testDockerAdd(images, server):
     # try to cache a good image to the mongo database
     img_name = 'girder/slicer_cli_web:small'
     images.assertNoImages()
     images.addImage(img_name, JobStatus.SUCCESS)
     images.imageIsLoaded(img_name, True)
-    # images.endpointsExist(img_name, ['Example1', 'Example2'], ['Example3'])
+    # If checked without a user, we should get an empty list
+    resp = server.request(path='/slicer_cli_web/docker_image')
+    assertStatus(resp, 200)
+    assert json.loads(getResponseBody(resp)) == {}
+    images.endpointsExist(img_name, ['Example1', 'Example2', 'Example3'], ['NotAnExample'])
     images.deleteImage(img_name, True)
     images.assertNoImages()
 

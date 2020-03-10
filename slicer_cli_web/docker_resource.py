@@ -59,23 +59,24 @@ class DockerResource(Resource):
 
         self._generateAllItemEndPoints()
 
-    @access.user
+    @access.public
     @describeRoute(
         Description('List docker images and their CLIs')
-        .errorResponse('You are not logged in.', 403)
+        .notes('You must be logged in to see any results.')
     )
     def getDockerImages(self, params):
         data = {}
-        for image in DockerImageItem.findAllImages(self.getCurrentUser()):
-            imgData = {}
-            for cli in image.getCLIs():
-                basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
-                imgData[cli.name] = {
-                    'type': cli.type,
-                    'xmlspec': basePath + '/xml',
-                    'run': basePath + '/run'
-                }
-            data.setdefault(image.image, {})[image.tag] = imgData
+        if self.getCurrentUser():
+            for image in DockerImageItem.findAllImages(self.getCurrentUser()):
+                imgData = {}
+                for cli in image.getCLIs():
+                    basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
+                    imgData[cli.name] = {
+                        'type': cli.type,
+                        'xmlspec': basePath + '/xml',
+                        'run': basePath + '/run'
+                    }
+                data.setdefault(image.image, {})[image.tag] = imgData
         return data
 
     @access.admin
