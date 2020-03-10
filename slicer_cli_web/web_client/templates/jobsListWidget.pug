@@ -7,7 +7,7 @@ table.g-jobs-list-table
         td.g-status-icon-container(status=job.status)
           i(class=JobStatus.icon(job.status))
         td
-          a(href=`/#job/${job._id}`, target='_blank', data-toggle='tooltip', title=created.toLocaleString())
+          a(href=`${rootLink}/#job/${job._id}`, target='_blank', data-toggle='tooltip', title=created.toLocaleString())
             = title
         if job.paramFile && job.paramFile._id
           td
