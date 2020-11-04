@@ -1,181 +1,150 @@
 version: 2.1
 
+executors:
+  toxandnode:
+    working_directory: ~/project
+    docker:
+      - image: girder/tox-and-node
+      - image: circleci/mongo:4.0-ram
+      - image: rabbitmq
 commands:
-  upload:
-    parameters:
-      conf:
-        description: Used to specify the location of the .codecov.yml config file
-        type: string
-        default: ".codecov.yml"
-      file:
-        description: Path to the code coverage data file to upload.
-        type: string
-        default: ""
-      flags:
-        description: Flag the upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
-        type: string
-        default: ""
-      token:
-        description: Set the private repository token (defaults to environment variable $CODECOV_TOKEN)
-        type: string
-        default: ${CODECOV_TOKEN}
-      upload_name:
-        description: Custom defined name of the upload. Visible in Codecov UI
-        type: string
-        default: ${CIRCLE_BUILD_NUM}
-      url:
-        description: Custom url to submit the codecov result. Default to "https://codecov.io/bash"
-        type: string
-        default: "https://codecov.io/bash"
-      when:
-        description: When should this step run?
-        type: string
-        default: "always"
-    steps:
-      - when:
-          condition: << parameters.file >>
-          steps:
-            - run:
-                name: Upload Coverage Results
-                command: |
-                  curl -s << parameters.url >> | bash -s -- \
-                    -f "<< parameters.file >>" \
-                    -t "<< parameters.token >>" \
-                    -n "<< parameters.upload_name >>" \
-                    -y "<< parameters.conf >>" \
-                    -F "<< parameters.flags >>" \
-                    -Z || echo 'Codecov upload failed'
-                when: << parameters.when >>
-      - unless:
-          condition: << parameters.file >>
-          steps:
-            - run:
-                name: Upload Coverage Results
-                command: |
-                  curl -s << parameters.url >> | bash -s -- \
-                    -t "<< parameters.token >>" \
-                    -n "<< parameters.upload_name >>" \
-                    -y "<< parameters.conf >>" \
-                    -F "<< parameters.flags >>" \
-                    -Z || echo 'Codecov upload failed'
-                when: << parameters.when >>
   tox:
-    description: "run tox"
+    description: "Run tox"
     parameters:
       env:
         type: string
     steps:
       - run:
-          name: Upgrade Pip
-          command: pip install -U pip
+          name: Preinstall phantomjs to work around an npm permission issue
+          command: npm install -g phantomjs-prebuilt --unsafe-perm
       - run:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
           # consume the exit code
-          command: tox -e << parameters.env >>  | cat; test ${PIPESTATUS[0]} -eq 0
-
-executors:
-  py2:
-    working_directory: ~/project
-    docker:
-      - image: girder/girder_test:latest-py2
-      - image: circleci/mongo:3.4-ram
-        # storage engine. We can pass alternate options to "mongod" by overwriting the default "CMD"
-        # used to start the Docker image: https://github.com/circleci/circleci-images/blob/master/mongo/resources/Dockerfile-ram.template
-        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
-      - image: rabbitmq
-  py3:
-    working_directory: ~/project
-    docker:
-      - image: girder/girder_test:latest-py3
-      - image: circleci/mongo:3.4-ram
-        command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
-      - image: rabbitmq
+          command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  coverage:
+    description: "Upload coverage"
+    steps:
+      - run:
+          name: Install Codecov client
+          command: pip install codecov==2.1.9
+      - run:
+          name: Upload coverage
+          # Retry as codecov can be flaky
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  lint:
-    executor: py3
+  py27:
+    executor: toxandnode
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py27
+      - coverage
+  py36:
+    executor: toxandnode
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py36
+      - coverage
+  py37:
+    executor: toxandnode
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py37
+      - coverage
+  py38:
+    executor: toxandnode
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py38
+      - coverage
+  py39:
+    executor: toxandnode
+    steps:
+      - checkout
+      - setup_remote_docker
+      - tox:
+          env: py39
+      - coverage
+  lint_and_docs:
+    executor: toxandnode
     steps:
       - checkout
       - tox:
           env: flake8,lintclient
-  py27:
-    executor: py2
+  release:
+    docker:
+      - image: girder/tox-and-node
     steps:
       - checkout
-      - setup_remote_docker
-      - run:
-          name: Install Python headers
-          command: |
-            sudo apt-get install python-dev
-      - tox:
-          env: py27
-  py36:
-    executor: py3
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install Python headers
-          command: |
-            sudo apt-get install python3-dev
-      - tox:
-          env: py36
-  py37:
-    executor: py3
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install Python headers
-          command: |
-            sudo apt-get install python3-dev
-      - tox:
-          env: py37
-      - upload:
-          file: .tox/coverage/py_coverage.xml
-          flags: backend
-      - upload:
-          file: build/test/coverage/web_temp/*.json
-          flags: ui
-      - store_test_results:
-          path: build/test-reports
-      - store_artifacts:
-          path: build/test-reports
-  deploy:
-    executor: py3
-    steps:
-      - checkout
-      - setup_remote_docker
       - deploy:
-          command: tox -e release
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: PYTEST_ADDOPTS=--forked tox -e release | cat; test ${PIPESTATUS[0]} -eq 0
 
 workflows:
   version: 2
   ci:
     jobs:
-      - lint:
-          filters:
-            tags:
-              only: /^v.*/
       - py27:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - py36:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - py37:
           filters:
             tags:
               only: /^v.*/
-      - deploy:
+            branches:
+              ignore:
+                - gh-pages
+      - py38:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py39:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - lint_and_docs:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - release:
           requires:
-            - lint
             - py27
             - py36
             - py37
+            - py38
+            - py39
+            - lint_and_docs
           filters:
             tags:
               only: /^v.*/

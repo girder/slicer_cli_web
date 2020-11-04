@@ -1,20 +1,22 @@
+import json
 import os
 import pytest
-import json
+
+from girder.api import rest
+from girder.models.item import Item
+
+from slicer_cli_web import docker_resource
+from slicer_cli_web import rest_slicer_cli
+from slicer_cli_web.models import CLIItem
 
 
 @pytest.mark.plugin('slicer_cli_web')
-def test_genHandlerToRunDockerCLI(admin, folder, file, adminToken, mocker):
-    mocker.patch('girder.api.rest.getCurrentToken').return_value = adminToken
-    mocker.patch('girder.api.rest.getApiUrl').return_value = '/api/v1'
-
-    from girder.api import rest
-    from slicer_cli_web import docker_resource
-    from slicer_cli_web import rest_slicer_cli
-    from slicer_cli_web.models import CLIItem
-    from girder.models.item import Item
-
+def test_genHandlerToRunDockerCLI(server, admin, folder, file):
+    # Make a request to allow ther eto be some lingering context to handle the
+    # testing outside of a request for the actual handler.
+    server.request('/system/version')
     rest.setCurrentUser(admin)
+
     xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
 
     girderCLIItem = Item().createItem('data', admin, folder)
