@@ -76,6 +76,8 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - The ``region`` type can have a ``coordinateSystem`` property.
 
+- Some input types (``image``, ``file``, ``item``, ``directory``) can have ``defaultNameMatch`` and ``defaultPathMatch`` properties.  These are regular expressions designed to give a UI a value to match to prepopulate default values from files or paths that match the regex.  ``defaultNameMatch`` is intended to match the final path element, whereas ``defaultPathMatch`` is used on the entire path as a combined string.
+
 
 .. |build-status| image:: https://circleci.com/gh/girder/slicer_cli_web.svg?style=svg
     :target: https://circleci.com/gh/girder/slicer_cli_web

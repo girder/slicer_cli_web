@@ -39,6 +39,14 @@
       "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
       "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI."
     },
+    "defaultPathMatch": {
+      "type": "string",
+      "description": "A regular expression that can be used to match a file, item, or folder total path to prepopulate a default value.  When used with Girder, this matches the resource path."
+    },
+    "defaultNameMatch": {
+      "type": "string",
+      "description": "A regular expression that can be used to match a file, item, or folder name to prepopulate a default value.  When used with Girder, this matches the resource name."
+    },
     "reference": {
       "oneOf": [
         {
@@ -551,6 +559,12 @@
                     "fileExtensions": {
                       "$ref": "#/definitions/fileExtensions"
                     },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/defaultPathMatch"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/defaultNameMatch"
+                    },
                     "reference": {
                       "$ref": "#/definitions/reference"
                     }
@@ -596,6 +610,12 @@
                     },
                     "fileExtensions": {
                       "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/defaultPathMatch"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/defaultNameMatch"
                     }
                   }
                 },
@@ -616,6 +636,12 @@
                     },
                     "fileExtensions": {
                       "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/defaultPathMatch"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/defaultNameMatch"
                     },
                     "reference": {
                       "$ref": "#/definitions/reference"
@@ -690,6 +716,12 @@
                       "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
                       "default": ".tsv|.csv|.txt|.ctbl"
                     },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
                     "reference": {
                       "$ref": "#/definitions/reference"
                     }
@@ -724,6 +756,12 @@
                       "description": "fileExtensions can contain a list of comma separated file extensions for optional use by the GUI.",
                       "pattern": "(?:(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)(?:,\\s*(?:\\.[^,\\s]|[^,\\.\\s\\*])[^,\\s]*)*",
                       "default": ".tfm,.h5,.hdf5,.mat,.txt"
+                    },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/fileExtensions"
                     },
                     "reference": {
                       "$ref": "#/definitions/reference"

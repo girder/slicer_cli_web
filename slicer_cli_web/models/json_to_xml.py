@@ -29,7 +29,8 @@ def _convert_param(parent, param):
 
     _copy(p, param, 'label', 'description', 'name', 'index', 'channel')
 
-    _copy_attr(p, param, 'coordinateSystem', 'fileExtensions',
+    _copy_attr(p, param,
+               'coordinateSystem', 'fileExtensions', 'defaultPathMatch', 'defaultNameMatch',
                image_type='type', table_type='type', geometry_type='type',
                transform_type='type')
 
