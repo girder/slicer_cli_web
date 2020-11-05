@@ -57,7 +57,6 @@ const ControlWidget = View.extend({
         if (channel === 'input') {
             if (model.get('defaultNameMatch') || model.get('defaultPathMatch')) {
                 this._getDefaultInputResource(model).then((resource) => {
-                    console.log('H', resource, model);
                     if (!resource) {
                         return null;
                     }

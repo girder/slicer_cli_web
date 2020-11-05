@@ -47,7 +47,6 @@ const SlicerUI = View.extend({
         this.$el.html(slicerUI({
             panels: this.panels
         }));
-        console.log('--', this.taskModel, this.taskModel.get('name')); // DWM::
         this.panels.forEach((panel) => {
             this._panelViews[panel.id] = new ControlsPanel({
                 controlWidget: {
