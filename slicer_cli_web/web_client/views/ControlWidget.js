@@ -7,6 +7,9 @@ import events from '@girder/core/events';
 import { getCurrentUser } from '@girder/core/auth';
 import FolderCollection from '@girder/core/collections/FolderCollection';
 import ItemModel from '@girder/core/models/ItemModel';
+import FileModel from '@girder/core/models/FileModel';
+import FolderModel from '@girder/core/models/FolderModel';
+import { restRequest } from '@girder/core/rest';
 
 import ItemSelectorWidget from './ItemSelectorWidget';
 
@@ -46,16 +49,25 @@ const ControlWidget = View.extend({
     },
 
     _initModel(settings) {
-        if (!settings.setDefaultOutput) {
-            return;
-        }
-
         const prefix = settings.setDefaultOutput;
         const model = this.model;
         const type = model.get('type');
         const channel = model.get('channel');
         const required = model.get('required');
-        if (!required || channel !== 'output' || !['new-file', 'file', 'item', 'directory'].includes(type)) {
+        if (channel === 'input') {
+            if (model.get('defaultNameMatch') || model.get('defaultPathMatch')) {
+                this._getDefaultInputResource(model).then((resource) => {
+                    if (!resource) {
+                        return null;
+                    }
+                    this.model.set({
+                        value: resource
+                    });
+                    return null;
+                });
+            }
+        }
+        if (!prefix || !required || channel !== 'output' || !['new-file', 'file', 'item', 'directory'].includes(type)) {
             return;
         }
         this._getDefaultOutputFolder().then((folder) => {
@@ -239,7 +251,10 @@ const ControlWidget = View.extend({
             el: $('#g-dialog-container'),
             parentView: this,
             model: this.model,
-            rootPath: this._rootPath
+            rootPath: this._rootPath,
+            rootSelectorSettings: {
+                pageLimit: 1000
+            }
         });
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
@@ -270,6 +285,22 @@ const ControlWidget = View.extend({
             });
         }).then(() => {
             return userFolders.isEmpty() ? null : userFolders.at(0);
+        });
+    },
+
+    _getDefaultInputResource(model) {
+        var type = {image: 'item', item: 'item', file: 'file', directory: 'folder'}[model.get('type')];
+        return restRequest({
+            url: 'slicer_cli_web/path_match',
+            data: {
+                type: type,
+                name: model.get('defaultNameMatch'),
+                path: model.get('defaultPathMatch')
+            },
+            error: null
+        }).then((resource) => {
+            var ModelType = {image: ItemModel, item: ItemModel, file: FileModel, directory: FolderModel}[model.get('type')];
+            return new ModelType(resource);
         });
     },
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-###############################################################################
+#############################################################################
 #  Copyright Kitware Inc.
 #
 #  Licensed under the Apache License, Version 2.0 ( the "License" );
@@ -14,19 +14,23 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-###############################################################################
+#############################################################################
 
 
 import json
+import re
 import six
 
 from girder.api import access
 from girder.api.describe import autoDescribeRoute, Description, describeRoute
 from girder.api.rest import setResponseHeader, setRawResponse
 from girder.api.v1.resource import Resource, RestException
-from girder.constants import AccessType
+from girder.constants import AccessType, SortDir
+from girder.exceptions import AccessException
 from girder.models.item import Item
+from girder.utility import path as path_util
 from girder.utility.model_importer import ModelImporter
+from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 
 from .config import PluginSettings
@@ -56,6 +60,8 @@ class DockerResource(Resource):
         self.route('DELETE', ('cli', ':id',), self.deleteItem)
         # run is generated per item for better validation
         self.route('GET', ('cli', ':id', 'xml'), self.getItemXML)
+
+        self.route('GET', ('path_match', ), self.getMatchingResource)
 
         self._generateAllItemEndPoints()
 
@@ -328,3 +334,35 @@ class DockerResource(Resource):
         setResponseHeader('Content-Type', 'application/xml')
         setRawResponse()
         return CLIItem(item).xml
+
+    @access.public
+    @autoDescribeRoute(
+        Description(
+            'Get the most recently updated resource that has a name and path '
+            'that matches a regular expression')
+        .notes('This can be very slow if name is too general.')
+        .param('name', 'A regular expression to match the name of the '
+               'resource.', required=False)
+        .param('path', 'A regular expression to match the entire resource path.', required=False)
+        .param('type', 'The type of the resource (item, file, etc.).')
+        .errorResponse('Invalid resource type.')
+        .errorResponse('No matches.')
+    )
+    def getMatchingResource(self, name, path, type):
+        setResponseTimeLimit(86400)
+        user = self.getCurrentUser()
+        model = ModelImporter.model(type)
+        pattern = None
+        if path:
+            pattern = re.compile(path)
+        for doc in model.findWithPermissions(
+                {'name': {'$regex': name}} if name else {},
+                sort=[('updated', SortDir.DESCENDING), ('created', SortDir.DESCENDING)],
+                user=user, level=AccessType.READ):
+            try:
+                resourcePath = path_util.getResourcePath(type, doc, user=user)
+                if not pattern or pattern.search(resourcePath):
+                    return doc
+            except AccessException:
+                pass
+        raise RestException('No matches.')

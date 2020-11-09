@@ -5,6 +5,7 @@
   "description": "Shows one of each type of parameter that slicer_cli_web can handle.",
   "version": "0.1.0.$Revision$(alpha)",
   "documentation-url": "http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/ExecutionModelTour",
+  "license": "",
   "contributor": "Daniel Blezek (GE), Bill Lorensen (GE)",
   "acknowledgements": "This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  It has been modified for slicer_cli_web.",
   "parameter_groups": [
@@ -141,6 +142,8 @@
         {
           "type": "file",
           "fileExtensions": ".png,.jpg,.jpeg,.bmp,.tif,.tiff,.gipl,.dcm,.dicom,.nhdr,.nrrd,.mhd,.mha,.mask,.hdr,.nii,.nii.gz,.hdr.gz,.pic,.lsm,.spr,.vtk,.vtkp,.vtki,.stl,.csv,.txt,.xml,.html",
+          "defaultNameMatch": "\\.png$",
+          "defaultPathMatch": "^\\/user\\/.*\\/[Ii]mages\\/.*\\.png$",
           "name": "file1",
           "longflag": "file1",
           "description": "An input file",

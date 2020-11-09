@@ -50,6 +50,9 @@ const ConfigView = View.extend({
                     isValid.resolve();
                 }
                 return isValid.promise();
+            },
+            rootSelectorSettings: {
+                pageLimit: 1000
             }
         });
         this.listenTo(this._browserWidgetView, 'g:saved', (val) => {

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 
 from setuptools import find_packages, setup
 
@@ -34,7 +35,7 @@ setup(
     keywords='girder-plugin, slicer_cli_web',
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
-    license='Apache 2.0',
+    license='Apache Software License 2.0',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
@@ -47,6 +48,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     include_package_data=True,
     package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},
@@ -61,8 +64,8 @@ setup(
     extras_require={
         'girder': [
             'docker>=2.6.0',
-            'girder>=3.0.3',
-            'girder-jobs>=3.0.3',
+            'girder>=3.0.4' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
+            'girder-jobs>=3.0.3' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
             'girder-worker[girder]>=0.6.0',
         ],
         'worker': [
@@ -77,5 +80,6 @@ setup(
         'girder_worker_plugins': [
             'slicer_cli_web = slicer_cli_web.girder_worker_plugin:SlicerCLIWebWorkerPlugin'
         ]
-    }
+    },
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
 )

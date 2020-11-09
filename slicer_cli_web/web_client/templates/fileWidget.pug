@@ -4,7 +4,14 @@ block input
   .input-group
     if value && value.name
       - value = value.name();
-    +input(title, type, id, value)(placeholder='Choose a file...', readonly=true)
+    - var placeholder = 'Choose a file...'
+    if type === 'item'
+      - placeholder = 'Choose an item...'
+    if type === 'image'
+      - placeholder = 'Choose an image...'
+    if type === 'directory'
+      - placeholder = 'Choose a folder...'
+    +input(title, type, id, value)(placeholder=placeholder, readonly=true)
     span.input-group-btn
       button.btn.btn-default.s-select-file-button(type='button')
         i.icon-folder-open
