@@ -70,7 +70,7 @@ const SlicerUI = View.extend({
         const opts = {};
         this.spec = parse(xml, opts);
 
-        if (opts.outputs) {
+        if (opts.output) {
             this._addParamFileOutput();
         }
 

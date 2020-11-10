@@ -18,6 +18,7 @@ const WidgetCollection = Backbone.Collection.extend({
                 case 'file':
                 case 'item':
                 case 'image':
+                case 'directory':
                     params[m.id] = m.value().id;
                     break;
                 case 'new-file':
