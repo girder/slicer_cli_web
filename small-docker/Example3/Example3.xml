@@ -18,6 +18,7 @@
       <constraints>
         <minimum>0</minimum>
         <maximum>1</maximum>
+        <step>0</step>
       </constraints>
     </float>
   </parameters>

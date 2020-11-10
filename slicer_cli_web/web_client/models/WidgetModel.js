@@ -185,7 +185,7 @@ const WidgetModel = Backbone.Model.extend({
         // make sure value is approximately an integer number
         // of "steps" larger than "min"
         min = min || 0;
-        const mod = (value - min) / step;
+        const mod = (value - min) / (step || 1);
         if (step > 0 && Math.abs(Math.round(mod) - mod) > eps) {
             return 'Value does not satisfy step "' + step + '"';
         }
@@ -214,7 +214,7 @@ const WidgetModel = Backbone.Model.extend({
         // make sure value is approximately an integer number
         // of "steps" larger than "min"
         min = min || 0;
-        if ((value - min) % step) {
+        if (step > 0 && ((value - min) % (step || 1))) {
             return `Value does not satisfy step "${step}"`;
         }
     },

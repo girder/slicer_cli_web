@@ -6,6 +6,7 @@ from girder_worker.docker.transforms import BindMountVolume
 from girder_worker.docker.transforms.girder import GirderFileIdToVolume
 from girder_worker.docker.tasks import _docker_run, DockerTask
 from girder_worker_utils import _walk_obj
+from girder_worker_utils.transforms.girder_io import GirderClientTransform
 
 
 def _get_basename(filename, direct_path):
@@ -41,6 +42,16 @@ class DirectGirderFileIdToVolume(GirderFileIdToVolume):
         if self._direct_container_path:
             return self._direct_container_path
         return super(DirectGirderFileIdToVolume, self).transform(**kwargs)
+
+
+class GirderApiUrl(GirderClientTransform):
+    def transform(self, **kwargs):
+        return self.gc.urlBase
+
+
+class GirderApiKey(GirderClientTransform):
+    def transform(self, **kwargs):
+        return self.gc.token
 
 
 def _resolve_direct_file_paths(args, kwargs):

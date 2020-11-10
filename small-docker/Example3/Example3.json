@@ -20,7 +20,8 @@
           "channel": "input",
           "constraints": {
             "minimum": 0.0,
-            "maximum": 1.0
+            "maximum": 1.0,
+            "step": 0.0
           }
         }
       ]

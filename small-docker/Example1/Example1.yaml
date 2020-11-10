@@ -78,6 +78,22 @@ parameter_groups:
     - Ross
     - Steve
     - Will
+- advanced: true
+  description: A Girder API URL and token for Girder client
+  label: Girder API URL and Key
+  parameters:
+  - type: string
+    name: girderApiUrl
+    longflag: api-url
+    label: Girder API URL
+    description: A Girder API URL (e.g., https://girder.example.com:443/api/v1)
+    default: ''
+  - type: string
+    name: girderApiKey
+    longflag: api-key
+    label: Girder API Key
+    description: A Girder token
+    default: ''
 - description: Variations on boolean parameters
   label: Boolean Parameters
   parameters:
@@ -181,7 +197,7 @@ parameter_groups:
     description: An example of a double return type
   - type: string
     name: astringreturn
-    label: A string point return value
+    label: A string return value
     channel: output
     default: Hello
     description: An example of a string return type

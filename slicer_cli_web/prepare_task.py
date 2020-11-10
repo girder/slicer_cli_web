@@ -14,7 +14,7 @@ from girder.models.file import File
 from girder.models.setting import Setting
 
 from .cli_utils import \
-    SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, return_parameter_file_name
+    SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, is_girder_api, return_parameter_file_name
 
 
 OPENAPI_DIRECT_TYPES = set(['boolean', 'integer', 'float', 'double', 'string'])
@@ -40,6 +40,18 @@ def _to_file_volume(param, model):
                                           filename=model['name'])
     except FilePathException:
         return GirderFileIdToVolume(model['_id'], filename=model['name'])
+
+
+def _to_girder_api(param, value):
+    from .girder_worker_plugin.direct_docker_run import GirderApiUrl, GirderApiKey
+
+    if value:
+        return value
+    if param.name == 'girderApiUrl':
+        return GirderApiUrl()
+    elif param.name == 'girderApiKey':
+        return GirderApiKey()
+    return value
 
 
 def _parseParamValue(param, value, user, token):
@@ -86,6 +98,9 @@ def _add_optional_input_param(param, args, user, token):
     if is_on_girder(param):
         # Bindings
         container_args.append(_to_file_volume(param, value))
+    elif is_girder_api(param):
+        # Bindings
+        container_args.append(_to_girder_api(param, value))
     else:
         container_args.append(value)
     return container_args
@@ -128,6 +143,8 @@ def _add_indexed_input_param(param, args, user, token):
     if is_on_girder(param):
         # Bindings
         return _to_file_volume(param, value), value['name']
+    if is_girder_api(param):
+        return _to_girder_api(param, value), value['name']
     return value, None
 
 

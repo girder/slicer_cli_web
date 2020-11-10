@@ -14,8 +14,8 @@ RUN chmod a+x /usr/local/bin/groupadd
 RUN touch /usr/local/bin/useradd
 RUN chmod a+x /usr/local/bin/useradd
 
-# We need ctk-cli to parse inputs
-RUN pip install ctk-cli
+# We need either ctk-cli or our equivalent to parse inputs
+RUN pip install --pre girder-slicer-cli-web
 COPY . $PWD
 
 ENTRYPOINT ["python", "./cli_list.py"]

@@ -80,6 +80,24 @@
       <element>Will</element>
     </string-enumeration>
   </parameters>
+  <parameters advanced="true">
+    <label>Girder API URL and Key</label>
+    <description>A Girder API URL and token for Girder client</description>
+    <string>
+      <name>girderApiUrl</name>
+      <longflag>api-url</longflag>
+      <label>Girder API URL</label>
+      <description>A Girder API URL (e.g., https://girder.example.com:443/api/v1)</description>
+      <default></default>
+    </string>
+    <string>
+      <name>girderApiKey</name>
+      <longflag>api-key</longflag>
+      <label>Girder API Key</label>
+      <description>A Girder token</description>
+      <default></default>
+    </string>
+  </parameters>
   <parameters>
     <label>Boolean Parameters</label>
     <description><![CDATA[Variations on boolean parameters]]></description>
@@ -194,7 +212,7 @@
     </double>
     <string>
       <name>astringreturn</name>
-      <label>A string point return value</label>
+      <label>A string return value</label>
       <channel>output</channel>
       <default>Hello</default>
       <description><![CDATA[An example of a string return type]]></description>
