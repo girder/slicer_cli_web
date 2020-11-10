@@ -77,3 +77,7 @@ def get_cli_parameters(clim):
 
 def is_on_girder(param):
     return param.typ in SLICER_TYPE_TO_GIRDER_MODEL_MAP
+
+
+def is_girder_api(param):
+    return param.name in {'girderApiUrl', 'girderApiKey'}
