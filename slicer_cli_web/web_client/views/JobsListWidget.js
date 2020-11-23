@@ -45,9 +45,15 @@ const JobsListWidget = View.extend({
     },
 
     render() {
-        const jobs = this.collection.filter((job, index) => {
+        let jobs = this.collection.filter((job, index) => {
             return index < 10 && (job.get('kwargs') || {}).image && (job.get('kwargs') || {}).container_args;
-        }).map((job) => {
+        });
+        if (!jobs.length) {
+            jobs = this.collection.filter((job, index) => {
+                return index < 10;
+            });
+        }
+        jobs = jobs.map((job) => {
             // make an async request to add output parameter information
             // to the job model
             this._paramFile(job);
