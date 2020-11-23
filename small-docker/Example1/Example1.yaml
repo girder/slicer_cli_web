@@ -89,9 +89,9 @@ parameter_groups:
     description: A Girder API URL (e.g., https://girder.example.com:443/api/v1)
     default: ''
   - type: string
-    name: girderApiKey
-    longflag: api-key
-    label: Girder API Key
+    name: girderToken
+    longflag: girder-token
+    label: Girder Token
     description: A Girder token
     default: ''
 - description: Variations on boolean parameters

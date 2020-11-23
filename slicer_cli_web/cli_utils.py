@@ -80,4 +80,4 @@ def is_on_girder(param):
 
 
 def is_girder_api(param):
-    return param.name in {'girderApiUrl', 'girderApiKey'}
+    return param.name in {'girderApiUrl', 'girderToken'}

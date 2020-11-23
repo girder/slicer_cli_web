@@ -43,14 +43,14 @@ def _to_file_volume(param, model):
 
 
 def _to_girder_api(param, value):
-    from .girder_worker_plugin.direct_docker_run import GirderApiUrl, GirderApiKey
+    from .girder_worker_plugin.direct_docker_run import GirderApiUrl, GirderToken
 
     if value:
         return value
     if param.name == 'girderApiUrl':
         return GirderApiUrl()
-    elif param.name == 'girderApiKey':
-        return GirderApiKey()
+    elif param.name == 'girderToken':
+        return GirderToken()
     return value
 
 

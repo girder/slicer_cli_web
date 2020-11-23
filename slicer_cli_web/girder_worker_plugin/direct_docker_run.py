@@ -49,7 +49,7 @@ class GirderApiUrl(GirderClientTransform):
         return self.gc.urlBase
 
 
-class GirderApiKey(GirderClientTransform):
+class GirderToken(GirderClientTransform):
     def transform(self, **kwargs):
         return self.gc.token
 
