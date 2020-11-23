@@ -121,9 +121,9 @@
         },
         {
           "type": "string",
-          "name": "girderApiKey",
-          "longflag": "api-key",
-          "label": "Girder API Key",
+          "name": "girderToken",
+          "longflag": "girder-token",
+          "label": "Girder Token",
           "description": "A Girder token",
           "default": ""
         }

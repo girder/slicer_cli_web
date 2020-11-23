@@ -91,9 +91,9 @@
       <default></default>
     </string>
     <string>
-      <name>girderApiKey</name>
-      <longflag>api-key</longflag>
-      <label>Girder API Key</label>
+      <name>girderToken</name>
+      <longflag>girder-token</longflag>
+      <label>Girder Token</label>
       <description>A Girder token</description>
       <default></default>
     </string>

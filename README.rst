@@ -78,7 +78,7 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - Some input types (``image``, ``file``, ``item``, ``directory``) can have ``defaultNameMatch`` and ``defaultPathMatch`` properties.  These are regular expressions designed to give a UI a value to match to prepopulate default values from files or paths that match the regex.  ``defaultNameMatch`` is intended to match the final path element, whereas ``defaultPathMatch`` is used on the entire path as a combined string.
 
-- There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderApiKey`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
+- There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderToken`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
 
 
 .. |build-status| image:: https://circleci.com/gh/girder/slicer_cli_web.svg?style=svg
