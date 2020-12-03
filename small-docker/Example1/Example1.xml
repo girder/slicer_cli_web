@@ -160,6 +160,13 @@
       <label>Output image</label>
       <channel>output</channel>
     </image>
+    <item>
+      <name>item1</name>
+      <longflag>item1</longflag>
+      <description>An input item</description>
+      <label>Input item</label>
+      <channel>input</channel>
+    </item>
   </parameters>
   <parameters>
     <label>Index Parameters</label>

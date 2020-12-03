@@ -9,23 +9,15 @@ ctk_cli.module.CLIConstraints.REQUIRED_ELEMENTS = ()
 
 
 class CLIParameter(ctk_cli.module.CLIParameter):
-    REQUIRED_ELEMENTS = ('name', 'description', 'label')
-
-    OPTIONAL_ELEMENTS = (  # either 'index' or at least one of 'flag' or 'longflag' is required
-        'flag', 'longflag', 'index',
-        'default', 'channel')
-
-    __slots__ = ('typ', 'hidden', '_pythonType') + REQUIRED_ELEMENTS + OPTIONAL_ELEMENTS + (
-        'constraints',  # scalarVectorType, scalarType
-        'multiple',  # multipleType
-        'elements',  # enumerationType
-        'coordinateSystem',  # pointType, pointFileType
-        'fileExtensions',  # fileType
-        'reference',  # imageType, transformType, geometryType, tableType
-        'subtype',  # 'type' of imageType / geometryType
+    __slots__ = ctk_cli.module.CLIParameter.__slots__ + (
         'defaultPathMatch',
         'defaultNameMatch',
     )
+    EXTERNAL_TYPES = ctk_cli.module.CLIParameter.EXTERNAL_TYPES.copy()
+    EXTERNAL_TYPES.update({
+        'item': '.item',  # extension is meaningless
+    })
+    TYPES = ctk_cli.module.CLIParameter.VALUE_TYPES + tuple(EXTERNAL_TYPES)
 
     # This is copied from ctk_cli/module.py with a few changes
     @classmethod  # noqa

@@ -158,6 +158,7 @@
                     "file",
                     "directory",
                     "image",
+                    "item",
                     "geometry",
                     "point",
                     "pointfile",
@@ -546,6 +547,46 @@
                       "type": "string"
                     },
                     "image_type": {
+                      "type": "string",
+                      "enum": [
+                        "scalar",
+                        "label",
+                        "tensor",
+                        "diffusion-weighted",
+                        "vector",
+                        "model"
+                      ]
+                    },
+                    "fileExtensions": {
+                      "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultPathMatch": {
+                      "$ref": "#/definitions/defaultPathMatch"
+                    },
+                    "defaultNameMatch": {
+                      "$ref": "#/definitions/defaultNameMatch"
+                    },
+                    "reference": {
+                      "$ref": "#/definitions/reference"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "channel"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "item"
+                      ]
+                    },
+                    "default": {
+                      "type": "string"
+                    },
+                    "item_type": {
                       "type": "string",
                       "enum": [
                         "scalar",

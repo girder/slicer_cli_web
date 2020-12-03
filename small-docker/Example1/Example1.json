@@ -206,6 +206,14 @@
           "description": "An output image",
           "label": "Output image",
           "channel": "output"
+        },
+        {
+          "type": "item",
+          "name": "item1",
+          "longflag": "item1",
+          "description": "An input item",
+          "label": "Input item",
+          "channel": "input"
         }
       ]
     },
