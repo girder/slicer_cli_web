@@ -81,6 +81,12 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 - There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderToken`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
 
 
+Small Example CLI Docker
+========================
+
+The small example CLI docker image can be built locally via ``docker build --force-rm -t girder/slicer_cli_web:small .``, or pulled from Docker Hub.
+
+
 .. |build-status| image:: https://circleci.com/gh/girder/slicer_cli_web.svg?style=svg
     :target: https://circleci.com/gh/girder/slicer_cli_web
     :alt: Build Status

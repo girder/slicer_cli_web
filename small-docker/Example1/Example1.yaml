@@ -153,6 +153,12 @@ parameter_groups:
     description: An output image
     label: Output image
     channel: output
+  - type: item
+    name: item1
+    longflag: item1
+    description: An input item
+    label: Input item
+    channel: input
 - description: Variations on parameters that use index rather than flags.
   label: Index Parameters
   parameters:
