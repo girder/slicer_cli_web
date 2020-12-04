@@ -87,6 +87,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
 
         switch (t) {
             case 'directory':
+            case 'new-file':
                 if (!model || model.get('_modelType') !== 'folder') {
                     error = 'Select a directory.';
                 }
@@ -104,7 +105,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
                     }).fail(() => {
                         result.reject('There was an error listing files for the selected item.');
                     });
-                    console.log(result);
                     return result.promise();
                 }
                 break;
@@ -118,11 +118,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
             case 'item':
                 if (!model) {
                     error = 'Select an item.';
-                }
-                break;
-            case 'new-file':
-                if (!model || model.get('_modelType') !== 'folder') {
-                    error = 'Select a directory.';
                 }
                 break;
         }
