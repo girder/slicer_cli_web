@@ -7,7 +7,6 @@ girderTest.promise.done(function () {
     parser = girder.plugins.slicer_cli_web.parser;
 });
 
-
 describe('XML Schema parser', function () {
     describe('type conversion', function () {
         it('number', function () {
@@ -227,7 +226,8 @@ describe('XML Schema parser', function () {
                 id: 'foo',
                 title: 'arg1',
                 description: 'A description',
-                channel: 'input'
+                channel: 'input',
+                multiple: false
             });
         });
         it('directory', function () {
@@ -267,7 +267,8 @@ describe('XML Schema parser', function () {
                 id: 'foo',
                 title: 'arg1',
                 description: 'A description',
-                channel: 'input'
+                channel: 'input',
+                multiple: false
             });
         });
         it('output file', function () {
