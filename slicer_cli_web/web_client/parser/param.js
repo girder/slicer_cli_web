@@ -39,6 +39,9 @@ export default function param(paramTag, opts = {}) {
     } else if (channel === 'input' && ['image', 'file', 'item', 'directory'].includes(type)) {
         extra.defaultNameMatch = $param.attr('defaultNameMatch');
         extra.defaultPathMatch = $param.attr('defaultPathMatch');
+        if (type !== 'directory') {
+            extra.multiple = $param.attr('multiple') === 'true';
+        }
     }
 
     if (!type) {
