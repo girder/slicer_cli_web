@@ -2,9 +2,16 @@ extends ./widget.pug
 
 block input
   .input-group
-    if value && value.name
+    if value && value.name && type === 'multi' && folderName !== undefined
+      - value = `${folderName}/RegEx(${value.name()})`;
+    else if value && value.name
       - value = value.name();
     - var placeholder = 'Choose a file...'
+    - var batchload = false
+    - if (['file','item','image', 'multi'].includes(type))
+      - batchload = true
+    - if (multiple)
+      - batchload = false
     if type === 'item'
       - placeholder = 'Choose an item...'
     if type === 'image'
@@ -15,3 +22,8 @@ block input
     span.input-group-btn
       button.btn.btn-default.s-select-file-button(type='button')
         i.icon-folder-open
+      if (batchload)
+        button.btn.btn-default.s-select-multifile-button(type='button')
+          span.fa-stack
+            i.icon-folder-open
+            i.icon-plus.fa-cancel-cover

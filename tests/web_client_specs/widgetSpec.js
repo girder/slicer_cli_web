@@ -618,6 +618,7 @@ describe('control widget view', function () {
             checkWidgetCommon(w);
 
             w.$('.s-select-file-button').click();
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
             expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
             arg.parentView._validate();
@@ -663,6 +664,7 @@ describe('control widget view', function () {
                 }
                 return $.Deferred().resolve([file.toJSON()]);
             });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
             w.$('.s-select-file-button').click();
             expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
@@ -751,6 +753,7 @@ describe('control widget view', function () {
             spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
                 return $.Deferred().resolve(file.toJSON());
             });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
             w.$('.s-select-file-button').click();
             expect(arg.parentModel).toBe(admin);
             arg.onItemClick(item);
@@ -766,6 +769,116 @@ describe('control widget view', function () {
             expect(w.model.get('path')).toEqual([]);
         });
     });
+
+    it('check multi exists', function () {
+            item = new girder.models.ItemModel({id: 'model id', name: 'b'});
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                rootPath: admin,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'item',
+                    title: 'Title',
+                    id: 'item-widget'
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                return $.Deferred().resolve(file.toJSON());
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.remove();
+    });
+
+    it('multiple flag prevents multi', function () {
+        item = new girder.models.ItemModel({id: 'model id', name: 'b'});
+
+        hProto.initialize = function (_arg) {
+            arg = _arg;
+            this.breadcrumbs = [];
+        };
+        hProto.render = function () {};
+
+        w = new slicer.views.ControlWidget({
+            parentView: parentView,
+            rootPath: admin,
+            el: $el.get(0),
+            model: new slicer.models.WidgetModel({
+                type: 'item',
+                title: 'Title',
+                id: 'item-widget',
+                multiple: true,
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+        expect(w.$('.s-select-multifile-button').length).toBe(0);
+        w.remove();
+    });
+
+    it('multi type swapping', function () {
+        runs(function() {
+            item = new girder.models.ItemModel({id: 'model id', name: 'b'});
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+
+            w = new slicer.views.ControlWidget({
+                parentView: parentView,
+                rootPath: admin,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'item',
+                    title: 'Title',
+                    id: 'item-widget',
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-multifile-button').click();
+        });
+        waitsFor(function () {
+            return $('.modal-footer a.btn-default').length === 1;
+        });
+        runs(function() {
+            expect(w.model.get('type')).toBe('multi');
+            expect(w.model.get('defaultType')).toBe('item');
+            $('.modal-footer a.btn-default').click();
+        });
+        waitsFor(function () {
+            return $('.modal-dialog:visible').length === 0;
+        });
+        runs(function() {
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return $('.modal-dialog:visible').length === 1;
+        });
+        runs(function() {
+            $('.modal-footer a.btn-default').click();
+            expect(w.model.get('type')).toBe('item');
+            w.remove();
+        });
+
+
+    });
+
+    //TODO:  Build a testing structure fo the ItemListWidget 'multi' functionality
 
     // disabling this -- it needs to be refactored to use actual folders and
     // collections in the database, not just local javascript models
@@ -828,6 +941,7 @@ describe('control widget view', function () {
             w.remove();
         });
     });
+
     it('invalid', function () {
         var w = new slicer.views.ControlWidget({
             parentView: parentView,

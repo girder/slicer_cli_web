@@ -40,6 +40,27 @@ const ItemSelectorWidget = BrowserWidget.extend({
                 settings.selectItem = true;
                 settings.showPreview = false;
                 break;
+            case 'multi':
+                settings.titleText = 'Select files';
+                settings.selectItem = false;
+                settings.input = {
+                    label: 'Item Filter (Regular Expression)',
+                    validate: (val) => {
+                        try {
+                            const regExp = RegExp(val);
+                            if (regExp) {
+                                return $.Deferred().resolve().promise();
+                            }
+                        } catch (exception) {
+                            if (exception instanceof SyntaxError) {
+                                return $.Deferred().reject('Specify a valid Regular Expression').promise();
+                            }
+                            return $.Deferred().reject(exception).promise();
+                        }
+                    }
+                };
+                settings.showPreview = false;
+                break;
             case 'new-file':
                 settings.titleText = 'Select a directory';
                 settings.input = {
@@ -57,16 +78,59 @@ const ItemSelectorWidget = BrowserWidget.extend({
         settings.titleText += ` for "${this.model.get('title')}"`;
 
         this.on('g:saved', (model, fileName) => this._saveModel(model, fileName));
-        return BrowserWidget.prototype.initialize.apply(this, arguments);
+
+       return  BrowserWidget.prototype.initialize.apply(this, arguments);
     },
 
     render() {
         BrowserWidget.prototype.render.apply(this, arguments);
+
         const t = this.model.get('type');
         if (['file', 'image', 'item'].includes(t)) {
             this.$('.modal-footer').hide();
         }
+        if (t === 'multi') {
+            this.$('#g-input-element').attr('placeholder', '(all)');
+            this.$('.g-item-list-entry').addClass('g-selected');
+
+            this.$('#g-input-element').on('input', () => this.processRegularExpression());
+        }
         return this;
+    },
+
+    /**
+     * While type is multi this will check the input element for a regular expression.
+     * Will apply highlighting to existing items if a valid expression
+     * If not valid it will provide feedback to the user that it is invalid
+     */
+    processRegularExpression() {
+        const reg = this.$('#g-input-element').val();
+        this.$('.g-item-list-entry').removeClass('g-selected');
+        try {
+            const regEx = new RegExp(reg, 'g');
+            this.$('.g-validation-failed-message').addClass('hidden');
+            this.$('.g-input-element.form-group').removeClass('has-error');
+
+            this.$('.g-item-list-link').each((index, item) => {
+                if (this.$(item)) {
+                    // Cloning to remove the Thumbnail counter text
+                    const text = this.$(item).clone()
+                        .children()
+                        .remove()
+                        .end()
+                        .text();
+                    if (text.match(regEx) || reg === '') {
+                        this.$(item).parent().addClass('g-selected');
+                    }
+                }
+            });
+        } catch (exception) {
+            if (exception instanceof SyntaxError) {
+                this.$('.g-validation-failed-message').text('Specify a valid Regular Expression');
+                this.$('.g-validation-failed-message').removeClass('hidden');
+                this.$('.g-input-element.form-group').addClass('has-error');
+            }
+        }
     },
 
     /**
@@ -79,6 +143,17 @@ const ItemSelectorWidget = BrowserWidget.extend({
             path = _.initial(path);
         }
         return path;
+    },
+    /**
+     * Checks when the model changes and binds to the changed of itemListView to select items in multi mode
+     */
+    _selectModel() {
+        BrowserWidget.prototype._selectModel.apply(this, arguments);
+        if (this.model.get('type') === 'multi' && this._hierarchyView && this._hierarchyView.itemListView) {
+            this._hierarchyView.itemListView.once('g:changed', (evt) => {
+                this.processRegularExpression();
+            });
+        }
     },
 
     _validateModel(model) {
@@ -129,7 +204,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
 
     _saveModel(model, fileName) {
         const t = this.model.get('type');
-
         switch (t) {
             case 'directory':
                 this.model.set({
@@ -144,6 +218,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
                     }
                     const file = new FileModel({_id: resp[0]._id});
                     file.once('g:fetched', () => {
+                        console.log(file);
                         this.model.set({
                             path: this._path(),
                             value: file
@@ -173,6 +248,20 @@ const ItemSelectorWidget = BrowserWidget.extend({
                 this.model.set({
                     path: this._path(),
                     parent: model,
+                    value: new ItemModel({
+                        name: fileName,
+                        folderId: model.id
+                    })
+                });
+                break;
+            case 'multi':
+                if (fileName.trim() === '') {
+                    fileName = '.*';
+                }
+                this.model.set({
+                    path: this._path(),
+                    parent: model,
+                    folderName: model.name(),
                     value: new ItemModel({
                         name: fileName,
                         folderId: model.id

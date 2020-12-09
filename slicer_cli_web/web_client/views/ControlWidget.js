@@ -32,6 +32,7 @@ const ControlWidget = View.extend({
         'change input,select': '_input',
         changeColor: '_input',
         'click .s-select-file-button': '_selectFile',
+        'click .s-select-multifile-button': '_selectMultiFile',
         'click .s-select-region-button': '_selectRegion'
     },
 
@@ -67,7 +68,7 @@ const ControlWidget = View.extend({
                 });
             }
         }
-        if (!prefix || !required || channel !== 'output' || !['new-file', 'file', 'item', 'directory'].includes(type)) {
+        if (!prefix || !required || channel !== 'output' || !['new-file', 'file', 'item', 'directory', 'multi'].includes(type)) {
             return;
         }
         this._getDefaultOutputFolder().then((folder) => {
@@ -202,6 +203,9 @@ const ControlWidget = View.extend({
         image: {
             template: fileWidget
         },
+        multi: {
+            template: fileWidget
+        },
         directory: {
             template: fileWidget
         },
@@ -247,6 +251,35 @@ const ControlWidget = View.extend({
      * input element.
      */
     _selectFile() {
+        // If we converted to multi, convert it back to the older type
+        const t = this.model.get('defaultType');
+        if (t) {
+            this.model.set({
+                type: t,
+                value: undefined
+            });
+        }
+        const modal = new ItemSelectorWidget({
+            el: $('#g-dialog-container'),
+            parentView: this,
+            model: this.model,
+            rootPath: this._rootPath,
+            rootSelectorSettings: {
+                pageLimit: 1000
+            }
+        });
+        modal.once('g:saved', () => {
+            modal.$el.modal('hide');
+        }).render();
+    },
+    _selectMultiFile() {
+        // Store the current type in case it is opened again
+        const t = this.model.get('type');
+        this.model.set({
+            type: 'multi',
+            defaultType: t,
+            value: undefined
+        });
         const modal = new ItemSelectorWidget({
             el: $('#g-dialog-container'),
             parentView: this,
