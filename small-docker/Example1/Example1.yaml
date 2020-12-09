@@ -1,5 +1,5 @@
 category: Developer Tools
-title: Execution Model Tour
+title: Example 1 - Execution Model Tour
 description: Shows one of each type of parameter that slicer_cli_web can handle.
 version: 0.1.0.$Revision$(alpha)
 documentation-url: http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/ExecutionModelTour

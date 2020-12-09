@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>Example</category>
-  <title>Simple Example</title>
+  <title>Example 2 - Report Inputs</title>
   <description>Report on a few input parameters.</description>
   <version>0.1.0</version>
   <license>Apache 2.0</license>
