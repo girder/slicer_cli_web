@@ -1,7 +1,7 @@
 {
   "$schema": "slicer_cli_web/models/schema.json",
   "category": "Example",
-  "title": "Simple Example",
+  "title": "Example 2 - Report Inputs",
   "description": "Report on a few input parameters.",
   "version": "0.1.0",
   "license": "Apache 2.0",
