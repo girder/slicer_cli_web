@@ -50,12 +50,11 @@ class SlicerCLIWebPlugin(GirderPlugin):
     CLIENT_SOURCE_PATH = 'web_client'
 
     def load(self, info):
-        getPlugin('jobs').load(info)  # load plugins you depend on
-        getPlugin('worker').load(info)  # load plugins you depend on
+        getPlugin('worker').load(info)
 
         DockerImageItem.prepare()
 
-        # passed in resource name must match the attribute added to info[apiroot]
+        # resource name must match the attribute added to info[apiroot]
         resource = DockerResource('slicer_cli_web')
         info['apiRoot'].slicer_cli_web = resource
 

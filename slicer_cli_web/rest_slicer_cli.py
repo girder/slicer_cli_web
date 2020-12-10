@@ -1,3 +1,4 @@
+import cherrypy
 import itertools
 import time
 
@@ -6,13 +7,14 @@ from bson.objectid import ObjectId
 from girder import logger
 from girder.api import access
 from girder.api.describe import Description, describeRoute
-from girder.api.rest import Resource, boundHandler, RestException, getCurrentToken
+from girder.api.rest import Resource, boundHandler, RestException, getCurrentToken, getApiUrl
 from girder.constants import SortDir
 from girder.models.item import Item
+from girder.models.setting import Setting
 from girder.models.token import Token
 from girder.models.user import User
-from girder_jobs.models.job import Job
 from girder_jobs.constants import JobStatus
+from girder_jobs.models.job import Job
 
 from .cli_utils import as_model, generate_description, get_cli_parameters, \
     return_parameter_file_name
@@ -165,6 +167,14 @@ def batchCLIJob(cliItem, params, user, cliTitle):
     :param cliTitle: title of the job.
     :returns: a job model.
     """
+    # We have to flog the girder_worker setting if it isn't set, since the task
+    # will be run outside of a cherrypy request context, and therefore
+    # girder_worker cannot determine the api_url.  Further girder_worker
+    # doesn't expose its constants, so we have to use the string form.  There
+    # is no way to confidently UNSET the setting, as two batches could be
+    # running concurrently.
+    if not Setting().get('worker.api_url'):
+        Setting().set('worker.api_url', getApiUrl())
     job = Job().createLocalJob(
         module='slicer_cli_web.rest_slicer_cli',
         function='batchCLITask',
@@ -173,6 +183,7 @@ def batchCLIJob(cliItem, params, user, cliTitle):
             'params': params,
             'userId': user['_id'],
             'cliTitle': cliTitle,
+            'url': cherrypy.url(),
         },
         title='Batch process %s' % cliTitle,
         type='slicer_cli_web_batch#%s#%s' % (cliItem.image, cliItem.name),
@@ -252,11 +263,19 @@ def batchCLITask(job):  # noqa C901
                     jobParams[param.identifier()] = value
                     paramText.append(', %s=%s' % (param.identifier(), value))
                 if not done:
-                    lastSubJob = handler.subHandler(cliItem, jobParams, user, token).job
+                    # We are running in a girder context, but girder_worker
+                    # uses cherrypy.request.app to detect this, so we have to
+                    # fake it.
+                    _before = cherrypy.request.app
+                    cherrypy.request.app = 'fake_context'
+                    try:
+                        lastSubJob = handler.subHandler(cliItem, jobParams, user, token).job
+                    finally:
+                        cherrypy.request.app = _before
                     scheduled += 1
                     Job().updateJob(
-                        job, log='Scheduling job %d/%d for %s%s\n' % (
-                            scheduled, count, cliTitle, ''.join(paramText)))
+                        job, log='Scheduling job %s, %d/%d for %s%s\n' % (
+                            lastSubJob['_id'], scheduled, count, cliTitle, ''.join(paramText)))
                     continue
             time.sleep(0.1)
     except Exception as exc:
@@ -334,6 +353,8 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
 
         if hasattr(getCurrentToken, 'set'):
             getCurrentToken.set(token)
+        if not getCurrentToken():
+            cherrypy.request.headers['Girder-Token'] = token['_id']
 
         container_args = [cliItem.name]
         reference = {'slicer_cli_web': {
