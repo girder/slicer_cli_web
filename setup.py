@@ -67,6 +67,10 @@ setup(
             'girder>=3.0.4' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
             'girder-jobs>=3.0.3' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
             'girder-worker[girder]>=0.6.0',
+            # Needed for Python 3.5 and Girder
+            'dogpile.cache<1;python_version<"3.6"',
+            # Needed for Python 2.7 and Girder worker
+            'diskcache<5;python_version<"3"',
         ],
         'worker': [
             'docker>=2.6.0',

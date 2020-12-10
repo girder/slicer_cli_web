@@ -21,7 +21,67 @@ commands:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
           # consume the exit code
-          command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+          command: |
+            node --version
+            npm --version
+            export NVM_DIR="/opt/circleci/.nvm"
+            source $NVM_DIR/nvm.sh
+            nvm install v12
+            nvm alias default v12
+            node --version
+            npm --version
+            tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  upgradepython:
+    description: "Upgrade python"
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pyenv
+          command: |
+            rm -rf /opt/circleci/.pyenv
+            curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+            pyenv install --list list
+      - run:
+          name: Use pyenv to install python
+          command: |
+            pyenv install << parameters.version >>
+  allservices:
+    description: "Switch to a python version and start other services"
+    parameters:
+      version:
+        type: string
+    steps:
+      - upgradepython:
+          version: << parameters.version >>
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global << parameters.version >>
+      - run:
+          name: start mongo
+          command: |
+            docker run --rm -d -p 27017:27017 circleci/mongo:4.0-ram
+      - run:
+          name: start rabbitmq
+          command: |
+            docker run --rm -d -p 5672:5672 rabbitmq
+      - run:
+          name: install nodejs
+          command: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+            export NVM_DIR="/opt/circleci/.nvm"
+            source $NVM_DIR/nvm.sh
+            nvm install v12
+            nvm alias default v12
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
+      - run:
+          name: Upgrade virtualenv and tox
+          command: pip install -U virtualenv tox
   coverage:
     description: "Upload coverage"
     steps:
@@ -34,42 +94,52 @@ commands:
 
 jobs:
   py27:
-    executor: toxandnode
+    machine:
+        image: circleci/classic:201808-01
     steps:
       - checkout
-      - setup_remote_docker
+      - allservices:
+          version: 2.7.18
       - tox:
           env: py27
       - coverage
   py36:
-    executor: toxandnode
+    machine:
+        image: circleci/classic:201808-01
     steps:
       - checkout
-      - setup_remote_docker
+      - allservices:
+          version: 3.6.12
       - tox:
           env: py36
       - coverage
   py37:
-    executor: toxandnode
+    machine:
+        image: circleci/classic:201808-01
     steps:
       - checkout
-      - setup_remote_docker
+      - allservices:
+          version: 3.7.9
       - tox:
           env: py37
       - coverage
   py38:
-    executor: toxandnode
+    machine:
+        image: circleci/classic:201808-01
     steps:
       - checkout
-      - setup_remote_docker
+      - allservices:
+          version: 3.8.6
       - tox:
           env: py38
       - coverage
   py39:
-    executor: toxandnode
+    machine:
+        image: circleci/classic:201808-01
     steps:
       - checkout
-      - setup_remote_docker
+      - allservices:
+          version: 3.9.0
       - tox:
           env: py39
       - coverage
@@ -77,8 +147,10 @@ jobs:
     executor: toxandnode
     steps:
       - checkout
-      - tox:
-          env: flake8,lintclient
+      - run:
+          name: Run tox
+          command: |
+            tox -e flake8,lintclient | cat; test ${PIPESTATUS[0]} -eq 0
   release:
     docker:
       - image: girder/tox-and-node
