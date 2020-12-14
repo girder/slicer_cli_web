@@ -12,7 +12,7 @@ Slicer CLI Web is both a Girder_ plugin and a `Girder Worker`_ plugin.  It allow
 Linux
 =====
 
-In linux with Python 2.7, Python 3.5, 3.6, or 3.7:
+In linux with Python 3.6, 3.7, 3.8, or 3.9:
 
 Prerequisites:
 
