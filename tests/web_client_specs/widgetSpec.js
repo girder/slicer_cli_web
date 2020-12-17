@@ -878,8 +878,6 @@ describe('control widget view', function () {
 
     });
 
-    //TODO:  Build a testing structure fo the ItemListWidget 'multi' functionality
-
     // disabling this -- it needs to be refactored to use actual folders and
     // collections in the database, not just local javascript models
     xit('new-file', function () {

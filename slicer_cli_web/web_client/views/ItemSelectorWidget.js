@@ -52,10 +52,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
                                 return $.Deferred().resolve().promise();
                             }
                         } catch (exception) {
-                            if (exception instanceof SyntaxError) {
-                                return $.Deferred().reject('Specify a valid Regular Expression').promise();
-                            }
-                            return $.Deferred().reject(exception).promise();
+                            return $.Deferred().reject('Specify a valid Regular Expression').promise();
                         }
                     }
                 };
@@ -218,7 +215,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
                     }
                     const file = new FileModel({_id: resp[0]._id});
                     file.once('g:fetched', () => {
-                        console.log(file);
                         this.model.set({
                             path: this._path(),
                             value: file
