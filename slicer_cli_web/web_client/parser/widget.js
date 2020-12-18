@@ -22,7 +22,8 @@ export default function widget(param) {
         image: 'image',
         file: 'file',
         item: 'item',
-        directory: 'directory'
+        directory: 'directory',
+        multi: 'multi'
     };
     return typeMap[param.tagName];
 }
