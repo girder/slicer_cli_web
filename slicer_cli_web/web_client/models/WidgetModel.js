@@ -299,7 +299,7 @@ const WidgetModel = Backbone.Model.extend({
      */
     isGirderModel() {
         return _.contains(
-            ['directory', 'file', 'item', 'new-file', 'image'],
+            ['directory', 'file', 'item', 'new-file', 'image', 'multi'],
             this.get('type')
         );
     },
@@ -342,6 +342,7 @@ const WidgetModel = Backbone.Model.extend({
         'file',
         'item',
         'directory',
+        'multi',
         'new-file',
         'image',
         'region'

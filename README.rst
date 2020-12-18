@@ -80,6 +80,20 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderToken`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
 
+CLI Endpoints
+=============
+
+Each exposed CLI is added as an endpoint using the REST path of ``slicer_cli_web/<docker image tag and version>/<cli command>/run`` and also using the REST path of ``slicer_cli_web/<internal item id>/run``, where ``<docker image tag and version>`` is the combined tag and version with slashes, colons, and at signs replaced by underscores.  All command line parameters can be passed as endpoint query parameters.  Input items, folders, and files are specified by their Girder ID.  Input images are specified by a Girder file ID.  Output files are specified by name and with an associated parameter with the same name plus a ``_folder`` suffix with a Girder folder ID.
+
+Batch Processing
+----------------
+
+All CLIs that take any single item, image, or files as inputs can be run on a set of such resources from a single directory.  For non-batch processing, the
+ID of the image, item, or file is passed to ``<param>``.  For batch processing, the ID of a folder is passed to ``<param>_folder`` and a regular expression is passed to <param>.  All items in that folder whose name matches the regex are processed.  For images, only items that contain large_images are considered.  For files, the first file in each considered item is used.
+
+If two inputs have batch specifications, there must be a one-to-one correspondence between the each of the lists of items determined by the folder ID and regular expression.  All of the lists are enumerated sorted by the lower case item name.
+
+When running a batch job, a parent job initiates ordinary (non-batch) jobs.  The parent job will only start another child job when the most recent child job is no longer waiting to start.  This allows non-batch jobs or multiple batch jobs' children to naturally interleave.  The parent job can be canceled which will stop it from scheduling any more child jobs.
 
 Small Example CLI Docker
 ========================

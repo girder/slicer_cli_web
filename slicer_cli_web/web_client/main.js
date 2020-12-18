@@ -4,6 +4,7 @@ import { registerPluginNamespace } from '@girder/core/pluginUtils';
 import './routes';
 import './views/ItemView';
 import './views/CollectionView';
+import './JobStatus';
 
 // expose symbols under girder.plugins
 import * as slicerCLIWeb from './index';
