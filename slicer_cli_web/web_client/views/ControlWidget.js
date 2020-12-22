@@ -252,11 +252,21 @@ const ControlWidget = View.extend({
      */
     _selectFile() {
         // If we converted to multi, convert it back to the older type
+        // We reset the name if it was multi before
+        if (this.model.get('type') === 'multi') {
+            if (this.model.get('value')){
+                this.model.set({
+                    value: new ItemModel({
+                        folderId: this.model.get('value').get('folderId')
+                    })
+                });
+            }
+        }
         const t = this.model.get('defaultType');
+
         if (t) {
             this.model.set({
                 type: t,
-                value: undefined
             });
         }
         const modal = new ItemSelectorWidget({
@@ -275,11 +285,12 @@ const ControlWidget = View.extend({
     _selectMultiFile() {
         // Store the current type in case it is opened again
         const t = this.model.get('type');
-        this.model.set({
-            type: 'multi',
-            defaultType: t,
-            value: undefined
-        });
+        if (t !== 'multi'){
+            this.model.set({
+                type: 'multi',
+                defaultType: t,
+            });
+        }
         const modal = new ItemSelectorWidget({
             el: $('#g-dialog-container'),
             parentView: this,

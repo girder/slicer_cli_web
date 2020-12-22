@@ -5,6 +5,9 @@ import { getCurrentUser } from '@girder/core/auth';
 import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
 import FileModel from '@girder/core/models/FileModel';
 import ItemModel from '@girder/core/models/ItemModel';
+import FolderModel from '@girder/core/models/FolderModel';
+import UserModel from '@girder/core/models/FolderModel';
+import CollectionModel from '@girder/core/models/CollectionModel';
 import { restRequest } from '@girder/core/rest';
 
 const ItemSelectorWidget = BrowserWidget.extend({
@@ -15,12 +18,89 @@ const ItemSelectorWidget = BrowserWidget.extend({
         const t = this.model.get('type');
         settings.showItems = true;
         settings.submitText = 'Confirm';
+
         settings.validate = (model) => this._validateModel(model);
         settings.root = settings.rootPath || getCurrentUser();
-        if (settings.root === false) {
+        if (settings.root === false || settings.defaultSelectedResource) {
             settings.root = null;
         }
 
+        settings.paginated = true;
+
+        /**
+         * I need to type this out
+         * If we have 'value' we need to look for an itemId or a folderID, if we have a folderID we should have a defaultResource we can point to
+         * 
+         * If we don't have 'value' we need to look for an itemID to get the eventual folderId used for
+         */
+
+        if (this.model.get('value')){       
+            this.getRoot(this.model.get('value'), settings);
+        } 
+            return this.completeInitialization(settings);
+
+    },
+
+    getRoot(resource, settings) {
+
+        const modelTypes = {
+            item: ItemModel,
+            folder: FolderModel,
+            collection: CollectionModel,
+            user: UserModel
+        };
+        let modelType = 'folder'; // folder type by default, other types if necessary
+        let modelId = null;
+        // If it is an item it will have a folderId associated with it as a parent item
+        if (resource.get('itemId')) {
+            modelId = resource.get('itemId');
+            modelType = 'item';
+        } else if (resource.get('folderId')) {
+            modelId = resource.get('folderId');
+        } else if (resource.get('parentCollection')) {
+            // Case for providing a folder as the defaultSelectedResource but want the user to select an item
+            // folder parent is either 'user' | 'folder' | 'collection', most likely folder though
+            modelType = resource.get('parentCollection');
+            modelId = resource.get('parentId');
+        }
+        // We need to fetch the itemID to get the model stuff
+        if (modelType === 'item') {
+            const itemModel = new modelTypes[modelType]();
+            itemModel.set({
+                _id: modelId
+            }).on('g:fetched', function () {
+                settings.defaultSelectedResource = itemModel;
+                settings.highlightItem = true;
+                settings.selectItem = true;
+                this.getRoot(itemModel, settings)
+            }, this).on('g:error', function () {
+                settings.root = null;
+                this.completeInitialization(settings)
+            }, this).fetch();
+        }
+        else if (modelTypes[modelType] && modelId) {
+            const parentModel = new modelTypes[modelType]();
+            parentModel.set({
+                _id: modelId
+            }).on('g:fetched', function () {
+                settings.root = parentModel;
+                settings.rootSelectorSettings.selectByResource = parentModel;
+                this.completeInitialization(settings);
+                this.render();
+                if (this.model.get('type') === 'multi') {
+                    this.processRegularExpression();
+                }
+            }, this).on('g:error', function () {
+                settings.root = null;
+                this.completeInitialization(settings)
+                this.render();
+            }, this).fetch();
+        }
+    },
+
+    completeInitialization(settings){
+
+        const t = this.model.get('type');
         switch (t) {
             case 'directory':
                 settings.titleText = 'Select a directory';
@@ -28,16 +108,19 @@ const ItemSelectorWidget = BrowserWidget.extend({
             case 'file':
                 settings.titleText = 'Select a file';
                 settings.selectItem = true;
+                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'image':
                 settings.titleText = 'Select an image';
                 settings.selectItem = true;
+                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'item':
                 settings.titleText = 'Select an item';
                 settings.selectItem = true;
+                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'multi':
@@ -91,6 +174,10 @@ const ItemSelectorWidget = BrowserWidget.extend({
             this.$('.g-item-list-entry').addClass('g-selected');
 
             this.$('#g-input-element').on('input', () => this.processRegularExpression());
+                if (this.model.get('value') && this.model.get('value').get('name')){
+                    this.$('#g-input-element').val(this.model.get('value').get('name'));
+                }    
+                this.processRegularExpression();
         }
         return this;
     },
