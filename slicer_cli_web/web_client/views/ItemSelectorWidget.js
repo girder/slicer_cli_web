@@ -20,87 +20,15 @@ const ItemSelectorWidget = BrowserWidget.extend({
         settings.submitText = 'Confirm';
 
         settings.validate = (model) => this._validateModel(model);
+        if (settings.root === undefined) {
         settings.root = settings.rootPath || getCurrentUser();
-        if (settings.root === false || settings.defaultSelectedResource) {
+        }
+        if (settings.root === false) {
             settings.root = null;
         }
 
         settings.paginated = true;
-
-        /**
-         * I need to type this out
-         * If we have 'value' we need to look for an itemId or a folderID, if we have a folderID we should have a defaultResource we can point to
-         * 
-         * If we don't have 'value' we need to look for an itemID to get the eventual folderId used for
-         */
-
-        if (this.model.get('value')){       
-            this.getRoot(this.model.get('value'), settings);
-        } 
-            return this.completeInitialization(settings);
-
-    },
-
-    getRoot(resource, settings) {
-
-        const modelTypes = {
-            item: ItemModel,
-            folder: FolderModel,
-            collection: CollectionModel,
-            user: UserModel
-        };
-        let modelType = 'folder'; // folder type by default, other types if necessary
-        let modelId = null;
-        // If it is an item it will have a folderId associated with it as a parent item
-        if (resource.get('itemId')) {
-            modelId = resource.get('itemId');
-            modelType = 'item';
-        } else if (resource.get('folderId')) {
-            modelId = resource.get('folderId');
-        } else if (resource.get('parentCollection')) {
-            // Case for providing a folder as the defaultSelectedResource but want the user to select an item
-            // folder parent is either 'user' | 'folder' | 'collection', most likely folder though
-            modelType = resource.get('parentCollection');
-            modelId = resource.get('parentId');
-        }
-        // We need to fetch the itemID to get the model stuff
-        if (modelType === 'item') {
-            const itemModel = new modelTypes[modelType]();
-            itemModel.set({
-                _id: modelId
-            }).on('g:fetched', function () {
-                settings.defaultSelectedResource = itemModel;
-                settings.highlightItem = true;
-                settings.selectItem = true;
-                this.getRoot(itemModel, settings)
-            }, this).on('g:error', function () {
-                settings.root = null;
-                this.completeInitialization(settings)
-            }, this).fetch();
-        }
-        else if (modelTypes[modelType] && modelId) {
-            const parentModel = new modelTypes[modelType]();
-            parentModel.set({
-                _id: modelId
-            }).on('g:fetched', function () {
-                settings.root = parentModel;
-                settings.rootSelectorSettings.selectByResource = parentModel;
-                this.completeInitialization(settings);
-                this.render();
-                if (this.model.get('type') === 'multi') {
-                    this.processRegularExpression();
-                }
-            }, this).on('g:error', function () {
-                settings.root = null;
-                this.completeInitialization(settings)
-                this.render();
-            }, this).fetch();
-        }
-    },
-
-    completeInitialization(settings){
-
-        const t = this.model.get('type');
+  
         switch (t) {
             case 'directory':
                 settings.titleText = 'Select a directory';
@@ -126,6 +54,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
             case 'multi':
                 settings.titleText = 'Select files';
                 settings.selectItem = false;
+                settings.highlightItem = false;
                 settings.input = {
                     label: 'Item Filter (Regular Expression)',
                     validate: (val) => {
@@ -160,8 +89,8 @@ const ItemSelectorWidget = BrowserWidget.extend({
         this.on('g:saved', (model, fileName) => this._saveModel(model, fileName));
 
        return  BrowserWidget.prototype.initialize.apply(this, arguments);
-    },
 
+    },
     render() {
         BrowserWidget.prototype.render.apply(this, arguments);
 
@@ -177,7 +106,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
                 if (this.model.get('value') && this.model.get('value').get('name')){
                     this.$('#g-input-element').val(this.model.get('value').get('name'));
                 }    
-                this.processRegularExpression();
         }
         return this;
     },
@@ -188,6 +116,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
      * If not valid it will provide feedback to the user that it is invalid
      */
     processRegularExpression() {
+        console.log("Processing!!!!")
         const reg = this.$('#g-input-element').val();
         this.$('.g-item-list-entry').removeClass('g-selected');
         try {

@@ -3,7 +3,7 @@ extends ./widget.pug
 block input
   .input-group
     if value && value.name && type === 'multi' && folderName !== undefined
-      - value = `${folderName}/RegEx(${value.name()})`;
+      - value = `${folderName}/RegEx(${value.name() || '.*'})`;
     else if value && value.name
       - value = value.name();
     - var placeholder = 'Choose a file...'
