@@ -17,10 +17,10 @@ const ItemSelectorWidget = BrowserWidget.extend({
         settings.submitText = 'Confirm';
 
         settings.validate = (model) => this._validateModel(model);
-        if (settings.root === undefined) {
+       if (!settings.defaultSelectedResource && !(settings.rootSelectorSettings && settings.rootSelectorSettings.selectByResource) ) {
             settings.root = settings.rootPath || getCurrentUser();
         }
-        if (settings.root === false) {
+        if (settings.root === false && !settings.defaultSelectedResource) {
             settings.root = null;
         }
 
@@ -33,19 +33,16 @@ const ItemSelectorWidget = BrowserWidget.extend({
             case 'file':
                 settings.titleText = 'Select a file';
                 settings.selectItem = true;
-                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'image':
                 settings.titleText = 'Select an image';
                 settings.selectItem = true;
-                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'item':
                 settings.titleText = 'Select an item';
                 settings.selectItem = true;
-                settings.highlightItem = true;
                 settings.showPreview = false;
                 break;
             case 'multi':
