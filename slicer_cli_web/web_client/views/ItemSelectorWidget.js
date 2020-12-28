@@ -5,9 +5,6 @@ import { getCurrentUser } from '@girder/core/auth';
 import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
 import FileModel from '@girder/core/models/FileModel';
 import ItemModel from '@girder/core/models/ItemModel';
-import FolderModel from '@girder/core/models/FolderModel';
-import UserModel from '@girder/core/models/FolderModel';
-import CollectionModel from '@girder/core/models/CollectionModel';
 import { restRequest } from '@girder/core/rest';
 
 const ItemSelectorWidget = BrowserWidget.extend({
@@ -21,14 +18,14 @@ const ItemSelectorWidget = BrowserWidget.extend({
 
         settings.validate = (model) => this._validateModel(model);
         if (settings.root === undefined) {
-        settings.root = settings.rootPath || getCurrentUser();
+            settings.root = settings.rootPath || getCurrentUser();
         }
         if (settings.root === false) {
             settings.root = null;
         }
 
         settings.paginated = true;
-  
+
         switch (t) {
             case 'directory':
                 settings.titleText = 'Select a directory';
@@ -88,8 +85,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
 
         this.on('g:saved', (model, fileName) => this._saveModel(model, fileName));
 
-       return  BrowserWidget.prototype.initialize.apply(this, arguments);
-
+        return BrowserWidget.prototype.initialize.apply(this, arguments);
     },
     render() {
         BrowserWidget.prototype.render.apply(this, arguments);
@@ -103,9 +99,9 @@ const ItemSelectorWidget = BrowserWidget.extend({
             this.$('.g-item-list-entry').addClass('g-selected');
 
             this.$('#g-input-element').on('input', () => this.processRegularExpression());
-                if (this.model.get('value') && this.model.get('value').get('name')){
-                    this.$('#g-input-element').val(this.model.get('value').get('name'));
-                }    
+            if (this.model.get('value') && this.model.get('value').get('name')) {
+                this.$('#g-input-element').val(this.model.get('value').get('name'));
+            }
         }
         return this;
     },
@@ -116,7 +112,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
      * If not valid it will provide feedback to the user that it is invalid
      */
     processRegularExpression() {
-        console.log("Processing!!!!")
         const reg = this.$('#g-input-element').val();
         this.$('.g-item-list-entry').removeClass('g-selected');
         try {
@@ -145,7 +140,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
             }
         }
     },
-
     /**
      * Get the currently displayed path in the hierarchy view.
      */
@@ -162,13 +156,32 @@ const ItemSelectorWidget = BrowserWidget.extend({
      */
     _selectModel() {
         BrowserWidget.prototype._selectModel.apply(this, arguments);
-        if (this.model.get('type') === 'multi' && this._hierarchyView && this._hierarchyView.itemListView) {
-            this._hierarchyView.itemListView.once('g:changed', (evt) => {
-                this.processRegularExpression();
-            });
+        if (this.model.get('type') === 'multi' && this._hierarchyView) {
+            // If changing the model process the regular expression
+            if (this._hierarchyView.itemListView) {
+                this._hierarchyView.itemListView.once('g:changed', (evt) => {
+                    this.processRegularExpression();
+                });
+            } else {
+                // When initialized the itemListView doesn't exist to process the regularExpression
+                // wait until it is visible and then apply it
+                this.checkItemsLoaded(100);
+            }
         }
     },
-
+    /**
+     * Best tool I could come up with to highlight regular expressions on load.  Waits for the entries to display
+     * and then computes the regular expression if one exists.
+     * @param {number} timeout
+     */
+    checkItemsLoaded(timeout) {
+        if (this.$('.g-folder-list-entry').length || this.$('.g-item-list-entry').length) {
+            clearTimeout(this.checkItemsTimeout);
+            this.processRegularExpression();
+        } else {
+            this.checkItemsTimeout = setTimeout(() => this.checkItemsLoaded(timeout), timeout);
+        }
+    },
     _validateModel(model) {
         const t = this.model.get('type');
         let error;

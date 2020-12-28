@@ -9,7 +9,7 @@ import FolderCollection from '@girder/core/collections/FolderCollection';
 import ItemModel from '@girder/core/models/ItemModel';
 import FileModel from '@girder/core/models/FileModel';
 import FolderModel from '@girder/core/models/FolderModel';
-import UserModel from '@girder/core/models/FolderModel';
+import UserModel from '@girder/core/models/UserModel';
 import CollectionModel from '@girder/core/models/CollectionModel';
 
 import { restRequest } from '@girder/core/rest';
@@ -257,7 +257,7 @@ const ControlWidget = View.extend({
         // If we converted to multi, convert it back to the older type
         // We reset the name if it was multi before
         if (this.model.get('type') === 'multi') {
-            if (this.model.get('value')){
+            if (this.model.get('value')) {
                 this.model.set({
                     value: new ItemModel({
                         folderId: this.model.get('value').get('folderId')
@@ -269,7 +269,7 @@ const ControlWidget = View.extend({
 
         if (t) {
             this.model.set({
-                type: t,
+                type: t
             });
         }
 
@@ -282,12 +282,11 @@ const ControlWidget = View.extend({
                 pageLimit: 1000
             }
         };
-        if (this.model.get('value')){       
+        if (this.model.get('value')) {
             this.getRoot(this.model.get('value'), itemSelectorSettings);
         } else {
             this.completeInitialization(itemSelectorSettings);
         }
-
     },
     /**
      * Used to collect the root of the resource passed to the itemSelectorWidget to enable the defaultSelectedResource
@@ -296,7 +295,6 @@ const ControlWidget = View.extend({
      * @param {*} settings - ItemSelectorWidget settings extended from BrowserWidget
      */
     getRoot(resource, settings) {
-
         const modelTypes = {
             item: ItemModel,
             folder: FolderModel,
@@ -326,13 +324,12 @@ const ControlWidget = View.extend({
                 settings.defaultSelectedResource = itemModel;
                 settings.highlightItem = true;
                 settings.selectItem = true;
-                this.getRoot(itemModel, settings)
+                this.getRoot(itemModel, settings);
             }, this).on('g:error', function () {
                 settings.root = null;
-                this.completeInitialization(settings)
+                this.completeInitialization(settings);
             }, this).fetch();
-        }
-        else if (modelTypes[modelType] && modelId) {
+        } else if (modelTypes[modelType] && modelId) {
             const parentModel = new modelTypes[modelType]();
             parentModel.set({
                 _id: modelId
@@ -342,7 +339,7 @@ const ControlWidget = View.extend({
                 this.completeInitialization(settings);
             }, this).on('g:error', function () {
                 settings.root = null;
-                this.completeInitialization(settings)
+                this.completeInitialization(settings);
             }, this).fetch();
         } else {
             this.completeInitialization(settings);
@@ -357,10 +354,10 @@ const ControlWidget = View.extend({
     _selectMultiFile() {
         // Store the current type in case it is opened again
         const t = this.model.get('type');
-        if (t !== 'multi'){
+        if (t !== 'multi') {
             this.model.set({
                 type: 'multi',
-                defaultType: t,
+                defaultType: t
             });
         }
 
@@ -373,7 +370,7 @@ const ControlWidget = View.extend({
                 pageLimit: 1000
             }
         };
-        if (this.model.get('value')){       
+        if (this.model.get('value')) {
             this.getRoot(this.model.get('value'), itemSelectorSettings);
         } else {
             this.completeInitialization(itemSelectorSettings);
