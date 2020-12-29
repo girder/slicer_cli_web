@@ -959,3 +959,155 @@ describe('control widget view', function () {
         console.warn = _warn;
     });
 });
+
+describe('control widget getRoot', function () {
+    var $el, admin, hInit, hRender, hProto, parentView = {
+        registerChildView: function () { }
+    };
+
+    var initializationSettings;
+
+    function checkWidgetCommon(widget) {
+        var model = widget.model;
+        expect(widget.$('label[for="' + model.id + '"]').text())
+            .toBe(model.get('title'));
+        if (widget.model.isEnumeration()) {
+            expect(widget.$('select#' + model.id).length).toBe(1);
+        } else {
+            expect(widget.$('input#' + model.id).length).toBe(1);
+        }
+    }
+
+    function fakeCompleteInitialization(settings) {
+        initializationSettings = settings;
+    }
+
+    beforeEach(function () {
+        admin = new girder.models.UserModel({ _id: 'admin', name: 'admin' });
+        hProto = girder.views.widgets.HierarchyWidget.prototype;
+        hInit = hProto.initialize;
+        hRender = hProto.render;
+        spyOn(slicer.views.ControlWidget.prototype, 'completeInitialization').andCallFake(fakeCompleteInitialization);
+
+        $el = $('<div/>').appendTo('body');
+    });
+
+    afterEach(function () {
+        hProto.initialize = hInit;
+        hProto.render = hRender;
+        $el.remove();
+    });
+
+
+    it('itemId', function () {
+        var arg, file, item, folder, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd', folderId: 'folder id'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f', parentId: 'admin', parentCollection:'user' });
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    value: new girder.models.ItemModel({
+                        "itemId": 'item id',
+                        name: 'd'
+                    })
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            initializationSettings = false;
+
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (opts.url.substr(0, 11) === 'collection/'){
+                    return $.Deferred().resolve(admin.toJSON());
+                }
+                if (opts.url.substr(0, 5) === 'item/') {
+                    return $.Deferred().resolve(item.toJSON());
+                }
+                if (opts.url.substr(0, 7) === 'folder/') {
+                    return $.Deferred().resolve(folder.toJSON());
+                }
+                return $.Deferred().resolve([item.toJSON()]);
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return initializationSettings !== false;
+        }, 'the initialization settings to change');
+        runs(function () {
+            expect(initializationSettings.root.get('_id')).toBe(folder.get('_id'))
+
+        }, 'folder should be the root');
+    });
+
+    it('folderId', function () {
+        var arg, file, item, folder, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd', folderId: 'folder id'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f', parentId: 'admin' });
+
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    value: new girder.models.ItemModel({
+                        "folderId": 'folder id',
+                        name: 'regex'
+                    })
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            initializationSettings = false;
+
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (opts.url.substr(0, 11) === 'collection/'){
+                    return $.Deferred().resolve(admin.toJSON());
+                }
+                if (opts.url.substr(0, 5) === 'item/') {
+                    return $.Deferred().resolve(item.toJSON());
+                }
+                if (opts.url.substr(0, 7) === 'folder/') {
+                    return $.Deferred().resolve(folder.toJSON());
+                }
+                return $.Deferred().resolve([item.toJSON()]);
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return initializationSettings !== false;
+        }, 'the initialization settings to change');
+        runs(function () {
+            expect(initializationSettings.root.get('_id')).toBe(folder.get('_id'))
+
+        }, 'folder should be the root');
+    });
+});
