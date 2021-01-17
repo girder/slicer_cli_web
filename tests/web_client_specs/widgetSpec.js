@@ -1110,4 +1110,171 @@ describe('control widget getRoot', function () {
 
         }, 'folder should be the root');
     });
+
+    it('parentCollection', function () {
+        var arg, file, item, folder, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd', folderId: 'folder id'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f', parentId: 'admin', parentCollection:'user' });
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    value: new girder.models.ItemModel({
+                        'parentCollection': 'user',
+                        'parentId': 'admin',
+                    })
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            initializationSettings = false;
+
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (opts.url.substr(0, 11) === 'collection/'){
+                    return $.Deferred().resolve(user.toJSON());
+                }
+                if (opts.url.substr(0, 5) === 'item/') {
+                    return $.Deferred().resolve(item.toJSON());
+                }
+                if (opts.url.substr(0, 7) === 'folder/') {
+                    return $.Deferred().resolve(folder.toJSON());
+                }
+                return $.Deferred().resolve([item.toJSON()]);
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return initializationSettings !== false;
+        }, 'the initialization settings to change');
+        runs(function () {
+            expect(initializationSettings.root.get('_id')).toBe(admin.get('_id'))
+
+        }, 'admin should be the root');
+    });
+
+    it('itemId error root test', function () {
+        var arg, file, item, folder, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd', folderId: 'folder id'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f', parentId: 'admin', parentCollection:'user' });
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    value: new girder.models.ItemModel({
+                        "itemId": 'fake item id',
+                        name: 'd'
+                    })
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            initializationSettings = false;
+
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (opts.url.substr(0, 11) === 'collection/'){
+                    return $.Deferred().resolve(user.toJSON());
+                }
+                if (opts.url.substr(0, 5) === 'item/') {
+                    return $.Deferred().reject(item.toJSON());
+                }
+                if (opts.url.substr(0, 7) === 'folder/') {
+                    return $.Deferred().resolve(folder.toJSON());
+                }
+                return $.Deferred().resolve([item.toJSON()]);
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return initializationSettings !== false;
+        }, 'the initialization settings to change');
+        runs(function () {
+            expect(initializationSettings.root).toBe(null);
+
+        }, 'root should be null');
+    });
+
+    it('folderId error root test', function () {
+        var arg, file, item, folder, w;
+        runs(function () {
+            item = new girder.models.ItemModel({_id: 'item id', name: 'd', folderId: 'folder id'});
+            file = new girder.models.FileModel({_id: 'file id', name: 'e'});
+            folder = new girder.models.FolderModel({ _id: 'folder id', name: 'f', parentId: 'admin', parentCollection:'user' });
+            hProto.initialize = function (_arg) {
+                arg = _arg;
+                this.breadcrumbs = [];
+            };
+            hProto.render = function () {};
+            w = new slicer.views.ControlWidget({
+                rootPath: admin,
+                parentView: parentView,
+                el: $el.get(0),
+                model: new slicer.models.WidgetModel({
+                    type: 'file',
+                    title: 'Title',
+                    id: 'file-widget',
+                    value: new girder.models.ItemModel({
+                        "folderId": 'folder id',
+                        name: 'd'
+                    })
+                })
+            });
+
+            w.render();
+            checkWidgetCommon(w);
+            initializationSettings = false;
+
+
+            spyOn(girder.rest, 'restRequest').andCallFake(function (opts) {
+                if (opts.url.substr(0, 11) === 'collection/'){
+                    return $.Deferred().resolve(user.toJSON());
+                }
+                if (opts.url.substr(0, 5) === 'item/') {
+                    return $.Deferred().resolve(item.toJSON());
+                }
+                if (opts.url.substr(0, 7) === 'folder/') {
+                    return $.Deferred().reject(folder.toJSON());
+                }
+                return $.Deferred().resolve([item.toJSON()]);
+            });
+            expect(w.$('.s-select-multifile-button').length).toBe(1);
+            w.$('.s-select-file-button').click();
+        });
+        waitsFor(function () {
+            return initializationSettings !== false;
+        }, 'the initialization settings to change');
+        runs(function () {
+            expect(initializationSettings.root).toBe(null);
+
+        }, 'root should be null');
+    });
+    
+
 });

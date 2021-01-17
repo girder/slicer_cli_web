@@ -17,7 +17,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
         settings.submitText = 'Confirm';
 
         settings.validate = (model) => this._validateModel(model);
-       if (!settings.defaultSelectedResource && !(settings.rootSelectorSettings && settings.rootSelectorSettings.selectByResource) ) {
+        if (!settings.defaultSelectedResource && !(settings.rootSelectorSettings && settings.rootSelectorSettings.selectByResource)) {
             settings.root = settings.rootPath || getCurrentUser();
         }
         if (settings.root === false && !settings.defaultSelectedResource) {
@@ -161,7 +161,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
                 });
             } else {
                 // When initialized the itemListView doesn't exist to process the regularExpression
-                // wait until it is visible and then apply it
+                // wait until items are added to highlight based on regularExpression
                 this.checkItemsLoaded(100);
             }
         }
@@ -172,7 +172,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
      * @param {number} timeout
      */
     checkItemsLoaded(timeout) {
-        if (this.$('.g-folder-list-entry').length || this.$('.g-item-list-entry').length) {
+        if (this.$('.g-folder-list').length || this.$('.g-item-list').length) {
             clearTimeout(this.checkItemsTimeout);
             this.processRegularExpression();
         } else {

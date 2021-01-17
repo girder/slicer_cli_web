@@ -291,8 +291,8 @@ const ControlWidget = View.extend({
     /**
      * Used to collect the root of the resource passed to the itemSelectorWidget to enable the defaultSelectedResource
      * The value isn't always a valid model so we need to fetch the model from the itemId, folderID, or if it is the item, the actual item
-     * @param {*} resource - value object for model containing either itemId, folderId, or a standard model
-     * @param {*} settings - ItemSelectorWidget settings extended from BrowserWidget
+     * @param {*} resource value object for model containing either itemId, folderId, or a standard model
+     * @param {*} settings ItemSelectorWidget settings extended from BrowserWidget
      */
     getRoot(resource, settings) {
         const modelTypes = {
