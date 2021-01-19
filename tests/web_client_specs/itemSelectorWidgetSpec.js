@@ -28,6 +28,7 @@ describe('browser hierarchy paginated selection', function () {
             parentView: this,
             el: dialogEl,
             rootPath: folder,
+            root: folder,
             defaultSelectedResource: item,
             selectItem: true,
             showItems: true,

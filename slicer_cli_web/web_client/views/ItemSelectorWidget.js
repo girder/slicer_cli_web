@@ -15,11 +15,16 @@ const ItemSelectorWidget = BrowserWidget.extend({
         const t = this.model.get('type');
         settings.showItems = true;
         settings.submitText = 'Confirm';
+
         settings.validate = (model) => this._validateModel(model);
-        settings.root = settings.rootPath || getCurrentUser();
-        if (settings.root === false) {
+        if (!settings.defaultSelectedResource && !(settings.rootSelectorSettings && settings.rootSelectorSettings.selectByResource)) {
+            settings.root = settings.rootPath || getCurrentUser();
+        }
+        if (settings.root === false && !settings.defaultSelectedResource) {
             settings.root = null;
         }
+
+        settings.paginated = true;
 
         switch (t) {
             case 'directory':
@@ -43,6 +48,7 @@ const ItemSelectorWidget = BrowserWidget.extend({
             case 'multi':
                 settings.titleText = 'Select files';
                 settings.selectItem = false;
+                settings.highlightItem = false;
                 settings.input = {
                     label: 'Item Filter (Regular Expression)',
                     validate: (val) => {
@@ -76,9 +82,8 @@ const ItemSelectorWidget = BrowserWidget.extend({
 
         this.on('g:saved', (model, fileName) => this._saveModel(model, fileName));
 
-       return  BrowserWidget.prototype.initialize.apply(this, arguments);
+        return BrowserWidget.prototype.initialize.apply(this, arguments);
     },
-
     render() {
         BrowserWidget.prototype.render.apply(this, arguments);
 
@@ -91,6 +96,9 @@ const ItemSelectorWidget = BrowserWidget.extend({
             this.$('.g-item-list-entry').addClass('g-selected');
 
             this.$('#g-input-element').on('input', () => this.processRegularExpression());
+            if (this.model.get('value') && this.model.get('value').get('name')) {
+                this.$('#g-input-element').val(this.model.get('value').get('name'));
+            }
         }
         return this;
     },
@@ -129,7 +137,6 @@ const ItemSelectorWidget = BrowserWidget.extend({
             }
         }
     },
-
     /**
      * Get the currently displayed path in the hierarchy view.
      */
@@ -146,13 +153,32 @@ const ItemSelectorWidget = BrowserWidget.extend({
      */
     _selectModel() {
         BrowserWidget.prototype._selectModel.apply(this, arguments);
-        if (this.model.get('type') === 'multi' && this._hierarchyView && this._hierarchyView.itemListView) {
-            this._hierarchyView.itemListView.once('g:changed', (evt) => {
-                this.processRegularExpression();
-            });
+        if (this.model.get('type') === 'multi' && this._hierarchyView) {
+            // If changing the model process the regular expression
+            if (this._hierarchyView.itemListView) {
+                this._hierarchyView.itemListView.once('g:changed', (evt) => {
+                    this.processRegularExpression();
+                });
+            } else {
+                // When initialized the itemListView doesn't exist to process the regularExpression
+                // wait until items are added to highlight based on regularExpression
+                this.checkItemsLoaded(100);
+            }
         }
     },
-
+    /**
+     * Best tool I could come up with to highlight regular expressions on load.  Waits for the entries to display
+     * and then computes the regular expression if one exists.
+     * @param {number} timeout
+     */
+    checkItemsLoaded(timeout) {
+        if (this.$('.g-folder-list').length || this.$('.g-item-list').length) {
+            clearTimeout(this.checkItemsTimeout);
+            this.processRegularExpression();
+        } else {
+            this.checkItemsTimeout = setTimeout(() => this.checkItemsLoaded(timeout), timeout);
+        }
+    },
     _validateModel(model) {
         const t = this.model.get('type');
         let error;

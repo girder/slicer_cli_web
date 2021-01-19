@@ -9,6 +9,9 @@ import FolderCollection from '@girder/core/collections/FolderCollection';
 import ItemModel from '@girder/core/models/ItemModel';
 import FileModel from '@girder/core/models/FileModel';
 import FolderModel from '@girder/core/models/FolderModel';
+import UserModel from '@girder/core/models/UserModel';
+import CollectionModel from '@girder/core/models/CollectionModel';
+
 import { restRequest } from '@girder/core/rest';
 
 import ItemSelectorWidget from './ItemSelectorWidget';
@@ -252,14 +255,25 @@ const ControlWidget = View.extend({
      */
     _selectFile() {
         // If we converted to multi, convert it back to the older type
+        // We reset the name if it was multi before
+        if (this.model.get('type') === 'multi') {
+            if (this.model.get('value')) {
+                this.model.set({
+                    value: new ItemModel({
+                        folderId: this.model.get('value').get('folderId')
+                    })
+                });
+            }
+        }
         const t = this.model.get('defaultType');
+
         if (t) {
             this.model.set({
-                type: t,
-                value: undefined
+                type: t
             });
         }
-        const modal = new ItemSelectorWidget({
+
+        const itemSelectorSettings = {
             el: $('#g-dialog-container'),
             parentView: this,
             model: this.model,
@@ -267,7 +281,72 @@ const ControlWidget = View.extend({
             rootSelectorSettings: {
                 pageLimit: 1000
             }
-        });
+        };
+        if (this.model.get('value')) {
+            this.getRoot(this.model.get('value'), itemSelectorSettings);
+        } else {
+            this.completeInitialization(itemSelectorSettings);
+        }
+    },
+    /**
+     * Used to collect the root of the resource passed to the itemSelectorWidget to enable the defaultSelectedResource
+     * The value isn't always a valid model so we need to fetch the model from the itemId, folderID, or if it is the item, the actual item
+     * @param {*} resource value object for model containing either itemId, folderId, or a standard model
+     * @param {*} settings ItemSelectorWidget settings extended from BrowserWidget
+     */
+    getRoot(resource, settings) {
+        const modelTypes = {
+            item: ItemModel,
+            folder: FolderModel,
+            collection: CollectionModel,
+            user: UserModel
+        };
+        let modelType = 'folder'; // folder type by default, other types if necessary
+        let modelId = null;
+        // If it is an item it will have a folderId associated with it as a parent item
+        if (resource.get('itemId')) {
+            modelId = resource.get('itemId');
+            modelType = 'item';
+        } else if (resource.get('folderId')) {
+            modelId = resource.get('folderId');
+        } else if (resource.get('parentCollection')) {
+            // Case for providing a folder as the defaultSelectedResource but want the user to select an item
+            // folder parent is either 'user' | 'folder' | 'collection', most likely folder though
+            modelType = resource.get('parentCollection');
+            modelId = resource.get('parentId');
+        }
+        // We need to fetch the itemID to get the model stuff
+        if (modelType === 'item') {
+            const itemModel = new modelTypes[modelType]();
+            itemModel.set({
+                _id: modelId
+            }).on('g:fetched', function () {
+                settings.defaultSelectedResource = itemModel;
+                settings.highlightItem = true;
+                settings.selectItem = true;
+                this.getRoot(itemModel, settings);
+            }, this).on('g:error', function () {
+                settings.root = null;
+                this.completeInitialization(settings);
+            }, this).fetch();
+        } else if (modelTypes[modelType] && modelId) {
+            const parentModel = new modelTypes[modelType]();
+            parentModel.set({
+                _id: modelId
+            }).on('g:fetched', function () {
+                settings.root = parentModel;
+                settings.rootSelectorSettings.selectByResource = parentModel;
+                this.completeInitialization(settings);
+            }, this).on('g:error', function () {
+                settings.root = null;
+                this.completeInitialization(settings);
+            }, this).fetch();
+        } else {
+            this.completeInitialization(settings);
+        }
+    },
+    completeInitialization(settings) {
+        const modal = new ItemSelectorWidget(settings);
         modal.once('g:saved', () => {
             modal.$el.modal('hide');
         }).render();
@@ -275,12 +354,14 @@ const ControlWidget = View.extend({
     _selectMultiFile() {
         // Store the current type in case it is opened again
         const t = this.model.get('type');
-        this.model.set({
-            type: 'multi',
-            defaultType: t,
-            value: undefined
-        });
-        const modal = new ItemSelectorWidget({
+        if (t !== 'multi') {
+            this.model.set({
+                type: 'multi',
+                defaultType: t
+            });
+        }
+
+        const itemSelectorSettings = {
             el: $('#g-dialog-container'),
             parentView: this,
             model: this.model,
@@ -288,10 +369,12 @@ const ControlWidget = View.extend({
             rootSelectorSettings: {
                 pageLimit: 1000
             }
-        });
-        modal.once('g:saved', () => {
-            modal.$el.modal('hide');
-        }).render();
+        };
+        if (this.model.get('value')) {
+            this.getRoot(this.model.get('value'), itemSelectorSettings);
+        } else {
+            this.completeInitialization(itemSelectorSettings);
+        }
     },
 
     _getDefaultOutputFolder() {
