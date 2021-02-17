@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #############################################################################
 #  Copyright Kitware Inc.
 #
@@ -26,7 +24,7 @@ from girder.settings import SettingDefault
 
 
 # Constants representing the setting keys for this plugin
-class PluginSettings(object):
+class PluginSettings:
     SLICER_CLI_WEB_TASK_FOLDER = 'slicer_cli_web.task_folder'
 
     @staticmethod

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -18,7 +17,6 @@
 ###############################################################################
 
 import docker
-import six
 import json
 
 from girder import logger
@@ -300,15 +298,15 @@ def getCliData(name, client, jobModel, job):
         cli_dict = getDockerOutput(name, '--list_cli', client)
         # contains nested dict
         # {<cliname>:{type:<type>}}
-        if isinstance(cli_dict, six.binary_type):
+        if isinstance(cli_dict, bytes):
             cli_dict = cli_dict.decode('utf8')
         cli_dict = json.loads(cli_dict)
 
-        for key, info in six.iteritems(cli_dict):
+        for key, info in cli_dict.items():
             desc_type = info.get('desc-type', 'xml')
             cli_desc = getDockerOutput(name, '%s --%s' % (key, desc_type), client)
 
-            if isinstance(cli_desc, six.binary_type):
+            if isinstance(cli_desc, bytes):
                 cli_desc = cli_desc.decode('utf8')
 
             cli_dict[key][desc_type] = cli_desc

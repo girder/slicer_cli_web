@@ -1,6 +1,3 @@
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #  Copyright Kitware Inc.
 #
@@ -16,8 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 ###############################################################################
-
-import six
 
 from girder.constants import AccessType
 from girder.models.folder import Folder
@@ -36,7 +31,7 @@ def _split(name):
     return name.split('@')
 
 
-class CLIItem(object):
+class CLIItem:
     def __init__(self, item):
         self.item = item
         self._id = item['_id']
@@ -46,7 +41,7 @@ class CLIItem(object):
         self.image = meta.get('image', 'UNKNOWN')
         self.digest = meta.get('digest', self.image)
         self.xml = meta['xml']
-        if isinstance(self.xml, six.text_type):
+        if isinstance(self.xml, str):
             self.xml = self.xml.encode('utf8')
 
         self.restBasePath = self.image.replace(':', '_').replace('/', '_').replace('@', '_')
@@ -115,7 +110,7 @@ class CLIItem(object):
         })
 
 
-class DockerImageItem(object):
+class DockerImageItem:
     def __init__(self, imageFolder, tagFolder, user):
         self.image = imageFolder['name']
         self.tag = tagFolder['name']
@@ -232,7 +227,7 @@ class DockerImageItem(object):
         if 'description' in labels:
             tag['description'] = labels['description']
             del labels['description']
-        labels = {k.replace('.', '_'): v for k, v in six.iteritems(labels)}
+        labels = {k.replace('.', '_'): v for k, v in labels.items()}
         if 'Author' in docker_image.attrs:
             labels['author'] = docker_image.attrs['Author']
 
@@ -255,7 +250,7 @@ class DockerImageItem(object):
         children = folderModel.childItems(image.tagFolder, filters={'meta.slicerCLIType': 'task'})
         existingItems = {item['name']: item for item in children}
 
-        for cli, desc in six.iteritems(cli_dict):
+        for cli, desc in cli_dict.items():
             item = itemModel.createItem(cli, user, image.tagFolder,
                                         'Slicer CLI generated CLI command item',
                                         reuseExisting=True)
@@ -280,7 +275,7 @@ class DockerImageItem(object):
                 del existingItems[cli]
 
         # delete superfluous items
-        for item in six.itervalues(existingItems):
+        for item in existingItems.values():
             itemModel.remove(item)
 
     @staticmethod

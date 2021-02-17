@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import os
-import sys
 
 from setuptools import find_packages, setup
 
@@ -42,10 +40,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -59,18 +54,13 @@ setup(
         'ctk_cli',
         'jsonschema>=2.5.1',
         'pyyaml>=5.1.2',
-        'six',
     ],
     extras_require={
         'girder': [
             'docker>=2.6.0',
-            'girder>=3.0.4' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
-            'girder-jobs>=3.0.3' + (',<=3.1.0' if sys.version_info < (3, 6) else ''),
+            'girder>=3.0.4',
+            'girder-jobs>=3.0.3',
             'girder-worker[girder]>=0.6.0',
-            # Needed for Python 3.5 and Girder
-            'dogpile.cache<1;python_version<"3.6"',
-            # Needed for Python 2.7 and Girder worker
-            'diskcache<5;python_version<"3"',
         ],
         'worker': [
             'docker>=2.6.0',
@@ -85,5 +75,5 @@ setup(
             'slicer_cli_web = slicer_cli_web.girder_worker_plugin:SlicerCLIWebWorkerPlugin'
         ]
     },
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
+    python_requires='>=3.6',
 )

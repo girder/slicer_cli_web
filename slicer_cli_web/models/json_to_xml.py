@@ -1,4 +1,4 @@
-import six
+import io
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 
 
@@ -7,7 +7,7 @@ def _copy(parent, data, *keys, **kwargs):
         if key in data:
             SubElement(parent, key).text = str(data[key])
 
-    for key, value in six.iteritems(kwargs):
+    for key, value in kwargs.items():
         if key in data:
             SubElement(parent, value).text = str(data[key])
 
@@ -17,7 +17,7 @@ def _copy_attr(parent, data, *keys, **kwargs):
         if key in data:
             parent.set(key, str(data[key]))
 
-    for key, value in six.iteritems(kwargs):
+    for key, value in kwargs.items():
         if key in data:
             parent.set(value, str(data[key]))
 
@@ -99,6 +99,6 @@ def json_to_xml(data):
         for group in data['parameter_groups']:
             _convert_group(root, group)
 
-    io = six.StringIO()
-    ElementTree(root).write(io, 'unicode' if six.PY3 else None, True)
-    return io.getvalue()
+    strio = io.StringIO()
+    ElementTree(root).write(strio, 'unicode', True)
+    return strio.getvalue()

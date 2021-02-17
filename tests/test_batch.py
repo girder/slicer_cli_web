@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 import requests
-import sys
 import time
 
 from girder.models.token import Token
@@ -40,7 +37,6 @@ def scheduleBatchJob(boundServer, admin, data):
     return req
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason='needs changes to work with earlier versions')
 @pytest.mark.usefixtures('girderWorker')
 @pytest.mark.plugin('slicer_cli_web')
 def testBatchOneParam(boundServer, admin, girderWorker, smallDocker, fileset):
@@ -59,7 +55,6 @@ def testBatchOneParam(boundServer, admin, girderWorker, smallDocker, fileset):
         assert 'item match' not in ''.join(subjob['log'])
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason='needs changes to work with earlier versions')
 @pytest.mark.usefixtures('girderWorker')
 @pytest.mark.plugin('slicer_cli_web')
 def testBatchImageParam(boundServer, admin, girderWorker, smallDocker, fileset):
@@ -78,7 +73,6 @@ def testBatchImageParam(boundServer, admin, girderWorker, smallDocker, fileset):
         assert 'item match' not in ''.join(subjob['log'])
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason='needs changes to work with earlier versions')
 @pytest.mark.usefixtures('girderWorker')
 @pytest.mark.plugin('slicer_cli_web')
 def testBatchTwoParams(boundServer, admin, girderWorker, smallDocker, fileset):

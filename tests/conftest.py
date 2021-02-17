@@ -1,7 +1,7 @@
+import io
 import json
 import os
 import pytest
-import six
 import subprocess
 import threading
 import time
@@ -39,7 +39,7 @@ def file(folder, admin, fsAssetstore):
 
     sampleData = b'Hello world'
     f = Upload().uploadFromFile(
-        obj=six.BytesIO(sampleData), size=len(sampleData), name='Sample',
+        obj=io.BytesIO(sampleData), size=len(sampleData), name='Sample',
         parentType='folder', parent=folder, user=admin)
 
     yield f
@@ -58,7 +58,7 @@ def splitName(name):
     return imageAndTag[0], imageAndTag[1]
 
 
-class ImageHelper(object):
+class ImageHelper:
     TIMEOUT = 180
 
     def __init__(self, server, admin, folder):
@@ -243,7 +243,7 @@ def fileset(db, admin, fsAssetstore):
         for idx in range(10):
             sampleData = b'Sample %d' % idx
             f = Upload().uploadFromFile(
-                obj=six.BytesIO(sampleData), size=len(sampleData),
+                obj=io.BytesIO(sampleData), size=len(sampleData),
                 name='Sample %d' % idx, parentType='folder', parent=folder,
                 user=admin)
             results['file%d' % (fidx + 1)].append(f)

@@ -1,5 +1,4 @@
 import json
-import six
 
 from girder.api.rest import RestException
 from girder.utility.model_importer import ModelImporter
@@ -17,7 +16,7 @@ from .cli_utils import \
     SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, is_girder_api, return_parameter_file_name
 
 
-OPENAPI_DIRECT_TYPES = set(['boolean', 'integer', 'float', 'double', 'string'])
+OPENAPI_DIRECT_TYPES = {'boolean', 'integer', 'float', 'double', 'string'}
 FOLDER_SUFFIX = '_folder'
 
 
@@ -55,7 +54,7 @@ def _to_girder_api(param, value):
 
 
 def _parseParamValue(param, value, user, token):
-    if isinstance(value, six.binary_type):
+    if isinstance(value, bytes):
         value = value.decode('utf8')
 
     param_id = param.identifier()
