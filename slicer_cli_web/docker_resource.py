@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #############################################################################
 #  Copyright Kitware Inc.
 #
@@ -19,7 +17,6 @@
 
 import json
 import re
-import six
 
 from girder.api import access
 from girder.api.describe import autoDescribeRoute, Description, describeRoute
@@ -47,7 +44,7 @@ class DockerResource(Resource):
     jobType = 'slicer_cli_web_job'
 
     def __init__(self, name):
-        super(DockerResource, self).__init__()
+        super().__init__()
         self.currentEndpoints = {}
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
@@ -168,19 +165,19 @@ class DockerResource(Resource):
         :returns: a list of image names.
         """
         nameList = param
-        if isinstance(param, six.binary_type):
+        if isinstance(param, bytes):
             param = param.decode('utf8')
-        if isinstance(param, six.string_types):
+        if isinstance(param, str):
             try:
                 nameList = json.loads(param)
             except ValueError:
                 pass
-        if isinstance(nameList, six.string_types):
+        if isinstance(nameList, str):
             nameList = [nameList]
         if not isinstance(nameList, list):
             raise RestException('A valid string or a list of strings is required.')
         for img in nameList:
-            if not isinstance(img, six.string_types):
+            if not isinstance(img, str):
                 raise RestException('%r is not a valid string.' % img)
             if ':' not in img and '@' not in img:
                 raise RestException('Image %s does not have a tag or digest' % img)
@@ -248,9 +245,9 @@ class DockerResource(Resource):
     def deleteImageEndpoints(self, imageList=None):
 
         if imageList is None:
-            imageList = six.iterkeys(self.currentEndpoints)
+            imageList = self.currentEndpoints.keys()
         for imageName in list(imageList):
-            for undoFunction in six.itervalues(self.currentEndpoints.pop(imageName, {})):
+            for undoFunction in self.currentEndpoints.pop(imageName, {}).values():
                 undoFunction()
 
     def _generateAllItemEndPoints(self):

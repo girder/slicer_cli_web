@@ -7,7 +7,7 @@ import subprocess
 def processCLI(filename):
     try:
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               filename), 'rt') as f:
+                               filename)) as f:
             list_spec = json.load(f)
     except Exception:
         print('Failed to parse %s' % filename)

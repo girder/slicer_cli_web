@@ -1,6 +1,5 @@
 """utils for CLI spec handling."""
 import io
-import six
 
 from .ctk_cli_adjustment import CLIModule
 
@@ -18,7 +17,7 @@ SLICER_SUPPORTED_TYPES = set(['boolean', 'integer', 'float', 'double', 'string',
                               'integer-vector', 'float-vector', 'double-vector', 'string-vector',
                               'integer-enumeration', 'float-enumeration', 'double-enumeration',
                               'string-enumeration',
-                              'region'] + list(six.iterkeys(SLICER_TYPE_TO_GIRDER_MODEL_MAP)))
+                              'region'] + list(SLICER_TYPE_TO_GIRDER_MODEL_MAP.keys()))
 
 
 def generate_description(clim):
@@ -42,7 +41,7 @@ def generate_description(clim):
 
 def as_model(cliXML):
     """Parses cli xml spec."""
-    stream = io.BytesIO(cliXML if isinstance(cliXML, six.binary_type) else cliXML.encode('utf8'))
+    stream = io.BytesIO(cliXML if isinstance(cliXML, bytes) else cliXML.encode('utf8'))
     return CLIModule(stream=stream)
 
 

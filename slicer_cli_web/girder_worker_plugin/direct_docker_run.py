@@ -22,7 +22,7 @@ TEMP_VOLUME_DIRECT_MOUNT_PREFIX = '/mnt/girder_direct_worker'
 
 class DirectGirderFileIdToVolume(GirderFileIdToVolume):
     def __init__(self, _id, filename=None, direct_file_path=None, **kwargs):
-        superc = super(DirectGirderFileIdToVolume, self)
+        superc = super()
         superc.__init__(_id, filename=_get_basename(filename, direct_file_path),
                         **kwargs)
         self._direct_file_path = direct_file_path
@@ -41,7 +41,7 @@ class DirectGirderFileIdToVolume(GirderFileIdToVolume):
     def transform(self, **kwargs):
         if self._direct_container_path:
             return self._direct_container_path
-        return super(DirectGirderFileIdToVolume, self).transform(**kwargs)
+        return super().transform(**kwargs)
 
 
 class GirderApiUrl(GirderClientTransform):
@@ -81,7 +81,7 @@ class DirectDockerTask(DockerTask):
                 for extra_volume in extra_volumes:
                     volumes.update(extra_volume._repr_json_())
 
-        super(DirectDockerTask, self).__call__(*args, **kwargs)
+        super().__call__(*args, **kwargs)
 
 
 def _has_image(image):

@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 import docker
 import json
-import six
 
 from girder_jobs.constants import JobStatus
 from pytest_girder.assertions import assertStatus
@@ -143,9 +140,9 @@ def testXmlEndpoint(images, server, admin):
 
     name, tag = splitName(img_name)
     data = images.getEndpoint()
-    for tag in six.itervalues(data):
-        for cli in six.itervalues(tag):
-            for info in six.itervalues(cli):
+    for tag in data.values():
+        for cli in tag.values():
+            for info in cli.values():
                 route = info['xmlspec']
                 resp = server.request(
                     path=route,
@@ -167,9 +164,9 @@ def testEndpointDeletion(images, server, admin):
     images.deleteImage(img_name, True)
     name, tag = splitName(img_name)
 
-    for tag in six.itervalues(data):
-        for cli in six.itervalues(tag):
-            for info in six.itervalues(cli):
+    for tag in data.values():
+        for cli in tag.values():
+            for info in cli.values():
                 route = info['xmlspec']
                 resp = server.request(
                     path=route,

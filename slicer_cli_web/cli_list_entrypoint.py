@@ -37,7 +37,7 @@ def _make_print_cli_list_spec_action(cli_list_spec_file):
                      dest=argparse.SUPPRESS,
                      default=argparse.SUPPRESS,
                      help=None):
-            super(_PrintCLIListSpecAction, self).__init__(
+            super().__init__(
                 option_strings=option_strings,
                 dest=dest,
                 default=default,
@@ -57,7 +57,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
         cli_list_spec_file = os.path.join(os.getcwd(), 'slicer_cli_list.json')
 
     # Parse CLI List spec
-    with open(cli_list_spec_file, 'rt') as f:
+    with open(cli_list_spec_file) as f:
         cli_list_spec = json.load(f)
 
     # create command-line argument parser

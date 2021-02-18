@@ -93,16 +93,6 @@ commands:
           command: codecov --tries 10 --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml
 
 jobs:
-  py27:
-    machine:
-        image: circleci/classic:201808-01
-    steps:
-      - checkout
-      - allservices:
-          version: 2.7.18
-      - tox:
-          env: py27
-      - coverage
   py36:
     machine:
         image: circleci/classic:201808-01
@@ -166,13 +156,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py27:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py36:
           filters:
             tags:
@@ -210,7 +193,6 @@ workflows:
                 - gh-pages
       - release:
           requires:
-            - py27
             - py36
             - py37
             - py38
