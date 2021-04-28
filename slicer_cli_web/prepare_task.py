@@ -1,3 +1,4 @@
+import jinja2
 import json
 
 from girder.api.rest import RestException
@@ -81,7 +82,51 @@ def _parseParamValue(param, value, user, token):
         raise RestException(msg)
 
 
-def _add_optional_input_param(param, args, user, token):
+def _processTemplates(value, param=None, templateParams=None):
+    """
+    Given a value that could be a string with jinja2-like template values, if
+    template parameters are supplied, replace the templated parts of the string
+    with the appropriate values.  Chained template references are not resolved
+    (e.g., referring to {{parameter_other}} where the other parameter contains
+    a template like {{now}} will probably result in the unprocessed template
+    value).
+
+    :param value: the object that might contain templates to be replaced.  If
+        there are no templates, this is returned unchanged.
+    :param param: a cli parameter, optional.  This extends the available
+        template keys to include default, description, index, label, and name
+        directly from the cli parameter.  'extension' is the first
+        fileExtension, if it exists.  'reference' and 'reference_base' are
+        mapped to the parameter listed in the cli parameter reference if it is
+        populated in the templateParams as 'parameter_<reference>'.
+    :param templateParams: a dictionary of template keys and values.  This
+        typically contains task, title, image, now, YYYY, MM, DD, hh, mm, ss,
+        parameter_<parameter name> and parameter_<parameter name>_base.
+    :returns: either the original value if there were no templates, or a string
+        with the templates replaced with their values.
+    """
+    if not templateParams:
+        return value
+    if param:
+        templateParams = templateParams.copy()
+        for key in {'default', 'description', 'index', 'label', 'name'}:
+            if getattr(param, key, None) is not None:
+                templateParams[key] = getattr(param, key)
+        if getattr(param, 'fileExtensions', None) is not None and len(param.fileExtensions) >= 1:
+            templateParams['extension'] = param.fileExtensions[0]
+        reference = getattr(param, 'reference', None)
+        key = f'parameter_{reference}'
+        if key in templateParams:
+            templateParams['reference'] = templateParams[key]
+            templateParams['reference_base'] = templateParams[f'{key}_base']
+    newvalue = jinja2.Template(str(value)).render(templateParams)
+    if newvalue != str(value):
+        logger.info('Replaced templated parameter %s with %s.', value, newvalue)
+        return newvalue
+    return value
+
+
+def _add_optional_input_param(param, args, user, token, templateParams):
     if param.identifier() not in args:
         return []
     value = _parseParamValue(param, args[param.identifier()], user, token)
@@ -101,15 +146,17 @@ def _add_optional_input_param(param, args, user, token):
         # Bindings
         container_args.append(_to_girder_api(param, value))
     else:
+        value = _processTemplates(value, param, templateParams)
         container_args.append(value)
     return container_args
 
 
-def _add_optional_output_param(param, args, user, result_hooks, reference):
+def _add_optional_output_param(param, args, user, result_hooks, reference, templateParams):
     if (not param.isExternalType() or not is_on_girder(param) or
             param.identifier() not in args or (param.identifier() + FOLDER_SUFFIX) not in args):
         return []
     value = args[param.identifier()]
+    value = _processTemplates(value, param, templateParams)
     folder = args[param.identifier() + FOLDER_SUFFIX]
 
     container_args = []
@@ -136,7 +183,7 @@ def _add_optional_output_param(param, args, user, result_hooks, reference):
     return container_args
 
 
-def _add_indexed_input_param(param, args, user, token):
+def _add_indexed_input_param(param, args, user, token, templateParams=None):
     value = _parseParamValue(param, args[param.identifier()], user, token)
 
     if is_on_girder(param):
@@ -144,11 +191,13 @@ def _add_indexed_input_param(param, args, user, token):
         return _to_file_volume(param, value), value['name']
     if is_girder_api(param):
         return _to_girder_api(param, value), value['name']
+    value = _processTemplates(value, param, templateParams)
     return value, None
 
 
-def _add_indexed_output_param(param, args, user, result_hooks, reference):
+def _add_indexed_output_param(param, args, user, result_hooks, reference, templateParams):
     value = args[param.identifier()]
+    value = _processTemplates(value, param, templateParams)
     folder = args[param.identifier() + FOLDER_SUFFIX]
 
     folderModel = ModelImporter.model('folder')
@@ -165,10 +214,43 @@ def _add_indexed_output_param(param, args, user, result_hooks, reference):
     return path
 
 
-def prepare_task(params, user, token, index_params, opt_params, has_simple_return_file, reference):
+def _populateTemplateParams(params, user, token, index_params, opt_params, templateParams=None):
+    """
+    Collect values and keys for processing templates.
+
+    :param params: a dictionary of arguments for the cli.
+    :param user: the authenticating user.
+    :param token: the authenticating token.
+    :param index_params: a list of cli parameters.
+    :param opt_params: a list of cli parameters.
+    :param templateParams: a dictionary of keys and values to always include in
+        the template values, such as 'now', 'task', and 'title'.
+    :returns: the collected templateParams.  This will be the supplied template
+        parameters plus 'parameter_<name>' and 'parameter_<name>_base' for the
+        cli arguments.
+    """
+    templateParams = templateParams.copy() if templateParams else {}
+    for param in index_params + opt_params:
+        if param.identifier() in params:
+            try:
+                value = _parseParamValue(param, params[param.identifier()], user, token)
+            except Exception:
+                continue
+            value = value.get('name') if isinstance(value, dict) else value
+            if value:
+                templateParams[f'parameter_{param.name}'] = value
+                templateParams[f'parameter_{param.name}_base'] = str(value).rsplit('.', 1)[0]
+    return templateParams
+
+
+def prepare_task(params, user, token, index_params, opt_params,
+                 has_simple_return_file, reference, templateParams=None):
     ca = []
     result_hooks = []
     primary_input_name = None
+
+    templateParams = _populateTemplateParams(
+        params, user, token, index_params, opt_params, templateParams)
 
     # Get primary name and reference
     for param in index_params:
@@ -188,15 +270,17 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
     # optional params
     for param in opt_params:
         if param.channel == 'output':
-            ca.extend(_add_optional_output_param(param, params, user, result_hooks, reference))
+            ca.extend(_add_optional_output_param(
+                param, params, user, result_hooks, reference, templateParams))
         else:
-            ca.extend(_add_optional_input_param(param, params, user, token))
+            ca.extend(_add_optional_input_param(param, params, user, token, templateParams))
 
     if has_simple_return_file:
         param_id = return_parameter_file_name + FOLDER_SUFFIX
         param_name_id = return_parameter_file_name
         if param_id in params and param_name_id in params:
             value = params[return_parameter_file_name]
+            value = _processTemplates(value, templateParams=templateParams)
             folder = params[return_parameter_file_name + FOLDER_SUFFIX]
 
             folderModel = ModelImporter.model('folder')
@@ -217,9 +301,10 @@ def prepare_task(params, user, token, index_params, opt_params, has_simple_retur
     # indexed params
     for param in index_params:
         if param.channel == 'output':
-            ca.append(_add_indexed_output_param(param, params, user, result_hooks, reference))
+            ca.append(_add_indexed_output_param(
+                param, params, user, result_hooks, reference, templateParams))
         else:
-            arg, name = _add_indexed_input_param(param, params, user, token)
+            arg, name = _add_indexed_input_param(param, params, user, token, templateParams)
             ca.append(arg)
             if name and not primary_input_name:
                 primary_input_name = name

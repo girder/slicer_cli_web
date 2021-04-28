@@ -52,6 +52,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'ctk_cli',
+        'jinja2',
         'jsonschema>=2.5.1',
         'pyyaml>=5.1.2',
     ],
