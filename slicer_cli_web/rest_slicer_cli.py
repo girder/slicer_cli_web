@@ -362,9 +362,22 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
             'image': cliItem.image,
             'name': cliItem.name,
         }}
+        now = time.localtime()
+        templateParams = {
+            'title': cliTitle,  # e.g., "Detects Nuclei"
+            'task': cliItem.name,  # e.g., "NucleiDetection"
+            'image': cliItem.image,  # e.g., "dsarchive/histomicstk:latest"
+            'now': time.strftime('%Y%m%d-%H%M%S', now),
+            'yyyy': time.strftime('%Y', now),
+            'mm': time.strftime('%m', now),
+            'dd': time.strftime('%d', now),
+            'HH': time.strftime('%H', now),
+            'MM': time.strftime('%M', now),
+            'SS': time.strftime('%S', now),
+        }
         args, result_hooks, primary_input_name = prepare_task(
             params, user, token, index_params, opt_params,
-            has_simple_return_file, reference)
+            has_simple_return_file, reference, templateParams=templateParams)
         container_args.extend(args)
 
         jobType = '%s#%s' % (cliItem.image, cliItem.name)

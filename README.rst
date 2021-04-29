@@ -85,6 +85,11 @@ CLI Endpoints
 
 Each exposed CLI is added as an endpoint using the REST path of ``slicer_cli_web/<docker image tag and version>/<cli command>/run`` and also using the REST path of ``slicer_cli_web/<internal item id>/run``, where ``<docker image tag and version>`` is the combined tag and version with slashes, colons, and at signs replaced by underscores.  All command line parameters can be passed as endpoint query parameters.  Input items, folders, and files are specified by their Girder ID.  Input images are specified by a Girder file ID.  Output files are specified by name and with an associated parameter with the same name plus a ``_folder`` suffix with a Girder folder ID.
 
+Small Example CLI Docker
+========================
+
+The small example CLI docker image can be built locally via ``docker build --force-rm -t girder/slicer_cli_web:small .``, or pulled from Docker Hub.
+
 Batch Processing
 ----------------
 
@@ -95,10 +100,32 @@ If two inputs have batch specifications, there must be a one-to-one corresponden
 
 When running a batch job, a parent job initiates ordinary (non-batch) jobs.  The parent job will only start another child job when the most recent child job is no longer waiting to start.  This allows non-batch jobs or multiple batch jobs' children to naturally interleave.  The parent job can be canceled which will stop it from scheduling any more child jobs.
 
-Small Example CLI Docker
-========================
+Templated Inputs
+----------------
 
-The small example CLI docker image can be built locally via ``docker build --force-rm -t girder/slicer_cli_web:small .``, or pulled from Docker Hub.
+Any CLI parameter that takes a value that isn't a Girder resource identifer can be specified with a Jinja2-style template string.
+
+For instance, instead of typing an explicit output file name, one can specify something like ``{{title}}-{{reference_base}}-{{now}}{{extension}}``.  If this were being run on a task called "Radial Blur" on an image called "SampleImage.tiff", where the output image referenced the image image and had a list of file extensions starting with ".png", this would end up being converted to the value ``Radial Blur-SampleImage-20210428-084321.png``.
+
+The following template values are handled identically for all parameters:
+
+- ``{{title}}``: the displayed CLI task title.
+- ``{{task}}``: the internal task name (this usually doesn't have spaces in it)
+- ``{{image}}``: the tag of the Docker image used for the task
+- ``{{now}}``: the local time the job started in the form yyyymmdd-HHMMSS.  You can use ``yyyy``, ``mm``, ``dd``, ``HH``, ``MM``, ``SS`` for the four digit year, and two digit month, day, 24-hour, minute, and second.
+- ``{{parameter_<name of cli parameter>}}``: any parameter that isn't templated can be referenced by its name.  For instance, in Example1 in the small-docker cli in this repo, ``{{parameter_stringChoice}}`` would get replaced by the value passed to the stringChoice parameter.
+- ``{{parameter_<name of cli parameter>_base}}`` is the same as the previous item except that if the right-most part of the parameter looks like a file extension, it is removed.  This can be used to get the base name of file parameters.
+
+There are also template values specific to individual parameters:
+
+- ``{{name}}``: the name of this parameter.  This usually doesn't have any spaces in it.
+- ``{{label}}``: the label of the is parameter.  This is what is displayed in the user interface.
+- ``{{description}}``: the description of the parameter.
+- ``{{index}}``: the index, if any, of the parameter.
+- ``{{default}}``: the default value, if any, of the parameter.
+- ``{{extension}}``: the first entry in the ``fileExtension`` value of the parameter, if any.
+- ``{{reference}}``: if the parameter has a reference to another parameter, this returns that parameter's value.  It is equivalent to ``{{parameter_<reference>}}``.
+- ``{{reference_base}}``: the reference value mentioned previously striped of the right-most file extension.
 
 
 .. |build-status| image:: https://circleci.com/gh/girder/slicer_cli_web.svg?style=svg
