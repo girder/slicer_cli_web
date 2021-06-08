@@ -32,7 +32,7 @@ const WidgetModel = Backbone.Model.extend({
     },
 
     /**
-     * Override Model.set for widget specific bahavior.
+     * Override Model.set for widget specific behavior.
      */
     set(hash, options) {
         let key, value;

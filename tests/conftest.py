@@ -158,7 +158,7 @@ class ImageHelper:
             assertStatus(resp, 200)
         else:
             assertStatus(resp, 400)
-            # A status ok or code 200 should not have been recieved for
+            # A status ok or code 200 should not have been received for
             # deleting the image %s' % str(name))
 
         if deleteDockerImage:

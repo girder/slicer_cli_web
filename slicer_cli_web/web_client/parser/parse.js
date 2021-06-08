@@ -14,7 +14,7 @@ import panel from './panel';
  *
  * * global metadata
  *   * panels[] -- each is rendered in a different panel
- *     * groups[] -- each is rendered together seperated by a horizontal line
+ *     * groups[] -- each is rendered together separated by a horizontal line
  *       * parameters[] -- individual parameters
  *
  * @param {string|object} spec The slicer GUI spec content (accepts parsed or unparsed xml)

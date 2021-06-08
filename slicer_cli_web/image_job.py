@@ -212,7 +212,7 @@ def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     :returns:DockerCache Object containing cli information for each image
     and a boolean indicating whether an error occurred
     """
-    # flag to indicate an error occured
+    # flag to indicate an error occurred
     errorState = False
     images = []
     for name in pullList:
