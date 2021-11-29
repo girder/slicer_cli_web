@@ -17,5 +17,9 @@
     "alias": "Example2",
     "type": "python",
     "desc-type": "yaml"
+  },
+  "ExampleProgress": {
+    "type": "python",
+    "desc-type": "json"
   }
 }
