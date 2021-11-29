@@ -21,6 +21,11 @@ class ProgressHelper(object):
         print("""<filter-progress>%s</filter-progress>""" % val)
         sys.stdout.flush()
 
+    def message(self, comment):
+        self.comment = comment
+        print("""<filter-comment>%s</filter-comment>""" % comment)
+        sys.stdout.flush()
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         end = time.time()
         duration = end - self.start

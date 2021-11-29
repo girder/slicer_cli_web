@@ -1,13 +1,12 @@
 import argparse
 import os
-from time import sleep
 import sys
+import time
 
 from progress_helper import ProgressHelper
 
-
 if __name__ == '__main__':
-    if len(sys.argv) == 2 and sys.argv[1] == '--json':
+    if '--json' in sys.argv:
         json_spec_file = os.path.splitext(sys.argv[0])[0] + '.json'
         with open(json_spec_file) as f:
             print(f.read())
@@ -18,9 +17,11 @@ if __name__ == '__main__':
     parser.add_argument('--sleep', dest='sleep', type=int, default=1)
 
     args = parser.parse_args()
-    with ProgressHelper('example', 'sleeping mostly') as p:
+    with ProgressHelper('Example', 'sleeping mostly') as p:
         for i in range(args.count):
             print('doing some complicated things...')
+            if i:
+                p.message('Sleeping for %g seconds' % ((args.count - i) * args.sleep))
             p.progress(float(i) / args.count)
-            sleep(args.sleep)
+            time.sleep(args.sleep)
         p.progress(1)
