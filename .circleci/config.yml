@@ -138,7 +138,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build the test docker
+          name: Build the small docker
           command: |
             cd small-docker
             docker build --force-rm -t girder/slicer_cli_web:small .
@@ -147,7 +147,20 @@ jobs:
           command: |
               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
               docker push girder/slicer_cli_web:small
-
+  example-average-color:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build the example-average-color docker
+          command: |
+            cd example-average-color
+            docker build --force-rm -t girder/slicer_cli_web:example-average-color .
+      - run:
+          name: Publish the images to Docker Hub
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push girder/slicer_cli_web:example-average-color
   lint_and_docs:
     executor: toxandnode
     steps:
@@ -213,6 +226,13 @@ workflows:
                 - master
                 # Create a branch of this name to push to docker hub
                 - small-docker
+      - example-average-color:
+          filters:
+            branches:
+              only:
+                - master
+                # Create a branch of this name to push to docker hub
+                - example-average-color
       - release:
           requires:
             - py36
