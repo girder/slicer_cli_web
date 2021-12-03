@@ -133,6 +133,21 @@ jobs:
       - tox:
           env: py39
       - coverage
+  small-docker:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build the test docker
+          command: |
+            cd small-docker
+            docker build --force-rm -t girder/slicer_cli_web:small .
+      - run:
+          name: Publish the images to Docker Hub
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push girder/slicer_cli_web:small
+
   lint_and_docs:
     executor: toxandnode
     steps:
@@ -191,6 +206,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - small-docker:
+          filters:
+            branches:
+              only:
+                - master
+                # Create a branch of this name to push to docker hub
+                - small-docker
       - release:
           requires:
             - py36
