@@ -9,6 +9,7 @@ const ControlsPanel = Panel.extend({
         this._controlWidgetSettings = settings.controlWidget || {};
 
         this.title = settings.title || '';
+        this.description = settings.description || '';
         this.advanced = settings.advanced || false;
         this.listenTo(this.collection, 'add', this.addOne);
         this.listenTo(this.collection, 'reset', this.render);
@@ -18,6 +19,7 @@ const ControlsPanel = Panel.extend({
     render() {
         this.$el.html(controlsPanel({
             title: this.title,
+            description: this.description,
             collapsed: this.advanced,
             id: this.$el.attr('id')
         }));

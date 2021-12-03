@@ -57,6 +57,7 @@ const SlicerUI = View.extend({
                 parentView: this,
                 collection: new WidgetCollection(panel.parameters),
                 title: panel.label,
+                description: panel.description,
                 advanced: panel.advanced,
                 el: this.$el.find(`#${panel.id}`)
             });

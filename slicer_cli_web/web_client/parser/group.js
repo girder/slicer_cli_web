@@ -10,9 +10,10 @@ import param from './param';
 export default function group(label, opts = {}) {
     // parameter groups inside panels
     const $label = $(label);
-    const $description = $label.next('description');
+    const $description = $label.siblings('description').length === 1 ? $label.siblings('description') : $label.next('description');
+    const paramlist = ($label.siblings('label').length ? $label.nextUntil('label') : $label.siblings()).filter(':not(description)');
     const parameters = _.filter(
-        _.map($description.nextUntil('label'), (p) => param(p, opts)),
+        _.map(paramlist, (p) => param(p, opts)),
         _.isObject
     );
 
