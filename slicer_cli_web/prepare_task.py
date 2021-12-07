@@ -1,27 +1,27 @@
-import jinja2
 import json
 
-from girder.api.rest import RestException
-from girder.utility.model_importer import ModelImporter
+import jinja2
 from girder import logger
+from girder.api.rest import RestException
 from girder.constants import AccessType
-from girder_worker.docker.transforms import VolumePath
-from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder, \
-    GirderFileIdToVolume, GirderFolderIdToVolume, GirderItemIdToVolume
-from girder_worker.girder_plugin.constants import PluginSettings
 from girder.exceptions import FilePathException
 from girder.models.file import File
 from girder.models.setting import Setting
+from girder.utility.model_importer import ModelImporter
 
-from .cli_utils import \
-    SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_on_girder, is_girder_api, return_parameter_file_name
-
+from .cli_utils import (SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_girder_api, is_on_girder,
+                        return_parameter_file_name)
 
 OPENAPI_DIRECT_TYPES = {'boolean', 'integer', 'float', 'double', 'string'}
 FOLDER_SUFFIX = '_folder'
 
 
 def _to_file_volume(param, model):
+    from girder_worker.docker.transforms.girder import (GirderFileIdToVolume,
+                                                        GirderFolderIdToVolume,
+                                                        GirderItemIdToVolume)
+    from girder_worker.girder_plugin.constants import PluginSettings
+
     from .girder_worker_plugin.direct_docker_run import DirectGirderFileIdToVolume
 
     girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
@@ -152,6 +152,9 @@ def _add_optional_input_param(param, args, user, token, templateParams):
 
 
 def _add_optional_output_param(param, args, user, result_hooks, reference, templateParams):
+    from girder_worker.docker.transforms import VolumePath
+    from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder
+
     if (not param.isExternalType() or not is_on_girder(param) or
             param.identifier() not in args or (param.identifier() + FOLDER_SUFFIX) not in args):
         return []
@@ -196,6 +199,9 @@ def _add_indexed_input_param(param, args, user, token, templateParams=None):
 
 
 def _add_indexed_output_param(param, args, user, result_hooks, reference, templateParams):
+    from girder_worker.docker.transforms import VolumePath
+    from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder
+
     value = args[param.identifier()]
     value = _processTemplates(value, param, templateParams)
     folder = args[param.identifier() + FOLDER_SUFFIX]
@@ -245,6 +251,9 @@ def _populateTemplateParams(params, user, token, index_params, opt_params, templ
 
 def prepare_task(params, user, token, index_params, opt_params,
                  has_simple_return_file, reference, templateParams=None):
+    from girder_worker.docker.transforms import VolumePath
+    from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder
+
     ca = []
     result_hooks = []
     primary_input_name = None
