@@ -16,7 +16,7 @@
 
 import json
 
-from girder import events
+from girder import events, logger
 from girder.utility.model_importer import ModelImporter
 from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
@@ -48,7 +48,10 @@ class SlicerCLIWebPlugin(GirderPlugin):
     CLIENT_SOURCE_PATH = 'web_client'
 
     def load(self, info):
-        getPlugin('worker').load(info)
+        try:
+            getPlugin('worker').load(info)
+        except Exception:
+            logger.info('Girder working is unavailable')
 
         DockerImageItem.prepare()
 

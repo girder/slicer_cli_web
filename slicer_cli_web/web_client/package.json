@@ -18,15 +18,13 @@
   },
   "peerDependencies": {
     "@girder/core": "*",
-    "@girder/jobs": "*",
-    "@girder/worker": "*"
+    "@girder/jobs": "*"
   },
   "girderPlugin": {
     "name": "slicer_cli_web",
     "main": "./main.js",
     "dependencies": [
-      "jobs",
-      "worker"
+      "jobs"
     ]
   },
   "eslintConfig": {

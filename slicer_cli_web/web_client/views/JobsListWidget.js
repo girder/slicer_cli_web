@@ -6,9 +6,6 @@ import { SORT_DESC } from '@girder/core/constants';
 import eventStream from '@girder/core/utilities/EventStream';
 import { restRequest } from '@girder/core/rest';
 
-// register worker status definitions as a side effect
-import '@girder/worker/JobStatus';
-
 import JobCollection from '@girder/jobs/collections/JobCollection';
 import JobStatus from '@girder/jobs/JobStatus';
 
