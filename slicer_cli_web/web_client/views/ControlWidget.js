@@ -71,7 +71,7 @@ const ControlWidget = View.extend({
                 });
             }
         }
-        if (!prefix || !required || channel !== 'output' || !['new-file', 'file', 'item', 'directory', 'multi'].includes(type)) {
+        if (!prefix || (!required && (!this._findReference() || !model.get('extensions'))) || channel !== 'output' || !['new-file', 'file', 'item', 'directory', 'multi'].includes(type)) {
             return;
         }
         this._getDefaultOutputFolder().then((folder) => {
