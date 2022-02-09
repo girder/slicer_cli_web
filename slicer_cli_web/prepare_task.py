@@ -251,9 +251,12 @@ def _populateTemplateParams(params, user, token, index_params, opt_params, templ
 
 def prepare_task(params, user, token, index_params, opt_params,
                  has_simple_return_file, reference, templateParams=None):
+    import uuid
+
     from girder_worker.docker.transforms import VolumePath
     from girder_worker.docker.transforms.girder import GirderUploadVolumePathToFolder
 
+    uuidVal = str(uuid.uuid4())
     ca = []
     result_hooks = []
     primary_input_name = None
@@ -275,6 +278,7 @@ def prepare_task(params, user, token, index_params, opt_params,
                     reference['fileId'] = str(value['_id'])
                     itemId = value['itemId']
                 reference['itemId'] = str(itemId)
+                reference['uuid'] = uuidVal
 
     # optional params
     for param in opt_params:
