@@ -4,8 +4,16 @@ block input
   .input-group
     +input(title, type, id, value.join(','))
     span.input-group-btn
-      button.btn.btn-default.s-select-region-button(
-          disabled=disableRegionSelect,
-          type='button', data-toggle='tooltip', data-placement='right',
-          title='Draw a region on the image')
-        i.icon-pencil
+      - var buttons = shapes ? shapes.split(',') : ['rectangle'];
+      if buttons.indexOf('rectangle') >= 0
+        button.btn.btn-default.s-select-region-button(
+            disabled=disableRegionSelect,
+            type='button', data-toggle='tooltip', data-placement='right',
+            title='Draw a rectangular region on the image')
+          i.icon-pencil
+      if buttons.indexOf('polygon') >= 0
+        button.btn.btn-default.s-select-region-polygon-button(
+            disabled=disableRegionSelect,
+            type='button', data-toggle='tooltip', data-placement='right',
+            title='Draw a polygon region on the image')
+          i.icon-star-empty

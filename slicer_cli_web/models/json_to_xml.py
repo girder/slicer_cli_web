@@ -1,5 +1,5 @@
 import io
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 
 def _copy(parent, data, *keys, **kwargs):
@@ -30,7 +30,8 @@ def _convert_param(parent, param):
     _copy(p, param, 'label', 'description', 'name', 'index', 'channel')
 
     _copy_attr(p, param,
-               'coordinateSystem', 'fileExtensions', 'defaultPathMatch', 'defaultNameMatch',
+               'coordinateSystem', 'fileExtensions', 'defaultPathMatch',
+               'defaultNameMatch', 'shapes',
                image_type='type', table_type='type', geometry_type='type',
                transform_type='type')
 

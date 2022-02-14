@@ -127,7 +127,7 @@
           },
           "description": {
             "type": "string",
-            "description": "A short description of the parameter group, (e.g. Input/Output Parameters, Anitostropic Diffusion Parameters). Any double quotes will be converted to single quotes."
+            "description": "A short description of the parameter group, (e.g. Input/Output Parameters, Anisotropic Diffusion Parameters). Any double quotes will be converted to single quotes."
           },
           "parameters": {
             "type": "array",
@@ -528,6 +528,10 @@
                     },
                     "coordinateSystem": {
                       "$ref": "#/definitions/coordinateSystem"
+                    },
+                    "shapes": {
+                      "description": "An optional comma-separated list of region specifications that can accepted.  This can be any of 'default', 'rectangle', or 'polygon', where 'rectangle' specifies the region as left,top,width,height, and polygon specifies the region as x,y,x,y,...,[-1,-1,x,y,x,y,...].  Polygons must have at least four points so that their format, and, if they contain multiple areas or holes, each polygon is separated by a point of -1,-1.",
+                      "type": "string"
                     }
                   }
                 },

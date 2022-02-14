@@ -36,7 +36,8 @@ const ControlWidget = View.extend({
         changeColor: '_input',
         'click .s-select-file-button': '_selectFile',
         'click .s-select-multifile-button': '_selectMultiFile',
-        'click .s-select-region-button': '_selectRegion'
+        'click .s-select-region-button': '_selectRegion',
+        'click .s-select-region-polygon-button': '_selectRegionPolygon'
     },
 
     initialize(settings) {
@@ -426,6 +427,10 @@ const ControlWidget = View.extend({
      */
     _selectRegion() {
         events.trigger('s:widgetDrawRegion', this.model);
+    },
+
+    _selectRegionPolygon() {
+        events.trigger('s:widgetDrawPolygonRegion', this.model);
     }
 });
 
