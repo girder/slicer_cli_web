@@ -95,7 +95,7 @@ commands:
 jobs:
   py36:
     machine:
-        image: circleci/classic:201808-01
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - allservices:
@@ -105,7 +105,7 @@ jobs:
       - coverage
   py37:
     machine:
-        image: circleci/classic:201808-01
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - allservices:
@@ -115,7 +115,7 @@ jobs:
       - coverage
   py38:
     machine:
-        image: circleci/classic:201808-01
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - allservices:
@@ -125,7 +125,7 @@ jobs:
       - coverage
   py39:
     machine:
-        image: circleci/classic:201808-01
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - allservices:
@@ -134,7 +134,8 @@ jobs:
           env: py39
       - coverage
   small-docker:
-    machine: true
+    machine:
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run:
@@ -148,7 +149,8 @@ jobs:
               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
               docker push girder/slicer_cli_web:small
   example-average-color:
-    machine: true
+    machine:
+        image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run:
