@@ -45,6 +45,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     include_package_data=True,
     package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},
@@ -55,6 +56,7 @@ setup(
         'jinja2',
         'jsonschema>=2.5.1',
         'pyyaml>=5.1.2',
+        'importlib-metadata ; python_version < "3.8"',
     ],
     extras_require={
         'girder': [
