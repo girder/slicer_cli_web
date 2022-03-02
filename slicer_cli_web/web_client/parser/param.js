@@ -43,6 +43,9 @@ export default function param(paramTag, opts = {}) {
             extra.multiple = $param.attr('multiple') === 'true';
         }
     }
+    if (type === 'region') {
+        extra.shapes = $param.attr('shapes');
+    }
 
     if (!type) {
         console.warn('Unhandled parameter type "' + paramTag.tagName + '"'); // eslint-disable-line no-console

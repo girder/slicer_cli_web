@@ -1,6 +1,5 @@
 import ctk_cli
 
-
 # Allow all parameters of constraints to be optional.
 ctk_cli.module.CLIConstraints.OPTIONAL_ELEMENTS = (
     ctk_cli.module.CLIConstraints.OPTIONAL_ELEMENTS +
@@ -12,6 +11,7 @@ class CLIParameter(ctk_cli.module.CLIParameter):
     __slots__ = ctk_cli.module.CLIParameter.__slots__ + (
         'defaultPathMatch',
         'defaultNameMatch',
+        'shapes',
     )
     EXTERNAL_TYPES = ctk_cli.module.CLIParameter.EXTERNAL_TYPES.copy()
     EXTERNAL_TYPES.update({
@@ -44,9 +44,10 @@ class CLIParameter(ctk_cli.module.CLIParameter):
         self.elements = None
         self.coordinateSystem = None
         self.fileExtensions = None
-        # Added defaultPathMatch, defaultNameMatch (slicer_cli_web)
+        # Added defaultPathMatch, defaultNameMatch, shapes (slicer_cli_web)
         self.defaultPathMatch = None
         self.defaultNameMatch = None
+        self.shapes = None
         self.reference = None
         self.subtype = None
 
@@ -63,6 +64,8 @@ class CLIParameter(ctk_cli.module.CLIParameter):
                 self.defaultPathMatch = value
             elif key == 'defaultNameMatch':
                 self.defaultNameMatch = value
+            elif key == 'shapes':
+                self.shapes = value
             # Added file (slicer_cli_web)
             elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table'):  # noqa
                 self.reference = value

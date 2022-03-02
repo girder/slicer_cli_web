@@ -14,7 +14,7 @@
       <index>0</index>
       <flag alias="ff" deprecatedalias="fi">i</flag>
     </image>
-    <region coordinateSystem="lps">
+    <region coordinateSystem="lps" shapes="default,rectangle,polygon">
       <label>region</label>
       <channel>output</channel>
       <description>ts</description>
