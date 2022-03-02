@@ -54,8 +54,8 @@ setup(
     install_requires=[
         'ctk_cli',
         'jinja2',
-        'jsonschema>=2.5.1',
-        'pyyaml>=5.1.2',
+        'jsonschema',
+        'pyyaml',
         'importlib-metadata ; python_version < "3.8"',
     ],
     extras_require={
