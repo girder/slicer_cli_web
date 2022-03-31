@@ -1,4 +1,5 @@
 import json
+import os
 
 import jinja2
 from girder import logger
@@ -249,6 +250,24 @@ def _populateTemplateParams(params, user, token, index_params, opt_params, templ
     return templateParams
 
 
+def _addEnvironmentToTemplateParams(templateParams=None):
+    """
+    Add the local environment to the template parameters.  Only environment
+    variables that start with SLICER_CLI_WEB_ are added, as to do otherwise
+    could expose private data.
+
+    :param templateParams: a dictionary of keys and values to always include in
+        the template values, such as 'now', 'task', and 'title'.
+    :returns: the adjusted templateParams.
+    """
+    templateParams = templateParams.copy() if templateParams else {}
+    for key in os.environ:
+        parts = key.split('SLICER_CLI_WEB_', 1)
+        if len(parts) == 2:
+            templateParams[f'env_{parts[1]}'] = os.environ[key]
+    return templateParams
+
+
 def prepare_task(params, user, token, index_params, opt_params,
                  has_simple_return_file, reference, templateParams=None):
     import uuid
@@ -261,6 +280,7 @@ def prepare_task(params, user, token, index_params, opt_params,
     result_hooks = []
     primary_input_name = None
 
+    templateParams = _addEnvironmentToTemplateParams(templateParams)
     templateParams = _populateTemplateParams(
         params, user, token, index_params, opt_params, templateParams)
 

@@ -1,17 +1,16 @@
 import functools
 import json
 import os
-import pytest
 import time
-from pytest_girder.assertions import assertStatusOk, assertStatus
 
+import pytest
 from girder.api import rest
 from girder.models.collection import Collection
 from girder.models.folder import Folder
 from girder.models.item import Item
+from pytest_girder.assertions import assertStatus, assertStatusOk
 
-from slicer_cli_web import docker_resource
-from slicer_cli_web import rest_slicer_cli
+from slicer_cli_web import docker_resource, rest_slicer_cli
 from slicer_cli_web.models import CLIItem
 
 
@@ -165,9 +164,11 @@ def test_girderApiUrl(handlerFunc, folder, file):
     ({'outputStainImageFile_1': '{{description}}.png'}, 'Output Image of Stain 1.png'),
     ({'outputStainImageFile_1': '{{index}}.png'}, '2.png'),
     ({'gamma': '{{default}}0'}, '0.50'),
+    ({'gamma': '{{env_GAMMA}}'}, '0.4'),
 ])
 @pytest.mark.plugin('slicer_cli_web')
 def test_templateParams(handlerFunc, folder, file, testParams, results):
+    os.environ['SLICER_CLI_WEB_GAMMA'] = '0.4'
     job = handlerFunc(params=dict({
         'inputImageFile': str(file['_id']),
         'secondImageFile': str(file['_id']),
