@@ -129,6 +129,7 @@ There are also template values specific to individual parameters:
 - ``{{reference}}``: if the parameter has a reference to another parameter, this returns that parameter's value.  It is equivalent to ``{{parameter_<reference>}}``.
 - ``{{reference_base}}``: the reference value mentioned previously striped of the right-most file extension.
 
+If the local (server) environment has any environment variables that begin with ``SLICER_CLI_WEB_``, these are accessible in the templates as ``{{env_(name)}}``.  For instance, ``SLICER_CLI_WEB_DASK_SERVER`` would be accessible as ``{{env_DASK_SERVER}}``.
 
 .. |build-status| image:: https://circleci.com/gh/girder/slicer_cli_web.svg?style=svg
     :target: https://circleci.com/gh/girder/slicer_cli_web
