@@ -1,5 +1,5 @@
 # Use a version of alpine that includes bash and python
-FROM python:3.7-alpine
+FROM python:3.9-alpine
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
 # Since we are using a BusyBox varient, we need to use addgroup and adduser,
@@ -14,8 +14,7 @@ RUN chmod a+x /usr/local/bin/groupadd
 RUN touch /usr/local/bin/useradd
 RUN chmod a+x /usr/local/bin/useradd
 
-# We need either ctk-cli or our equivalent to parse inputs
-RUN pip install --pre girder-slicer-cli-web
+RUN pip install girder-slicer-cli-web
 COPY . $PWD
 
 ENTRYPOINT ["python", "./cli_list.py"]
