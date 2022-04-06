@@ -159,7 +159,8 @@ def jobPullAndLoad(job):
             notExistSet = set(err.imageName)
             job = Job().updateJob(
                 job,
-                log='could not find the following images\n' + '\n'.join(notExistSet) + '\n',
+                log='FAILURE: Could not find the following images\n' + '\n'.join(
+                    notExistSet) + '\n',
             )
         images, loadingError = loadMetadata(job, docker_client, pullList,
                                             loadList, notExistSet)
@@ -226,8 +227,7 @@ def loadMetadata(job, docker_client, pullList, loadList, notExistSet):
             except DockerImageError as err:
                 job = Job().updateJob(
                     job,
-                    log='Error with recently pulled image %s\n%s\n' % (name, err),
-                    status=JobStatus.ERROR
+                    log='FAILURE: Error with recently pulled image %s\n%s\n' % (name, err),
                 )
                 errorState = True
 
@@ -243,8 +243,8 @@ def loadMetadata(job, docker_client, pullList, loadList, notExistSet):
         except DockerImageError as err:
             job = Job().updateJob(
                 job,
-                log='Error with recently loading pre-existing image %s\n%s\n' % (name, err),
-                status=JobStatus.ERROR
+                log='FAILURE: Error with recently loading pre-existing image %s\n%s\n' % (
+                    name, err),
             )
             errorState = True
     return images, errorState
@@ -305,7 +305,6 @@ def getCliData(name, client, job):
             job = Job().updateJob(
                 job,
                 log='Got image %s, cli %s metadata\n' % (name, key),
-                status=JobStatus.RUNNING,
             )
         return cli_dict
     except Exception as err:
