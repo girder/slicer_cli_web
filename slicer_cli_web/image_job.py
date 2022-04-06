@@ -16,15 +16,17 @@
 #  limitations under the License.
 ###############################################################################
 
-import docker
 import json
 
+import docker
 from girder import logger
 from girder.constants import AccessType
-from girder.utility.model_importer import ModelImporter
+from girder.models.folder import Folder
+from girder.models.user import User
 from girder_jobs.constants import JobStatus
-from .models import DockerImageItem, DockerImageError, \
-    DockerImageNotFoundError
+from girder_jobs.models.job import Job
+
+from .models import DockerImageError, DockerImageItem, DockerImageNotFoundError
 
 
 def deleteImage(job):
@@ -35,10 +37,7 @@ def deleteImage(job):
     the local machine
 
     """
-
-    jobModel = ModelImporter.model('job', 'jobs')
-
-    jobModel.updateJob(
+    job = Job().updateJob(
         job,
         log='Started to Delete Docker images\n',
         status=JobStatus.RUNNING,
@@ -53,7 +52,7 @@ def deleteImage(job):
 
         except docker.errors.DockerException as err:
             logger.exception('Could not create the docker client')
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Failed to create the Docker Client\n' + str(err) + '\n',
                 status=JobStatus.ERROR,
@@ -66,14 +65,13 @@ def deleteImage(job):
 
             except Exception as err:
                 logger.exception('Failed to remove image')
-                jobModel.updateJob(
+                job = Job().updateJob(
                     job,
                     log='Failed to remove image \n' + str(err) + '\n',
-                    status=JobStatus.RUNNING,
                 )
                 error = True
         if error is True:
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Failed to remove some images',
                 status=JobStatus.ERROR,
@@ -81,8 +79,7 @@ def deleteImage(job):
                 progressMessage='Errors deleting some images'
             )
         else:
-
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Removed all images',
                 status=JobStatus.SUCCESS,
@@ -91,7 +88,7 @@ def deleteImage(job):
             )
     except Exception as err:
         logger.exception('Error with job')
-        jobModel.updateJob(
+        job = Job().updateJob(
             job,
             log='Error with job \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
@@ -128,18 +125,15 @@ def jobPullAndLoad(job):
     related
     """
     try:
-        jobModel = ModelImporter.model('job', 'jobs')
-        userModel = ModelImporter.model('user')
-        folderModel = ModelImporter.model('folder')
-        user = userModel.load(job['userId'], level=AccessType.READ)
-        baseFolder = folderModel.load(job['kwargs']['folder'], user=user, level=AccessType.WRITE)
+        user = User().load(job['userId'], level=AccessType.READ)
+        baseFolder = Folder().load(job['kwargs']['folder'], user=user, level=AccessType.WRITE)
 
         loadList = job['kwargs']['nameList']
 
         errorState = False
 
         notExistSet = set()
-        jobModel.updateJob(
+        job = Job().updateJob(
             job,
             log='Started to Load Docker images\n',
             status=JobStatus.RUNNING,
@@ -149,7 +143,7 @@ def jobPullAndLoad(job):
 
         except docker.errors.DockerException as err:
             logger.exception('Could not create the docker client')
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Failed to create the Docker Client\n' + str(err) + '\n',
             )
@@ -163,13 +157,11 @@ def jobPullAndLoad(job):
         except DockerImageNotFoundError as err:
             errorState = True
             notExistSet = set(err.imageName)
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
-                log='could not find the following '
-                    'images\n' + '\n'.join(notExistSet) + '\n',
-                status=JobStatus.ERROR,
+                log='could not find the following images\n' + '\n'.join(notExistSet) + '\n',
             )
-        images, loadingError = loadMetadata(jobModel, job, docker_client, pullList,
+        images, loadingError = loadMetadata(job, docker_client, pullList,
                                             loadList, notExistSet)
         for name, cli_dict in images:
             docker_image = docker_client.images.get(name)
@@ -178,7 +170,7 @@ def jobPullAndLoad(job):
             newStatus = JobStatus.SUCCESS
         else:
             newStatus = JobStatus.ERROR
-        jobModel.updateJob(
+        job = Job().updateJob(
             job,
             log='Finished caching Docker image data\n',
             status=newStatus,
@@ -187,19 +179,19 @@ def jobPullAndLoad(job):
         )
     except Exception as err:
         logger.exception('Error with job')
-        jobModel.updateJob(
+        job = Job().updateJob(
             job,
             log='Error with job \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
         )
 
 
-def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
+def loadMetadata(job, docker_client, pullList, loadList, notExistSet):
     """
     Attempt to query preexisting images and pulled images for cli data.
     Cli data for each image is stored and returned as a sing DockerCache Object
 
-    :param jobModel: Singleton JobModel used to update job status
+    :param Job(): Singleton JobModel used to update job status
     :param job: The current job being executed
     :param docker_client: An instance of the Docker python client
     :param pullList: The list of images that the job attempted to pull
@@ -217,22 +209,22 @@ def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     images = []
     for name in pullList:
         if name not in notExistSet:
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Image %s was pulled successfully \n' % name,
 
             )
 
             try:
-                cli_dict = getCliData(name, docker_client, jobModel, job)
+                cli_dict = getCliData(name, docker_client, job)
                 images.append((name, cli_dict))
-                jobModel.updateJob(
+                job = Job().updateJob(
                     job,
                     log='Got pulled image %s metadata \n' % name
 
                 )
             except DockerImageError as err:
-                jobModel.updateJob(
+                job = Job().updateJob(
                     job,
                     log='Error with recently pulled image %s\n%s\n' % (name, err),
                     status=JobStatus.ERROR
@@ -242,14 +234,14 @@ def loadMetadata(jobModel, job, docker_client, pullList, loadList, notExistSet):
     for name in loadList:
         # create dictionary and load to database
         try:
-            cli_dict = getCliData(name, docker_client, jobModel, job)
+            cli_dict = getCliData(name, docker_client, job)
             images.append((name, cli_dict))
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Loaded metadata from pre-existing local image %s\n' % name
             )
         except DockerImageError as err:
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Error with recently loading pre-existing image %s\n%s\n' % (name, err),
                 status=JobStatus.ERROR
@@ -293,7 +285,7 @@ def getDockerOutput(imgName, command, client):
     return logs
 
 
-def getCliData(name, client, jobModel, job):
+def getCliData(name, client, job):
     try:
         cli_dict = getDockerOutput(name, '--list_cli', client)
         # contains nested dict
@@ -310,17 +302,15 @@ def getCliData(name, client, jobModel, job):
                 cli_desc = cli_desc.decode('utf8')
 
             cli_dict[key][desc_type] = cli_desc
-            jobModel.updateJob(
+            job = Job().updateJob(
                 job,
                 log='Got image %s, cli %s metadata\n' % (name, key),
                 status=JobStatus.RUNNING,
             )
         return cli_dict
     except Exception as err:
-        logger.exception(
-            'Error getting %s cli data from image', name)
-        raise DockerImageError(
-            'Error getting %s cli data from image ' % (name) + str(err))
+        logger.exception('Error getting %s cli data from image', name)
+        raise DockerImageError('Error getting %s cli data from image ' % (name) + str(err))
 
 
 def pullDockerImage(client, names):
