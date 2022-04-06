@@ -19,8 +19,8 @@ import json
 import re
 
 from girder.api import access
-from girder.api.describe import autoDescribeRoute, Description, describeRoute
-from girder.api.rest import setResponseHeader, setRawResponse
+from girder.api.describe import Description, autoDescribeRoute, describeRoute
+from girder.api.rest import setRawResponse, setResponseHeader
 from girder.api.v1.resource import Resource, RestException
 from girder.constants import AccessType, SortDir
 from girder.exceptions import AccessException
@@ -29,9 +29,10 @@ from girder.utility import path as path_util
 from girder.utility.model_importer import ModelImporter
 from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
+from girder_jobs.models.job import Job
 
 from .config import PluginSettings
-from .models import DockerImageNotFoundError, DockerImageItem, CLIItem
+from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
 
 
@@ -136,9 +137,7 @@ class DockerResource(Resource):
         :param removed:A list of docker image names
         :type removed: list of strings
         """
-        jobModel = ModelImporter.model('job', 'jobs')
-
-        job = jobModel.createLocalJob(
+        job = Job().createLocalJob(
             module='slicer_cli_web.image_job',
 
             function='deleteImage',
@@ -152,7 +151,7 @@ class DockerResource(Resource):
             asynchronous=True
         )
 
-        jobModel.scheduleJob(job)
+        Job().scheduleJob(job)
 
     def parseImageNameList(self, param):
         """
@@ -208,8 +207,7 @@ class DockerResource(Resource):
         return self._createPutImageJob(nameList, folder)
 
     def _createPutImageJob(self, nameList, baseFolder):
-        jobModel = ModelImporter.model('job', 'jobs')
-        job = jobModel.createLocalJob(
+        job = Job().createLocalJob(
             module='slicer_cli_web.image_job',
             function='jobPullAndLoad',
             kwargs={
@@ -222,7 +220,7 @@ class DockerResource(Resource):
             public=True,
             asynchronous=True
         )
-        jobModel.scheduleJob(job)
+        Job().scheduleJob(job)
         return job
 
     def storeEndpoints(self, imgName, cliName, undoFunction):

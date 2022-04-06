@@ -17,9 +17,9 @@
 import json
 
 from girder import events, logger
-from girder.utility.model_importer import ModelImporter
-from girder.plugin import getPlugin, GirderPlugin
 from girder.constants import AccessType
+from girder.plugin import GirderPlugin, getPlugin
+from girder_jobs.models.job import Job
 
 from .docker_resource import DockerResource
 from .models import DockerImageItem
@@ -32,13 +32,12 @@ def _onUpload(event):
         return
 
     if isinstance(ref, dict) and ref.get('type') == 'slicer_cli.parameteroutput':
-        jobModel = ModelImporter.model('job', 'jobs')
-        job = jobModel.load(ref['jobId'], force=True, exc=True)
+        job = Job().load(ref['jobId'], force=True, exc=True)
 
         file = event.info['file']
 
         # Add link to job model to the output item
-        jobModel.updateJob(job, otherFields={
+        Job().updateJob(job, otherFields={
             'slicerCLIBindings.outputs.parameters': file['_id']
         })
 
@@ -59,8 +58,7 @@ class SlicerCLIWebPlugin(GirderPlugin):
         resource = DockerResource('slicer_cli_web')
         info['apiRoot'].slicer_cli_web = resource
 
-        ModelImporter.model('job', 'jobs').exposeFields(level=AccessType.READ, fields={
-            'slicerCLIBindings'})
+        Job().exposeFields(level=AccessType.READ, fields={'slicerCLIBindings'})
 
         events.bind('jobs.job.update.after', resource.resourceName,
                     resource.addRestEndpoints)

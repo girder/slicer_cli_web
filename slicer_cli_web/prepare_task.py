@@ -7,6 +7,7 @@ from girder.api.rest import RestException
 from girder.constants import AccessType
 from girder.exceptions import FilePathException
 from girder.models.file import File
+from girder.models.folder import Folder
 from girder.models.setting import Setting
 from girder.utility.model_importer import ModelImporter
 
@@ -171,8 +172,7 @@ def _add_optional_output_param(param, args, user, result_hooks, reference, templ
     else:
         return []
 
-    folderModel = ModelImporter.model('folder')
-    instance = folderModel.load(folder, level=AccessType.WRITE, user=user)
+    instance = Folder().load(folder, level=AccessType.WRITE, user=user)
     if not instance:
         raise RestException('Invalid Folder id (%s).' % (str(folder)))
 
@@ -207,8 +207,7 @@ def _add_indexed_output_param(param, args, user, result_hooks, reference, templa
     value = _processTemplates(value, param, templateParams)
     folder = args[param.identifier() + FOLDER_SUFFIX]
 
-    folderModel = ModelImporter.model('folder')
-    instance = folderModel.load(folder, level=AccessType.WRITE, user=user)
+    instance = Folder().load(folder, level=AccessType.WRITE, user=user)
     if not instance:
         raise RestException('Invalid Folder id (%s).' % (str(folder)))
 
@@ -316,8 +315,7 @@ def prepare_task(params, user, token, index_params, opt_params,
             value = _processTemplates(value, templateParams=templateParams)
             folder = params[return_parameter_file_name + FOLDER_SUFFIX]
 
-            folderModel = ModelImporter.model('folder')
-            instance = folderModel.load(folder, level=AccessType.WRITE, user=user)
+            instance = Folder().load(folder, level=AccessType.WRITE, user=user)
             if not instance:
                 raise RestException('Invalid Folder id (%s).' % (str(folder)))
 
