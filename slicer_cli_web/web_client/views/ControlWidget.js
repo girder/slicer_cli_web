@@ -37,7 +37,10 @@ const ControlWidget = View.extend({
         'click .s-select-file-button': '_selectFile',
         'click .s-select-multifile-button': '_selectMultiFile',
         'click .s-select-region-button': '_selectRegion',
-        'click .s-select-region-polygon-button': '_selectRegionPolygon'
+        'click .s-select-region-add-button': '_selectRegionAdd',
+        'click .s-select-region-polygon-button': '_selectRegionPolygon',
+        'click .s-select-region-polygon-add-button': '_selectRegionAddPolygon',
+        'click .s-select-region-clear-button': '_clearRegion'
     },
 
     initialize(settings) {
@@ -123,6 +126,7 @@ const ControlWidget = View.extend({
     },
 
     render(_, options) {
+        this.$('[data-toggle="tooltip"]').tooltip('destroy');
         this.$('.form-group').removeClass('has-error');
         this.model.isValid();
         if (options && options.norender) {
@@ -426,12 +430,30 @@ const ControlWidget = View.extend({
      * might be listening.
      */
     _selectRegion() {
+        this.$('.tooltip[role="tooltip"]').remove();
         events.trigger('s:widgetDrawRegion', this.model);
     },
 
+    _selectRegionAdd() {
+        this.$('.tooltip[role="tooltip"]').remove();
+        events.trigger('s:widgetDrawAddRegion', this.model);
+    },
+
+    _selectRegionAddPolygon() {
+        this.$('.tooltip[role="tooltip"]').remove();
+        events.trigger('s:widgetDrawAddPolygonRegion', this.model);
+    },
+
     _selectRegionPolygon() {
+        this.$('.tooltip[role="tooltip"]').remove();
         events.trigger('s:widgetDrawPolygonRegion', this.model);
+    },
+
+    _clearRegion() {
+        this.$('.tooltip[role="tooltip"]').remove();
+        events.trigger('s:widgetClearRegion', this.model);
     }
+
 });
 
 export default ControlWidget;
