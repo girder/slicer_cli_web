@@ -5,15 +5,53 @@ block input
     +input(title, type, id, value.join(','))
     span.input-group-btn
       - var buttons = shapes ? shapes.split(',') : ['rectangle'];
-      if buttons.indexOf('rectangle') >= 0
+      if buttons.indexOf('rectangle') >= 0 || buttons.indexOf('multipolygon') >= 0
         button.btn.btn-default.s-select-region-button(
             disabled=disableRegionSelect,
             type='button', data-toggle='tooltip', data-placement='right',
             title='Draw a rectangular region on the image')
           i.icon-pencil
-      if buttons.indexOf('polygon') >= 0
+      else if buttons.indexOf('polygon') >= 0 || buttons.indexOf('multipolygon') >= 0
         button.btn.btn-default.s-select-region-polygon-button(
             disabled=disableRegionSelect,
             type='button', data-toggle='tooltip', data-placement='right',
             title='Draw a polygon region on the image')
           i.icon-draw-polygon
+      if buttons.length > 0
+        .btn-group.region-dropdown(role='group')
+          button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown', disabled=disableRegionSelecta)
+            i.icon-down-dir
+          .dropdown-menu
+            if buttons.indexOf('rectangle') >= 0 || buttons.indexOf('multipolygon') >= 0
+              button.btn.btn-default.s-select-region-button(
+                  type='button', data-toggle='tooltip', data-placement='right',
+                  title='Draw a rectangular region on the image')
+                i.icon-pencil
+                |  Rectangle
+            if buttons.indexOf('polygon') >= 0 || buttons.indexOf('multipolygon') >= 0
+              button.btn.btn-default.s-select-region-polygon-button(
+                  type='button', data-toggle='tooltip', data-placement='right',
+                  title='Draw a polygon region on the image')
+                i.icon-draw-polygon
+                |  Polygon
+            if buttons.indexOf('multipolygon') >= 0
+              if buttons.indexOf('rectangle') >= 0
+                button.btn.btn-default.s-select-region-add-button(
+                    type='button', data-toggle='tooltip', data-placement='right',
+                    title='Add a rectangular area to the existing region')
+                  span.fa-stack
+                    i.icon-pencil
+                    i.icon-plus.fa-cancel-cover
+                  |  Add Rectangle
+              button.btn.btn-default.s-select-region-polygon-add-button(
+                  type='button', data-toggle='tooltip', data-placement='right',
+                  title='Add a polygon to the existing region')
+                span.fa-stack
+                  i.icon-draw-polygon
+                  i.icon-plus.fa-cancel-cover
+                |  Add Polygon
+            button.btn.btn-default.s-select-region-clear-button(
+                type='button', data-toggle='tooltip', data-placement='right',
+                title='Clear the current region')
+              i.icon-cancel
+              |  Clear
