@@ -107,6 +107,8 @@ def _processTemplates(value, param=None, templateParams=None):
     :returns: either the original value if there were no templates, or a string
         with the templates replaced with their values.
     """
+    if value == '__default__' and param:
+        value = param.default
     if not templateParams:
         return value
     if param:
@@ -121,10 +123,13 @@ def _processTemplates(value, param=None, templateParams=None):
         if key in templateParams:
             templateParams['reference'] = templateParams[key]
             templateParams['reference_base'] = templateParams[f'{key}_base']
-    newvalue = jinja2.Template(str(value)).render(templateParams)
-    if newvalue != str(value):
-        logger.info('Replaced templated parameter %s with %s.', value, newvalue)
-        return newvalue
+    try:
+        newvalue = jinja2.Template(str(value)).render(templateParams)
+        if newvalue != str(value):
+            logger.info('Replaced templated parameter %s with %s.', value, newvalue)
+            return newvalue
+    except Exception:
+        logger.exception('Failed to repalce templated parameter %r', value)
     return value
 
 
