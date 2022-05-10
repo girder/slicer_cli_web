@@ -1,11 +1,13 @@
 # requires xmljson
 
 import argparse
-from collections import OrderedDict
 import json
 import sys
+from collections import OrderedDict
+
 import xmljson
 import yaml
+
 try:
     from lxml.etree import parse
 except ImportError:
@@ -64,8 +66,10 @@ if __name__ == '__main__':  # noqa
                         for k, v in param['constraints'].items():
                             param['constraints'][k] = cast(v)
                     group['parameters'].append(param)
-                    if key.endswith('-enumeration') and param.get('element'):
-                        enumer = param.pop('element')
+                    if key.endswith('-enumeration') and (
+                            param.get('element') or param.get('enumeration')):
+                        enumer = (param.pop('element') if param.get('element') else
+                                  param.pop('enumeration').pop('element'))
                         if not isinstance(enumer, list):
                             enumer = list(enumer)
                         param['enumeration'] = [cast(v) for v in enumer]
