@@ -82,6 +82,12 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderToken`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
 
+- Internally, the ``ctk_cli`` module is used.  This has two differences from the Slicer Execution Schema that are technically bugs.  
+
+  - Enumerations have bare elements under the appropriate parent tag.  That is, instead of a structure like ``<string-enumeration>...<enumeration><element>Value 1</element><element>Value 2</element>...</enumeration></string-enumeration>``, the ``<enumeration>`` tag is omitted: ``<string-enumeration>...<element>Value 1</element><element>Value 2</element>...</string-enumeration>``.  
+
+  - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presense of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it cahnges what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
+
 CLI Endpoints
 =============
 
