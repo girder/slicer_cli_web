@@ -72,12 +72,14 @@
       <description><![CDATA[An enumeration of strings]]></description>
       <label>String Enumeration Parameter</label>
       <default>Bill</default>
-      <element>Ron</element>
-      <element>Eric</element>
-      <element>Bill</element>
-      <element>Ross</element>
-      <element>Steve</element>
-      <element>Will</element>
+      <enumeration>
+        <element>Ron</element>
+        <element>Eric</element>
+        <element>Bill</element>
+        <element>Ross</element>
+        <element>Steve</element>
+        <element>Will</element>
+      </enumeration>
     </string-enumeration>
   </parameters>
   <parameters advanced="true">
