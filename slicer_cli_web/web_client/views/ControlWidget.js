@@ -139,6 +139,9 @@ const ControlWidget = View.extend({
         this.$('.s-control-item[data-type="range"] input').slider();
         this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+        if (params.datalist) {
+            this.$('.s-control-item input').addClass('has-datalist');
+        }
         return this;
     },
 

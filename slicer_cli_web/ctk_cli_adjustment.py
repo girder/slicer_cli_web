@@ -9,6 +9,7 @@ ctk_cli.module.CLIConstraints.REQUIRED_ELEMENTS = ()
 
 class CLIParameter(ctk_cli.module.CLIParameter):
     __slots__ = ctk_cli.module.CLIParameter.__slots__ + (
+        'datalist',
         'defaultPathMatch',
         'defaultNameMatch',
         'shapes',
@@ -44,7 +45,8 @@ class CLIParameter(ctk_cli.module.CLIParameter):
         self.elements = None
         self.coordinateSystem = None
         self.fileExtensions = None
-        # Added defaultPathMatch, defaultNameMatch, shapes (slicer_cli_web)
+        # Added datalist, defaultPathMatch, defaultNameMatch, shapes (slicer_cli_web)
+        self.datalist = None
         self.defaultPathMatch = None
         self.defaultNameMatch = None
         self.shapes = None
@@ -59,7 +61,9 @@ class CLIParameter(ctk_cli.module.CLIParameter):
                 self.coordinateSystem = value
             elif key == 'fileExtensions':
                 self.fileExtensions = [ext.strip() for ext in value.split(',')]
-            # Added defaultPathMatch, defaultNameMatch (slicer_cli_web)
+            # Added datalist, defaultPathMatch, defaultNameMatch (slicer_cli_web)
+            elif key == 'datalist':
+                self.datalist = value
             elif key == 'defaultPathMatch':
                 self.defaultPathMatch = value
             elif key == 'defaultNameMatch':

@@ -210,6 +210,8 @@ def _add_indexed_output_param(param, args, user, result_hooks, reference, templa
 
     value = args[param.identifier()]
     value = _processTemplates(value, param, templateParams)
+    if param.typ == 'string':
+        return value
     folder = args[param.identifier() + FOLDER_SUFFIX]
 
     instance = Folder().load(folder, level=AccessType.WRITE, user=user)

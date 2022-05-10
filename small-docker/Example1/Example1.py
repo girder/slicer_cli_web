@@ -4,6 +4,12 @@ from slicer_cli_web import CLIArgumentParser
 
 
 def main(args):
+    if args.stringWithOptions == '__datalist__':
+        print(
+            '<element>First option</element>\n'
+            '<element>Second option</element>\n'
+            '<element>Third option</element>\n')
+        return
     print('>> parsed arguments')
     print('%r' % args)
     pprint.pprint(vars(args), width=1000)
@@ -15,4 +21,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(CLIArgumentParser().parse_args())
+    parser = CLIArgumentParser()
+    main(parser.parse_args())

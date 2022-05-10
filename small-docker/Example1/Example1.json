@@ -103,6 +103,15 @@
             "Steve",
             "Will"
           ]
+        },
+        {
+          "type": "string",
+          "datalist": "--string_with_options=--list",
+          "name": "stringWithOptions",
+          "longflag": "string_with_options",
+          "description": "A string with options that are listed from the CLI itself",
+          "label": "String With Options",
+          "default": ""
         }
       ]
     },

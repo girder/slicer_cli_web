@@ -11,6 +11,7 @@ import WidgetCollection from '../collections/WidgetCollection';
 import events from '../events';
 import JobsPanel from './JobsPanel';
 import ControlsPanel from './ControlsPanel';
+import utils from '../utils';
 
 import panelGroup from '../templates/panelGroup.pug';
 import '../stylesheets/panelGroup.styl';
@@ -62,6 +63,9 @@ const PanelGroup = View.extend({
         });
 
         events.trigger('h:analysis:rendered', this);
+        if (!this.$el.hasClass('hidden') && this.$el.find('.has-datalist')) {
+            utils.handleDatalist(this.$el, this._basePath, () => this.parameters());
+        }
         return this;
     },
 
@@ -203,6 +207,7 @@ const PanelGroup = View.extend({
         }
         const process = (xml) => {
             this._submit = `${path}/run`;
+            this._basePath = path;
             this._schema(xml);
             events.trigger('h:analysis', path, xml);
         };
