@@ -16,8 +16,14 @@
 
 # These two imports must be in this order for appropriate side effects
 
+# isort: off
+
 from . import ctk_cli_adjustment  # noqa
+
 from ctk_cli import CLIArgumentParser  # noqa
+
+# isort: on
+
 
 try:
     from importlib.metadata import PackageNotFoundError

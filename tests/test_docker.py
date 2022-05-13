@@ -1,7 +1,7 @@
-import pytest
-import docker
 import json
 
+import docker
+import pytest
 from girder_jobs.constants import JobStatus
 from pytest_girder.assertions import assertStatus
 from pytest_girder.utils import getResponseBody

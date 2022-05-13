@@ -1,12 +1,12 @@
 import io
 import json
 import os
-import pytest
 import subprocess
 import threading
 import time
 import types
 
+import pytest
 from girder import events
 from girder.models.folder import Folder
 from girder.models.item import Item

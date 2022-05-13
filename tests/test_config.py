@@ -1,6 +1,6 @@
 import pytest
+from pytest_girder.assertions import assertStatus, assertStatusOk
 
-from pytest_girder.assertions import assertStatusOk, assertStatus
 from slicer_cli_web.config import PluginSettings
 
 

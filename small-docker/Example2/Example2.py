@@ -1,7 +1,8 @@
 import os
 import pprint
-from ctk_cli import CLIArgumentParser
 import sys
+
+from slicer_cli_web import CLIArgumentParser
 
 
 def main(args):

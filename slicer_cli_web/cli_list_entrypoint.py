@@ -1,8 +1,8 @@
-import os
-import sys
-import json
 import argparse
+import json
+import os
 import subprocess
+import sys
 import textwrap as _textwrap
 
 try:

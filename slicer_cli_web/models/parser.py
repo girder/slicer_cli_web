@@ -1,13 +1,12 @@
 import json
-from jsonschema import validate
-from os.path import join, dirname
+from os.path import dirname, join
+
 import yaml
-
-
 from girder.models.file import File
+from jsonschema import validate
+
 from ..cli_utils import as_model
 from .json_to_xml import json_to_xml
-
 
 with open(join(dirname(__file__), 'schema.json')) as f:
     json_schema = json.load(f)

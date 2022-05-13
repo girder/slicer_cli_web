@@ -1,7 +1,7 @@
-import pytest
-import requests
 import time
 
+import pytest
+import requests
 from girder.models.token import Token
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job

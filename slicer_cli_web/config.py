@@ -15,12 +15,12 @@
 #############################################################################
 
 from girder.api.rest import getCurrentUser
-from girder.models.folder import Folder
 from girder.constants import AccessType
-from girder.models.setting import Setting
-from girder.utility import setting_utilities
 from girder.exceptions import ValidationException
+from girder.models.folder import Folder
+from girder.models.setting import Setting
 from girder.settings import SettingDefault
+from girder.utility import setting_utilities
 
 
 # Constants representing the setting keys for this plugin

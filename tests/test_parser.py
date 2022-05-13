@@ -1,8 +1,9 @@
-import pytest
-import re
 import os
+import re
 
-from slicer_cli_web.models.parser import parse_xml_desc, parse_json_desc, parse_yaml_desc
+import pytest
+
+from slicer_cli_web.models.parser import parse_json_desc, parse_xml_desc, parse_yaml_desc
 
 
 def read_file(name):
