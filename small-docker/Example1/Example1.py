@@ -1,7 +1,6 @@
 import pprint
 
-from slicer_cli_web import ctk_cli_adjustment  # noqa - imported for side effects
-from ctk_cli import CLIArgumentParser
+from slicer_cli_web import CLIArgumentParser
 
 
 def main(args):

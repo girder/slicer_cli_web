@@ -1,7 +1,7 @@
 import json
 import os
-import sys
 import subprocess
+import sys
 
 
 def processCLI(filename):

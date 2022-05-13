@@ -3,7 +3,6 @@ import io
 
 from .ctk_cli_adjustment import CLIModule
 
-
 return_parameter_file_name = 'returnparameterfile'
 
 SLICER_TYPE_TO_GIRDER_MODEL_MAP = {

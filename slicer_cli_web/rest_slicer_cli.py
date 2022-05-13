@@ -1,13 +1,12 @@
-import cherrypy
 import itertools
 import time
 
+import cherrypy
 from bson.objectid import ObjectId
-
 from girder import logger
 from girder.api import access
 from girder.api.describe import Description, describeRoute
-from girder.api.rest import Resource, boundHandler, RestException, getCurrentToken, getApiUrl
+from girder.api.rest import Resource, RestException, boundHandler, getApiUrl, getCurrentToken
 from girder.constants import SortDir
 from girder.models.item import Item
 from girder.models.setting import Setting
@@ -16,11 +15,10 @@ from girder.models.user import User
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from .cli_utils import as_model, generate_description, get_cli_parameters, \
-    return_parameter_file_name
+from .cli_utils import (as_model, generate_description, get_cli_parameters,
+                        return_parameter_file_name)
 from .models import CLIItem
-from .prepare_task import prepare_task, OPENAPI_DIRECT_TYPES, FOLDER_SUFFIX
-
+from .prepare_task import FOLDER_SUFFIX, OPENAPI_DIRECT_TYPES, prepare_task
 
 _return_parameter_file_desc = """
     Filename in which to write simple return parameters

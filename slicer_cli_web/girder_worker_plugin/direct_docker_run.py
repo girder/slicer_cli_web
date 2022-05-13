@@ -1,11 +1,11 @@
-from os import access, R_OK
-from os.path import basename, isfile, abspath, join
+from os import R_OK, access
+from os.path import abspath, basename, isfile, join
 
 from girder_worker.app import app
-from girder_worker.docker.transforms import BindMountVolume, ContainerStdOut
 from girder_worker.docker.io import FDReadStreamConnector
+from girder_worker.docker.tasks import DockerTask, _docker_run
+from girder_worker.docker.transforms import BindMountVolume, ContainerStdOut
 from girder_worker.docker.transforms.girder import GirderFileIdToVolume
-from girder_worker.docker.tasks import _docker_run, DockerTask
 from girder_worker_utils import _walk_obj
 from girder_worker_utils.transforms.girder_io import GirderClientTransform
 
