@@ -15,10 +15,11 @@
 ###############################################################################
 
 from girder.constants import AccessType
+from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
-from girder.models.file import File
-from .parser import parse_xml_desc, parse_yaml_desc, parse_json_desc
+
+from .parser import parse_json_desc, parse_xml_desc, parse_yaml_desc
 
 
 def _split(name):
@@ -46,6 +47,9 @@ class CLIItem:
 
         self.restBasePath = self.image.replace(':', '_').replace('/', '_').replace('@', '_')
         self.restPath = '%s/%s' % (self.restBasePath, self.name)
+
+    def __str__(self):
+        return 'CLIItem %s, image: %s, id: %s' % (self.name, self.image, self._id)
 
     @staticmethod
     def find(itemId, user):
