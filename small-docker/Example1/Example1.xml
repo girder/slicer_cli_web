@@ -79,6 +79,13 @@
       <element>Steve</element>
       <element>Will</element>
     </string-enumeration>
+    <string datalist="{&quot;stringWithOptions&quot;: &quot;__datalist__&quot;, &quot;arg0&quot;: &quot;skip&quot;, &quot;arg1&quot;: &quot;skip&quot;, &quot;arg1_folder&quot;: &quot;skip&quot;}">
+      <name>stringWithOptions</name>
+      <longflag>string_with_options</longflag>
+      <description>A string with options that are listed from the CLI itself</description>
+      <label>String With Options</label>
+      <default></default>
+    </string>
   </parameters>
   <parameters advanced="true">
     <label>Girder API URL and Key</label>

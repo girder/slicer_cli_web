@@ -13,6 +13,7 @@ import { parse } from '../parser';
 import slicerUI from '../templates/slicerUI.pug';
 import '../stylesheets/slicerUI.styl';
 import { showJobSuccessAlert } from './utils';
+import utils from '../utils';
 
 wrap(ItemView, 'render', function (render) {
     this.once('g:rendered', () => {
@@ -63,6 +64,9 @@ const SlicerUI = View.extend({
             });
             this._panelViews[panel.id].render();
         });
+        if (this.$el.find('.has-datalist')) {
+            utils.handleDatalist(this.$el, `slicer_cli_web/cli/${this.taskModel.id}`, () => this.generateParameters());
+        }
         return this;
     },
 

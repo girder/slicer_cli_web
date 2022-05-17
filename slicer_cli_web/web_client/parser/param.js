@@ -43,6 +43,9 @@ export default function param(paramTag, opts = {}) {
             extra.multiple = $param.attr('multiple') === 'true';
         }
     }
+    if (channel === 'input' && $param.attr('datalist')) {
+        extra.datalist = true;
+    }
     if (type === 'region') {
         extra.shapes = $param.attr('shapes');
     }

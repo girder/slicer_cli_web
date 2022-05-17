@@ -1,4 +1,5 @@
 import itertools
+import json
 import time
 
 import cherrypy
@@ -12,20 +13,29 @@ from girder.models.item import Item
 from girder.models.setting import Setting
 from girder.models.token import Token
 from girder.models.user import User
+from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from .cli_utils import (as_model, generate_description, get_cli_parameters,
+from .cli_utils import (as_model, generate_description, get_cli_parameters, is_on_girder,
                         return_parameter_file_name)
 from .models import CLIItem
 from .prepare_task import FOLDER_SUFFIX, OPENAPI_DIRECT_TYPES, prepare_task
 
 _return_parameter_file_desc = """
-    Filename in which to write simple return parameters
-    (integer, float, integer-vector, etc.) as opposed to bulk
-    return parameters (image, file, directory, geometry,
-    transform, measurement, table).
+Filename in which to write simple return parameters (integer, float,
+integer-vector, etc.) as opposed to bulk return parameters (image, file,
+directory, geometry, transform, measurement, table).
 """
+
+
+def stringifyParam(param):
+    newparam = param.__class__()
+    for key in param.__slots__:
+        if key != 'typ':
+            setattr(newparam, key, getattr(param, key, None))
+    newparam.typ = 'string'
+    return newparam
 
 
 def _getParamDefaultVal(param):
@@ -308,16 +318,22 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
     # get CLI parameters
     index_params, opt_params, simple_out_params = get_cli_parameters(clim)
 
+    datalist = {}
+
     for param in index_params:
         if param.channel == 'output':
             _addOutputParamToHandler(param, handlerDesc, True)
         else:
             _addInputParamToHandler(param, handlerDesc, True)
+            if param.datalist:
+                datalist[param.name] = {'json': json.loads(param.datalist)}
     for param in opt_params:
         if param.channel == 'output':
             _addOutputParamToHandler(param, handlerDesc, False)
         else:
             _addInputParamToHandler(param, handlerDesc, False)
+            if param.datalist:
+                datalist[param.name] = {'json': json.loads(param.datalist)}
 
     # add returnparameterfile if there are simple output params
     has_simple_return_file = len(simple_out_params) > 0
@@ -338,7 +354,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
                 batchParams.append(param)
         return batchParams
 
-    def cliSubHandler(currentItem, params, user, token):
+    def cliSubHandler(currentItem, params, user, token, datalist=None):
         """
         Create a job for a Slicer CLI item and schedule it.
 
@@ -346,6 +362,8 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
         :param params: parameter dictionary passed to the endpoint.
         :param user: user model for the current user.
         :param token: allocated token for the job.
+        :param datalist: if not None, an object with keys that override
+            parameters.  No ouputs are used.
         """
         from .girder_worker_plugin.direct_docker_run import run
 
@@ -373,9 +391,29 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
             'MM': time.strftime('%M', now),
             'SS': time.strftime('%S', now),
         }
+
+        sub_index_params, sub_opt_params = index_params, opt_params
+        if datalist:
+            params = params.copy()
+            params.update(datalist)
+            sub_index_params = [
+                param if param.name not in datalist or not is_on_girder(param)
+                else stringifyParam(param)
+                for param in index_params
+                if (param.name not in datalist or datalist.get(param.name) is not None) and
+                param.name not in {k + FOLDER_SUFFIX for k in datalist}]
+            sub_opt_params = [
+                param if param.name not in datalist or not is_on_girder(param)
+                else stringifyParam(param)
+                for param in opt_params
+                if param.channel != 'output' and (
+                    param.name not in datalist or datalist.get(param.name) is not None) and
+                param.name not in {k + FOLDER_SUFFIX for k in datalist}]
+
         args, result_hooks, primary_input_name = prepare_task(
-            params, user, token, index_params, opt_params,
-            has_simple_return_file, reference, templateParams=templateParams)
+            params, user, token, sub_index_params, sub_opt_params,
+            has_simple_return_file and not datalist,
+            reference, templateParams=templateParams)
         container_args.extend(args)
 
         jobType = '%s#%s' % (cliItem.image, cliItem.name)
@@ -418,6 +456,42 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
 
     cliHandler.subHandler = cliSubHandler
     cliHandler.getBatchParams = getBatchParams
+    if len(datalist):
+        cliHandler.datalist = datalist
+        for key, entry in datalist.items():
+
+            datalistDesc = Description(clim.title)
+            datalistDesc.__dict__ = handlerDesc.__dict__.copy()
+            datalistDesc.notes('List values for %s' % key) \
+                .produces('text/plain')
+            datalistDesc._params = [
+                param for param in datalistDesc._params
+                if param['name'] not in entry['json'] and
+                param['name'] not in {k + FOLDER_SUFFIX for k in entry['json']}]
+
+            @access.user
+            @describeRoute(datalistDesc)
+            def datalistHandler(resource, params):
+                setResponseTimeLimit(86400)
+                user = resource.getCurrentUser()
+                currentItem = CLIItem.find(itemId, user)
+                if not currentItem:
+                    raise RestException('Invalid CLI Item id (%s).' % (itemId))
+                token = Token().createToken(user=user)
+                job = cliSubHandler(currentItem, params, user, token, entry['json']).job
+                delay = 0.01
+                while job['status'] not in {JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED}:
+                    time.sleep(delay)
+                    delay = min(delay * 1.5, 1.0)
+                    job = Job().load(id=job['_id'], force=True, includeLog=True)
+                result = ''.join(job['log']) if 'log' in job else ''
+                if '<element' in result:
+                    result = result[result.index('<element'):]
+                if '</element>' in result:
+                    result = result[:result.rindex('</element>') + 10]
+                return result
+
+            entry['handler'] = datalistHandler
     return cliHandler
 
 
@@ -454,21 +528,33 @@ def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRou
         cliRunHandler = boundHandler(restResource)(handler)
 
         cliRunHandlerName = 'run_%s' % cliItem._id
-        setattr(restResource, cliRunHandlerName, cliRunHandler)
 
         restRunPath = ('cli', str(cliItem._id), 'run')
-        restResource.route('POST', restRunPath, cliRunHandler)
-
+        routes = [('POST', restRunPath, cliRunHandler, cliRunHandlerName)]
         if registerNamedRoute:
             restNamedRunPath = (cliItem.restBasePath, cliItem.name, 'run')
-            restResource.route('POST', restNamedRunPath, cliRunHandler)
+            routes.append(('POST', restNamedRunPath, cliRunHandler, cliRunHandlerName))
+
+        if hasattr(handler, 'datalist'):
+            for key, entry in handler.datalist.items():
+                dlHandler = boundHandler(restResource)(entry['handler'])
+                dlHandlerName = 'dl_%s_%s' % (cliItem._id, key)
+                dlHandlerPath = ('cli', str(cliItem._id), 'datalist', key)
+                routes.append(('POST', dlHandlerPath, dlHandler, dlHandlerName))
+                if registerNamedRoute:
+                    dlHandlerPath = (cliItem.restBasePath, cliItem.name, 'datalist', key)
+                    routes.append(('POST', dlHandlerPath, dlHandler, dlHandlerName))
+
+        for routeMethod, routeName, routeHandler, routeHandlerName in routes:
+            setattr(restResource, routeHandlerName, routeHandler)
+            restResource.route(routeMethod, routeName, routeHandler)
 
         def undoFunction():
             try:
-                restResource.removeRoute('POST', restRunPath, cliRunHandler)
-                if registerNamedRoute:
-                    restResource.removeRoute('POST', restNamedRunPath, cliRunHandler)
-                delattr(restResource, cliRunHandlerName)
+                for routeMethod, routeName, routeHandler, routeHandlerName in routes:
+                    restResource.removeRoute(routeMethod, routeName, routeHandler)
+                    if hasattr(restResource, routeHandlerName):
+                        delattr(restResource, routeHandlerName)
             except Exception:
                 logger.exception('Failed to remove route')
 
