@@ -17,7 +17,6 @@ utils.handleDatalist = function (elem, basePath, getParams) {
             }
         });
         const promises = elem.find('.has-datalist[id]').map((idx, el) => {
-            console.log(el);
             const id = $(el).attr('id');
             restRequest({
                 url: basePath + '/datalist/' + id,

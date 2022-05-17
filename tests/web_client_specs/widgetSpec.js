@@ -918,7 +918,6 @@ describe('control widget view', function () {
             // selecting with a file name in a collection should error
             $('.modal-dialog #g-input-element').val('my file');
             var r = []; for (var prop in hView.parentView) r.push(prop);
-            console.log('--F ' + JSON.stringify(r));
             hView.parentView._selectedItem(collection);
             hView.parentModel = collection;
             hView.parentView._validate();
@@ -1275,6 +1274,6 @@ describe('control widget getRoot', function () {
 
         }, 'root should be null');
     });
-    
+
 
 });
