@@ -64,7 +64,7 @@ commands:
       - run:
           name: start mongo
           command: |
-            docker run --rm -d -p 27017:27017 circleci/mongo:4.0-ram
+            docker run --rm -d -p 27017:27017 mongo:4.0 bash -c "mkdir /dev/shm/mongo && mongod --nojournal --dbpath=/dev/shm/mongo --noauth --bind_ip_all"
       - run:
           name: start rabbitmq
           command: |
