@@ -1,5 +1,6 @@
 import itertools
 import json
+import threading
 import time
 
 import cherrypy
@@ -203,7 +204,18 @@ def batchCLIJob(cliItem, params, user, cliTitle):
     return job
 
 
-def batchCLITask(job):  # noqa C901
+def batchCLITask(job):
+    """
+    Run a batch of jobs via a thread.
+
+    :param job: the job model.
+    """
+    proc = threading.Thread(target=batchCLITaskProcess, args=(job,), daemon=True)
+    proc.start()
+    return job, proc
+
+
+def batchCLITaskProcess(job):  # noqa C901
     """
     Run a batch of jobs.  The job parameters contain the id of the cli item,
     the parameters, including those for batching, and the user id.
