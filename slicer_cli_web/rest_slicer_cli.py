@@ -255,7 +255,8 @@ def batchCLITaskProcess(job):  # noqa C901
     done = False
     lastSubJob = None
     try:
-        while not done:
+        while not done or (lastSubJob and lastSubJob['status'] not in {
+                JobStatus.CANCELED, JobStatus.ERROR, JobStatus.SUCCESS}):
             job = Job().load(id=job['_id'], force=True)
             if not job or job['status'] in {JobStatus.CANCELED, JobStatus.ERROR}:
                 return
