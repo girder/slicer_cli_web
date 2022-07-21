@@ -25,7 +25,10 @@ with open('README.rst') as f:
 setup(
     name='girder-slicer-cli-web',
     use_scm_version={'local_scheme': prerelease_local_scheme},
-    setup_requires=['setuptools-scm'],
+    setup_requires=[
+        'setuptools-scm<7 ; python_version < "3.7"',
+        'setuptools-scm ; python_version >= "3.7"',
+    ],
     description='A girder plugin for exposing slicer CLIs over the web',
     long_description=readme,
     long_description_content_type='text/x-rst',

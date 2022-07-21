@@ -491,7 +491,8 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
                 if not currentItem:
                     raise RestException('Invalid CLI Item id (%s).' % (itemId))
                 token = Token().createToken(user=user)
-                job = cliSubHandler(currentItem, params, user, token, entry['json']).job
+                job = cliSubHandler(
+                    currentItem, params, user, token, entry['json']).job  # noqa: B023
                 delay = 0.01
                 while job['status'] not in {JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED}:
                     time.sleep(delay)
