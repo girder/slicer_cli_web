@@ -18,11 +18,15 @@ const Panel = View.extend({
         this.$('.s-panel-content').collapse({toggle: false});
         return this;
     },
-    expand() {
-        this.$('.icon-down-open').attr('class', 'icon-up-open');
+    expand(evt) {
+        if ($(evt.target).hasClass('s-panel-content')) {
+            this.$('.s-panel-controls .icon-down-open').attr('class', 'icon-up-open');
+        }
     },
-    collapse() {
-        this.$('.icon-up-open').attr('class', 'icon-down-open');
+    collapse(evt) {
+        if ($(evt.target).hasClass('s-panel-content')) {
+            this.$('.s-panel-controls .icon-up-open').attr('class', 'icon-down-open');
+        }
     },
     _handleTitleClick(e) {
         if (!$(e.target).closest('.s-no-panel-toggle').length) {
