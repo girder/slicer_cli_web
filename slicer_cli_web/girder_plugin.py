@@ -14,11 +14,13 @@
 #  limitations under the License.
 ###############################################################################
 
+import datetime
 import json
 
 from girder import events, logger
 from girder.constants import AccessType
 from girder.plugin import GirderPlugin, getPlugin
+from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
 from .docker_resource import DockerResource
@@ -63,3 +65,13 @@ class SlicerCLIWebPlugin(GirderPlugin):
         events.bind('jobs.job.update.after', resource.resourceName,
                     resource.addRestEndpoints)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
+
+        count = 0
+        for job in Job().find({
+            'status': {'$in': [JobStatus.INACTIVE, JobStatus.QUEUED, JobStatus.RUNNING]},
+            'updated': {'$lt': datetime.datetime.utcnow() - datetime.timedelta(days=7)}
+        }, force=True):
+            Job().updateJob(job, log='Canceled stale job.', status=JobStatus.CANCELED)
+            count += 1
+        if count:
+            logger.info('Marking %d old job(s) as cancelled' % count)
