@@ -106,7 +106,7 @@
         },
         {
           "type": "string",
-          "datalist": "--string_with_options=--list",
+          "datalist": "{\"stringWithOptions\": \"__datalist__\", \"arg0\": \"skip\", \"arg1\": \"skip\", \"arg1_folder\": \"skip\"}",
           "name": "stringWithOptions",
           "longflag": "string_with_options",
           "description": "A string with options that are listed from the CLI itself",
@@ -180,6 +180,19 @@
           "longflag": "file1",
           "description": "An input file",
           "label": "Input file",
+          "channel": "input"
+        },
+        {
+          "type": "file",
+          "fileExtensions": ".png",
+          "reference": "_girder_id_",
+          "defaultNameMatch": "\\.png$",
+          "defaultPathMatch": "^\\/user\\/.*\\/[Ii]mages\\/.*\\.png$",
+          "defaultRelativePath": "..",
+          "name": "file2",
+          "longflag": "file2",
+          "description": "Another input file",
+          "label": "Input file 2",
           "channel": "input"
         },
         {

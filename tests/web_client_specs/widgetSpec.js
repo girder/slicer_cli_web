@@ -827,6 +827,7 @@ describe('control widget view', function () {
     });
 
     it('multi type swapping', function () {
+        girderTest.waitForLoad('wait 1');
         runs(function() {
             item = new girder.models.ItemModel({id: 'model id', name: 'b'});
 
@@ -852,30 +853,30 @@ describe('control widget view', function () {
             expect(w.$('.s-select-multifile-button').length).toBe(1);
             w.$('.s-select-multifile-button').click();
         });
+        girderTest.waitForDialog('wait 2');
         waitsFor(function () {
             return $('.modal-footer a.btn-default').length === 1;
-        });
+        }, 'default button to show');
         runs(function() {
             expect(w.model.get('type')).toBe('multi');
             expect(w.model.get('defaultType')).toBe('item');
             $('.modal-footer a.btn-default').click();
         });
+        girderTest.waitForLoad('wait 3');
         waitsFor(function () {
             return $('.modal-dialog:visible').length === 0;
-        });
+        }, 'modal to hide');
         runs(function() {
             w.$('.s-select-file-button').click();
         });
         waitsFor(function () {
             return $('.modal-dialog:visible').length === 1;
-        });
+        }, 'modal to show');
         runs(function() {
             $('.modal-footer a.btn-default').click();
             expect(w.model.get('type')).toBe('item');
             w.remove();
         });
-
-
     });
 
     // disabling this -- it needs to be refactored to use actual folders and

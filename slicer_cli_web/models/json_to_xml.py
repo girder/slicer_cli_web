@@ -31,7 +31,7 @@ def _convert_param(parent, param):
 
     _copy_attr(p, param,
                'coordinateSystem', 'fileExtensions', 'defaultPathMatch',
-               'defaultNameMatch', 'shapes',
+               'defaultNameMatch', 'defaultRelativePath', 'shapes',
                image_type='type', table_type='type', geometry_type='type',
                transform_type='type')
 

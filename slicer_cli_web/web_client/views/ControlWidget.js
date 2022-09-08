@@ -69,6 +69,7 @@ const ControlWidget = View.extend({
                         return null;
                     }
                     this.model.set({
+                        path: resource._path,
                         value: resource
                     });
                     return null;
@@ -419,12 +420,17 @@ const ControlWidget = View.extend({
             data: {
                 type: type,
                 name: model.get('defaultNameMatch'),
-                path: model.get('defaultPathMatch')
+                path: model.get('defaultPathMatch'),
+                relative_path: model.get('defaultRelativePath'),
+                base_id: model.get('defaultRelativePath_id'),
+                base_type: model.get('defaultRelativePath_type')
             },
             error: null
         }).then((resource) => {
             var ModelType = {image: ItemModel, item: ItemModel, file: FileModel, directory: FolderModel}[model.get('type')];
-            return new ModelType(resource);
+            const result = new ModelType(resource);
+            result._path = resource._path;
+            return result;
         });
     },
 
