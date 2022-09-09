@@ -7,6 +7,7 @@ import '../stylesheets/controlsPanel.styl';
 const ControlsPanel = Panel.extend({
     initialize(settings) {
         this._controlWidgetSettings = settings.controlWidget || {};
+        this._widgets = {};
 
         this.title = settings.title || '';
         this.description = settings.description || '';
@@ -32,15 +33,18 @@ const ControlsPanel = Panel.extend({
             model: model,
             parentView: this
         }, this._controlWidgetSettings));
+        this._widgets[model.id] = view;
         this.$('form').append(view.render().el);
     },
 
     addAll() {
         this.$('form').children().remove();
+        this._widgets = {};
         this.collection.each(this.addOne, this);
     },
 
     removeWidget(model) {
+        delete this._widgets[model.id];
         model.destroy();
     }
 });

@@ -72,7 +72,9 @@ def _parseParamValue(param, value, user, token):
     try:
         if param.isVector():
             return '%s' % ', '.join(map(str, json.loads(value)))
-        elif param.typ in OPENAPI_DIRECT_TYPES or param.typ == 'string-enumeration':
+        elif (param.typ in OPENAPI_DIRECT_TYPES or
+                param.typ == 'string-enumeration' or
+                param.typ in SLICER_TYPE_TO_GIRDER_MODEL_MAP):
             return str(value)
         else:  # json
             return str(json.loads(value))

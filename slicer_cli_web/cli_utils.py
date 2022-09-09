@@ -74,6 +74,8 @@ def get_cli_parameters(clim):
 
 
 def is_on_girder(param):
+    if param.reference == '_girder_id_':
+        return False
     return param.typ in SLICER_TYPE_TO_GIRDER_MODEL_MAP
 
 

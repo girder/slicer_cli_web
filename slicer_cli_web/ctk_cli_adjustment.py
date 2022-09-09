@@ -12,6 +12,7 @@ class CLIParameter(ctk_cli.module.CLIParameter):
         'datalist',
         'defaultPathMatch',
         'defaultNameMatch',
+        'defaultRelativePath',
         'shapes',
     )
     EXTERNAL_TYPES = ctk_cli.module.CLIParameter.EXTERNAL_TYPES.copy()
@@ -45,10 +46,12 @@ class CLIParameter(ctk_cli.module.CLIParameter):
         self.elements = None
         self.coordinateSystem = None
         self.fileExtensions = None
-        # Added datalist, defaultPathMatch, defaultNameMatch, shapes (slicer_cli_web)
+        # Added datalist, defaultPathMatch, defaultNameMatch,
+        # defaultRelativePath, shapes (slicer_cli_web)
         self.datalist = None
         self.defaultPathMatch = None
         self.defaultNameMatch = None
+        self.defaultRelativePath = None
         self.shapes = None
         self.reference = None
         self.subtype = None
@@ -61,17 +64,20 @@ class CLIParameter(ctk_cli.module.CLIParameter):
                 self.coordinateSystem = value
             elif key == 'fileExtensions':
                 self.fileExtensions = [ext.strip() for ext in value.split(',')]
-            # Added datalist, defaultPathMatch, defaultNameMatch (slicer_cli_web)
+            # Added datalist, defaultPathMatch, defaultNameMatch,
+            # default RelativePath (slicer_cli_web)
             elif key == 'datalist':
                 self.datalist = value
             elif key == 'defaultPathMatch':
                 self.defaultPathMatch = value
             elif key == 'defaultNameMatch':
                 self.defaultNameMatch = value
+            elif key == 'defaultRelativePath':
+                self.defaultRelativePath = value
             elif key == 'shapes':
                 self.shapes = value
-            # Added file (slicer_cli_web)
-            elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table'):  # noqa
+            # Added file. directory (slicer_cli_web)
+            elif key == 'reference' and self.typ in ('image', 'file', 'transform', 'geometry', 'table', 'directory', 'item'):  # noqa
                 self.reference = value
                 # Suppressed warning (slicer_cli_web)
                 # ctk_cli.module.logger.warning("'reference' attribute of %r is not part of the spec yet (CTK issue #623)" % (ctk_cli.module._tag(elementTree), ))  # noqa

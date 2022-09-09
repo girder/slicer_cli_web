@@ -89,7 +89,7 @@ def test_get_matching_resource(server, admin):
     Item().createItem('item Private 1', admin, privateFolder)
     folderD = Folder().createFolder(publicFolder, 'folder D', creator=admin)
     Item().createItem('item D1', admin, folderD)
-    Item().createItem('item D2', admin, folderD)
+    itemD2 = Item().createItem('item D2', admin, folderD)
     # Now test
     resp = server.request('/slicer_cli_web/path_match', params={
         'type': 'folder',
@@ -124,6 +124,30 @@ def test_get_matching_resource(server, admin):
         'type': 'item',
         'name': 'nosuchitem',
     })
+    assertStatus(resp, 400)
+
+    resp = server.request('/slicer_cli_web/path_match', params={
+        'type': 'folder',
+        'relative_path': '..',
+        'base_type': 'item',
+        'base_id': itemD2['_id']
+    }, user=admin)
+    assertStatusOk(resp)
+    assert resp.json['name'] == 'folder D'
+
+    resp = server.request('/slicer_cli_web/path_match', params={
+        'type': 'folder',
+        'relative_path': '..',
+        'base_type': 'item',
+    }, user=admin)
+    assertStatus(resp, 400)
+
+    resp = server.request('/slicer_cli_web/path_match', params={
+        'type': 'folder',
+        'relative_path': '..',
+        'base_type': 'item',
+        'base_id': 'nosuchid'
+    }, user=admin)
     assertStatus(resp, 400)
 
 

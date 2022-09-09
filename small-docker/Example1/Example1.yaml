@@ -78,6 +78,14 @@ parameter_groups:
     - Ross
     - Steve
     - Will
+  - type: string
+    datalist: '{"stringWithOptions": "__datalist__", "arg0": "skip", "arg1": "skip",
+      "arg1_folder": "skip"}'
+    name: stringWithOptions
+    longflag: string_with_options
+    description: A string with options that are listed from the CLI itself
+    label: String With Options
+    default: ''
 - advanced: true
   description: A Girder API URL and token for Girder client
   label: Girder API URL and Key
@@ -125,6 +133,17 @@ parameter_groups:
     longflag: file1
     description: An input file
     label: Input file
+    channel: input
+  - type: file
+    fileExtensions: .png
+    reference: _girder_id_
+    defaultNameMatch: \.png$
+    defaultPathMatch: ^\/user\/.*\/[Ii]mages\/.*\.png$
+    defaultRelativePath: ..
+    name: file2
+    longflag: file2
+    description: Another input file
+    label: Input file 2
     channel: input
   - type: file
     fileExtensions: .png,.jpg,.jpeg,.bmp,.tif,.tiff,.gipl,.dcm,.dicom,.nhdr,.nrrd,.mhd,.mha,.mask,.hdr,.nii,.nii.gz,.hdr.gz,.pic,.lsm,.spr,.vtk,.vtkp,.vtki,.stl,.csv,.txt,.xml,.html

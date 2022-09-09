@@ -47,6 +47,10 @@
       "type": "string",
       "description": "A regular expression that can be used to match a file, item, or folder name to prepopulate a default value.  When used with Girder, this matches the resource name."
     },
+    "defaultRelativePath": {
+      "type": "string",
+      "description": "A path expression that is relative to the resource path of a base item used to prepopulate a default value.  When used with Girder, this is relative to the base item."
+    },
     "reference": {
       "oneOf": [
         {
@@ -570,6 +574,9 @@
                     "defaultNameMatch": {
                       "$ref": "#/definitions/defaultNameMatch"
                     },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
+                    },
                     "reference": {
                       "$ref": "#/definitions/reference"
                     }
@@ -609,6 +616,9 @@
                     },
                     "defaultNameMatch": {
                       "$ref": "#/definitions/defaultNameMatch"
+                    },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
                     },
                     "reference": {
                       "$ref": "#/definitions/reference"
@@ -661,6 +671,9 @@
                     },
                     "defaultNameMatch": {
                       "$ref": "#/definitions/defaultNameMatch"
+                    },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
                     }
                   }
                 },
@@ -687,6 +700,9 @@
                     },
                     "defaultNameMatch": {
                       "$ref": "#/definitions/defaultNameMatch"
+                    },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
                     },
                     "reference": {
                       "$ref": "#/definitions/reference"
@@ -767,6 +783,9 @@
                     "defaultNameMatch": {
                       "$ref": "#/definitions/fileExtensions"
                     },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
+                    },
                     "reference": {
                       "$ref": "#/definitions/reference"
                     }
@@ -807,6 +826,9 @@
                     },
                     "defaultNameMatch": {
                       "$ref": "#/definitions/fileExtensions"
+                    },
+                    "defaultRelativePath": {
+                      "$ref": "#/definitions/defaultRelativePath"
                     },
                     "reference": {
                       "$ref": "#/definitions/reference"

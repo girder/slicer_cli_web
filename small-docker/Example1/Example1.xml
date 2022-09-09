@@ -139,6 +139,13 @@
       <label>Input file</label>
       <channel>input</channel>
     </file>
+    <file fileExtensions=".png" reference="_girder_id_" defaultNameMatch="\.png$" defaultPathMatch="^\/user\/.*\/[Ii]mages\/.*\.png$" defaultRelativePath="..">
+      <name>file2</name>
+      <longflag>file2</longflag>
+      <description>Another input file</description>
+      <label>Input file 2</label>
+      <channel>input</channel>
+    </file>
     <file fileExtensions=".png,.jpg,.jpeg,.bmp,.tif,.tiff,.gipl,.dcm,.dicom,.nhdr,.nrrd,.mhd,.mha,.mask,.hdr,.nii,.nii.gz,.hdr.gz,.pic,.lsm,.spr,.vtk,.vtkp,.vtki,.stl,.csv,.txt,.xml,.html" multiple="true">
       <name>files</name>
       <longflag>files</longflag>

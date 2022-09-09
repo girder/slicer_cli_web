@@ -39,6 +39,7 @@ export default function param(paramTag, opts = {}) {
     } else if (channel === 'input' && ['image', 'file', 'item', 'directory', 'multi'].includes(type)) {
         extra.defaultNameMatch = $param.attr('defaultNameMatch');
         extra.defaultPathMatch = $param.attr('defaultPathMatch');
+        extra.defaultRelativePath = $param.attr('defaultRelativePath');
         if (type !== 'directory') {
             extra.multiple = $param.attr('multiple') === 'true';
         }
