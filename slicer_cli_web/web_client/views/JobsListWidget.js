@@ -38,6 +38,7 @@ const JobsListWidget = View.extend({
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', this.fetchAndRender);
         this.listenTo(eventStream, 'g:event.job_created', this.fetchAndRender);
+        this.listenTo(eventStream, 'g:eventStream.start', this.fetchAndRender);
         this.fetchAndRender();
     },
 
