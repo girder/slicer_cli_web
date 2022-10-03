@@ -61,7 +61,7 @@ setup(
         'jinja2',
         'jsonschema',
         'pyyaml',
-        'importlib-metadata ; python_version < "3.8"',
+        'importlib-metadata<5 ; python_version < "3.8"',
     ],
     extras_require={
         'girder': [
