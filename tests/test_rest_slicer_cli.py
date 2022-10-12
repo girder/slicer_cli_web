@@ -34,6 +34,27 @@ def handlerFunc(server, admin, folder, file):
     yield functools.partial(handlerFunc, resource)
 
 
+@pytest.fixture
+def handlerRerunFuncs(server, admin, folder, file):
+    # Make a request to allow there to be some lingering context to handle the
+    # testing outside of a request for the actual handler.
+    server.request('/system/version')
+    rest.setCurrentUser(admin)
+
+    xmlpath = os.path.join(os.path.dirname(__file__), 'data', 'ExampleSpec.xml')
+
+    girderCLIItem = Item().createItem('data', admin, folder)
+    Item().setMetadata(girderCLIItem, dict(
+        slicerCLIType='task', type='python', image='dockerImage',
+        digest='dockerImage@sha256:abc', xml=open(xmlpath, 'rb').read()))
+
+    resource = docker_resource.DockerResource('test')
+    item = CLIItem(girderCLIItem)
+    handlerFunc = rest_slicer_cli.genHandlerToRunDockerCLI(item)
+    handlerRerunFunc = rest_slicer_cli.genHandlerToReRunDockerCLI(item, handlerFunc)
+    yield functools.partial(handlerFunc, resource), functools.partial(handlerRerunFunc, resource)
+
+
 @pytest.mark.plugin('slicer_cli_web')
 def test_genHandlerToRunDockerCLI(folder, file, handlerFunc):
     assert handlerFunc is not None
@@ -208,3 +229,35 @@ def test_templateParams(handlerFunc, folder, file, testParams, results):
     }, **testParams))
     ca = json.loads(job['kwargs'])['container_args']
     assert results in repr(ca)
+
+
+@pytest.mark.plugin('slicer_cli_web')
+def test_genHandlerToReRunDockerCLI(folder, file, handlerRerunFuncs):
+    handlerFunc, handlerRerunFunc = handlerRerunFuncs
+    assert handlerFunc is not None
+    assert handlerRerunFunc is not None
+
+    job = handlerFunc(params={
+        'inputImageFile': str(file['_id']),
+        'secondImageFile': str(file['_id']),
+        'outputStainImageFile_1_folder': str(folder['_id']),
+        'outputStainImageFile_1': 'sample1.png',
+        'outputStainImageFile_2_folder': str(folder['_id']),
+        'outputStainImageFile_2_name': 'sample2.png',
+        'stainColor_1': '[0.5, 0.5, 0.5]',
+        'stainColor_2': '[0.2, 0.3, 0.4]',
+        'returnparameterfile_folder': str(folder['_id']),
+        'returnparameterfile': 'output.data',
+    })
+
+    rerunJob = handlerRerunFunc(params={'jobId': str(job['_id'])})
+
+    kwargs = json.loads(rerunJob['kwargs'])
+    assert 'container_args' in kwargs
+    assert 'image' in kwargs
+    assert 'pull_image' in kwargs
+
+    assert kwargs['image'] == 'dockerImage@sha256:abc'
+    assert kwargs['pull_image'] == 'if-not-present'
+    container_args = kwargs['container_args']
+    assert container_args[0] == 'data'
