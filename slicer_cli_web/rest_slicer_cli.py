@@ -201,6 +201,10 @@ def batchCLIJob(cliItem, params, user, cliTitle):
         public=True,
         asynchronous=True,
     )
+    job['_original_params'] = params
+    job['_original_name'] = cliItem.name
+    job['_original_path'] = cliItem.restBasePath
+    job = Job().save(job)
     Job().scheduleJob(job)
     return job
 
@@ -476,6 +480,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
 
     cliHandler.subHandler = cliSubHandler
     cliHandler.getBatchParams = getBatchParams
+    cliHandler.cliTitle = cliTitle
     if len(datalist):
         cliHandler.datalist = datalist
         for key, entry in datalist.items():
@@ -546,9 +551,14 @@ def genHandlerToReRunDockerCLI(cliItem, cliHandler):
                 originalName or cliItem.name, cliItem.restBasePath,
                 cliItem.name))
         newParams.update(params)
-        token = Token().createToken(user=user)
-        job = cliHandler.subHandler(currentItem, newParams, user, token)
-        return job.job
+        batchParams = cliHandler.getBatchParams(newParams)
+        if len(batchParams):
+            job = batchCLIJob(currentItem, newParams, user, cliHandler.cliTitle)
+        else:
+            token = Token().createToken(user=user)
+            job = cliHandler.subHandler(currentItem, newParams, user, token)
+            job = job.job
+        return job
 
     return rerunHandler
 
