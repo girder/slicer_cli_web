@@ -1,3 +1,4 @@
+import copy
 import itertools
 import json
 import threading
@@ -9,7 +10,7 @@ from girder import logger
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.api.rest import Resource, RestException, boundHandler, getApiUrl, getCurrentToken
-from girder.constants import SortDir
+from girder.constants import AccessType, SortDir
 from girder.models.item import Item
 from girder.models.setting import Setting
 from girder.models.token import Token
@@ -200,6 +201,10 @@ def batchCLIJob(cliItem, params, user, cliTitle):
         public=True,
         asynchronous=True,
     )
+    job['_original_params'] = params
+    job['_original_name'] = cliItem.name
+    job['_original_path'] = cliItem.restBasePath
+    job = Job().save(job)
     Job().scheduleJob(job)
     return job
 
@@ -380,6 +385,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
         """
         from .girder_worker_plugin.direct_docker_run import run
 
+        original_params = copy.deepcopy(params)
         if hasattr(getCurrentToken, 'set'):
             getCurrentToken.set(token)
         if not getCurrentToken():
@@ -443,8 +449,13 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
             girder_result_hooks=result_hooks,
             image=cliItem.digest,
             pull_image='if-not-present',
-            container_args=container_args
+            container_args=container_args,
         )
+        jobRecord = Job().load(job.job['_id'], force=True)
+        job.job['_original_params'] = jobRecord['_original_params'] = original_params
+        job.job['_original_name'] = jobRecord['_original_name'] = cliItem.name
+        job.job['_original_path'] = jobRecord['_original_path'] = cliItem.restBasePath
+        Job().save(jobRecord)
         return job
 
     @access.user
@@ -469,6 +480,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
 
     cliHandler.subHandler = cliSubHandler
     cliHandler.getBatchParams = getBatchParams
+    cliHandler.cliTitle = cliTitle
     if len(datalist):
         cliHandler.datalist = datalist
         for key, entry in datalist.items():
@@ -509,6 +521,48 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
     return cliHandler
 
 
+def genHandlerToReRunDockerCLI(cliItem, cliHandler):
+    itemId = cliItem._id
+    description = copy.deepcopy(cliHandler.description)
+    for param in description.params:
+        param['required'] = False
+        param.pop('default', None)
+    description.param('jobId', 'The previous job ID')
+    description._params = description._params[-1:] + description._params[:-1]
+    description._summary = 'Rerun ' + description._summary
+    if description._notes:
+        description._notes = 'Rerun a previous job: ' + description._notes
+
+    @access.user
+    @describeRoute(description)
+    def rerunHandler(resource, params):
+        user = resource.getCurrentUser()
+        currentItem = CLIItem.find(itemId, user)
+        if not currentItem:
+            raise RestException('Invalid CLI Item id (%s).' % (itemId))
+        originalJob = Job().load(params.pop('jobId'), user=user, level=AccessType.READ)
+        newParams = originalJob.get('_original_params', {})
+        originalName = originalJob.get('_original_name')
+        originalPath = originalJob.get('_original_path')
+        if ((originalName and cliItem.name != originalName) or
+                (originalPath and cliItem.restBasePath != originalPath)):
+            raise RestException('Original job was from %s/%s, not %s/%s.' % (
+                originalPath or cliItem.restBasePath,
+                originalName or cliItem.name, cliItem.restBasePath,
+                cliItem.name))
+        newParams.update(params)
+        batchParams = cliHandler.getBatchParams(newParams)
+        if len(batchParams):
+            job = batchCLIJob(currentItem, newParams, user, cliHandler.cliTitle)
+        else:
+            token = Token().createToken(user=user)
+            job = cliHandler.subHandler(currentItem, newParams, user, token)
+            job = job.job
+        return job
+
+    return rerunHandler
+
+
 def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRoute=False):
     """Generates REST end points for slicer CLIs placed in subdirectories of a
     given root directory and attaches them to a REST resource with the given
@@ -537,17 +591,24 @@ def genRESTEndPointsForSlicerCLIsForItem(restResource, cliItem, registerNamedRou
 
     try:
         handler = genHandlerToRunDockerCLI(cliItem)
+        rerunHandler = genHandlerToReRunDockerCLI(cliItem, handler)
 
         # define CLI handler function
         cliRunHandler = boundHandler(restResource)(handler)
+        cliReRunHandler = boundHandler(restResource)(rerunHandler)
 
         cliRunHandlerName = 'run_%s' % cliItem._id
+        cliReRunHandlerName = 'rerun_%s' % cliItem._id
 
         restRunPath = ('cli', str(cliItem._id), 'run')
         routes = [('POST', restRunPath, cliRunHandler, cliRunHandlerName)]
+        restReRunPath = ('cli', str(cliItem._id), 'rerun')
+        routes.append(('POST', restReRunPath, cliReRunHandler, cliReRunHandlerName))
         if registerNamedRoute:
             restNamedRunPath = (cliItem.restBasePath, cliItem.name, 'run')
             routes.append(('POST', restNamedRunPath, cliRunHandler, cliRunHandlerName))
+            restNamedReRunPath = (cliItem.restBasePath, cliItem.name, 'rerun')
+            routes.append(('POST', restNamedReRunPath, cliReRunHandler, cliReRunHandlerName))
 
         if hasattr(handler, 'datalist'):
             for key, entry in handler.datalist.items():
