@@ -124,6 +124,7 @@ def jobPullAndLoad(job):
     Event listeners check the jobtype to determine if a job is Dockerimage
     related
     """
+    stage = 'initializing'
     try:
         user = User().load(job['userId'], level=AccessType.READ)
         baseFolder = Folder().load(job['kwargs']['folder'], user=user, level=AccessType.WRITE)
@@ -153,6 +154,7 @@ def jobPullAndLoad(job):
         loadList = [name for name in loadList if name not in pullList]
 
         try:
+            stage = 'pulling'
             pullDockerImage(docker_client, pullList)
         except DockerImageNotFoundError as err:
             errorState = True
@@ -162,10 +164,12 @@ def jobPullAndLoad(job):
                 log='FAILURE: Could not find the following images\n' + '\n'.join(
                     notExistSet) + '\n',
             )
+        stage = 'metadata'
         images, loadingError = loadMetadata(job, docker_client, pullList,
                                             loadList, notExistSet)
         for name, cli_dict in images:
             docker_image = docker_client.images.get(name)
+            stage = 'parsing'
             DockerImageItem.saveImage(name, cli_dict, docker_image, user, baseFolder)
         if errorState is False and loadingError is False:
             newStatus = JobStatus.SUCCESS
@@ -179,10 +183,10 @@ def jobPullAndLoad(job):
             progressMessage='Completed caching docker images'
         )
     except Exception as err:
-        logger.exception('Error with job')
+        logger.exception('Error with job with %s', stage)
         job = Job().updateJob(
             job,
-            log='Error with job \n ' + str(err) + '\n',
+            log='Error with job with %s\n %s\n' % (stage, err),
             status=JobStatus.ERROR,
         )
 

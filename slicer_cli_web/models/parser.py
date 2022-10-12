@@ -41,7 +41,10 @@ def _parse_xml_desc(item, user, xml):
 
 
 def parse_xml_desc(item, desc, user):
-    return _parse_xml_desc(item, user, desc['xml'])
+    try:
+        return _parse_xml_desc(item, user, desc['xml'])
+    except Exception as exc:
+        raise Exception('Failed to parse xml (error %s), xml: """%s"""' % (exc, desc['xml']))
 
 
 def _parse_json_desc(item, user, data):
@@ -51,12 +54,22 @@ def _parse_json_desc(item, user, data):
 
 
 def parse_json_desc(item, desc, user):
-    data = json.loads(desc['json'])
-
-    return _parse_json_desc(item, user, data)
+    try:
+        data = json.loads(desc['json'])
+    except Exception as exc:
+        raise Exception('Failed to load json (error %s), json: """%s"""' % (exc, desc['json']))
+    try:
+        return _parse_json_desc(item, user, data)
+    except Exception as exc:
+        raise Exception('Failed to parse json (error %s), json: """%s"""' % (exc, desc['json']))
 
 
 def parse_yaml_desc(item, desc, user):
-    data = yaml.safe_load(desc['yaml'])
-
-    return _parse_json_desc(item, user, data)
+    try:
+        data = yaml.safe_load(desc['yaml'])
+    except Exception as exc:
+        raise Exception('Failed to load yaml (error %s), yaml: """%s"""' % (exc, desc['yaml']))
+    try:
+        return _parse_json_desc(item, user, data)
+    except Exception as exc:
+        raise Exception('Failed to parse yaml (error %s), yaml: """%s"""' % (exc, desc['yaml']))
