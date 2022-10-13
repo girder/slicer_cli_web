@@ -71,7 +71,10 @@ class SlicerCLIWebPlugin(GirderPlugin):
             'status': {'$in': [JobStatus.INACTIVE, JobStatus.QUEUED, JobStatus.RUNNING]},
             'updated': {'$lt': datetime.datetime.utcnow() - datetime.timedelta(days=7)}
         }, force=True):
-            Job().updateJob(job, log='Canceled stale job.', status=JobStatus.CANCELED)
-            count += 1
+            try:
+                Job().updateJob(job, log='Canceled stale job.', status=JobStatus.CANCELED)
+                count += 1
+            except Exception:
+                pass
         if count:
             logger.info('Marking %d old job(s) as cancelled' % count)
