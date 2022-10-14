@@ -126,19 +126,20 @@ def jobPullAndLoad(job):
     """
     stage = 'initializing'
     try:
+        job = Job().updateJob(
+            job,
+            log='Started to Load Docker images\n',
+            status=JobStatus.RUNNING,
+        )
         user = User().load(job['userId'], level=AccessType.READ)
-        baseFolder = Folder().load(job['kwargs']['folder'], user=user, level=AccessType.WRITE)
+        baseFolder = Folder().load(
+            job['kwargs']['folder'], user=user, level=AccessType.WRITE, exc=True)
 
         loadList = job['kwargs']['nameList']
 
         errorState = False
 
         notExistSet = set()
-        job = Job().updateJob(
-            job,
-            log='Started to Load Docker images\n',
-            status=JobStatus.RUNNING,
-        )
         try:
             docker_client = docker.from_env(version='auto')
 
