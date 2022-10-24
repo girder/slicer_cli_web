@@ -195,7 +195,7 @@ def jobPullAndLoad(job):
 def loadMetadata(job, docker_client, pullList, loadList, notExistSet):
     """
     Attempt to query preexisting images and pulled images for cli data.
-    Cli data for each image is stored and returned as a sing DockerCache Object
+    Cli data for each image is stored and returned as a DockerCache Object
 
     :param Job(): Singleton JobModel used to update job status
     :param job: The current job being executed

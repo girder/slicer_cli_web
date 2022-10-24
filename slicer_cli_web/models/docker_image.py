@@ -263,6 +263,8 @@ class DockerImageItem:
             # copy some things from the image to be independent
             meta_data['image'] = image.name
             meta_data['digest'] = image.digest if image.name != image.digest else None
+            if desc.get('docker-params'):
+                meta_data['docker-params'] = desc['docker-params']
 
             desc_type = desc.get('desc-type', 'xml')
 
