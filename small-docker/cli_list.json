@@ -16,7 +16,13 @@
   "Example2yaml": {
     "alias": "Example2",
     "type": "python",
-    "desc-type": "yaml"
+    "desc-type": "yaml",
+  "Example2params": {
+    "alias": "Example2",
+    "type": "python",
+    "docker-params": {
+      "ipc_mode": "host"
+    }
   },
   "ExampleProgress": {
     "type": "python",

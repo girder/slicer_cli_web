@@ -442,6 +442,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
         else:
             jobTitle = cliTitle
 
+        job_kwargs = cliItem.item.get('meta', {}).get('docker-params', {})
         job = run.delay(
             girder_user=user,
             girder_job_type=jobType,
@@ -450,6 +451,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
             image=cliItem.digest,
             pull_image='if-not-present',
             container_args=container_args,
+            **job_kwargs
         )
         jobRecord = Job().load(job.job['_id'], force=True)
         job.job['_original_params'] = jobRecord['_original_params'] = original_params

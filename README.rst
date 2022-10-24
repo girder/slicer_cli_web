@@ -90,6 +90,45 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
   - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presense of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it cahnges what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
 
+--list_cli response format
+==========================
+
+The response from a docker image invoked with the ``--list_cli`` option needs to be a JSON response returning a single object.  The object must contain a key for each CLI.  Each key has a value used to parse or handle the CLI.
+
+Here is a commented example::
+
+    {
+      // the key is the name of the CLI
+      "Example1": {        
+        // type is typically either "python" or "cxx".  The default program
+        // either runs "python <CLI key>/<CLI key>.py" for python or 
+        // "<CLI key>/<CLI key>" for cxx.
+        "type": "python"   
+      },
+      "Example2": {
+        "type": "python",
+        // The desc-type defaults to xml but can be any of "xml", "json", or
+        // "yaml".  To get the CLI command line options, the CLI is invoked via
+        //   docker run <docker image tag> <cli name> --<desc-type>
+        "desc-type": "json"
+      },
+      "AnotherName": {
+        // The alias allows the CLI to be invoked as either the key or the
+        // alias.  This runs Example2 when invoked as AnotherName.
+        "alias": "Example2",
+        "type": "python"
+      },
+      "Example3": {
+        "type": "python",
+        // docker-params is a dictionary of parameters passed to the docker API
+        // when the docker container is created and run.  Not all possible tags
+        // are passed through.  See the docker python module for options.
+        "docker-params": {
+          "ipc_mode": "host"
+        }
+      }
+    }
+
 CLI Endpoints
 =============
 
