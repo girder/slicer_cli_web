@@ -44,7 +44,7 @@ Girder Plugin
 Importing Docker Images
 =======================
 
-When installed in Girder, an admin user can go to the Admin Console -> Plugins -> Slicer CLI Web to add Docker images.  Select a Docker image and an existing folder and then select Import Image.  Slicer CLI Web will pull the Docker image if it is not available on the Girder machine. 
+When installed in Girder, an admin user can go to the Admin Console -> Plugins -> Slicer CLI Web to add Docker images.  Select a Docker image and an existing folder and then select Import Image.  Slicer CLI Web will pull the Docker image if it is not available on the Girder machine.
 
 For each docker image that is imported, a folder is created with the image tag.  Within this folder, a subfolder is created with the image version.  The subfolder will have one item per CLI that the Docker image reports.  These items can be moved after they have been imported, just like standard Girder items.
 
@@ -76,7 +76,7 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - The ``region`` type can have a ``coordinateSystem`` property.
 
-- The ``region`` type has an optional ``shapes`` property that is a comma-separated list of values that can include ``default``, ``rectangle``, ``polygon``, and ``multipolygon``.  In the official schema, region is a vector of six values of the form x,y,z,rx,ry,rz, defining a rectangle based on its center and radius in each of three dimensions.  This is the ``default`` shape.  The ``rectangle`` shape allows a vector of four values defining a rectangle of the form x,y,width,height, where x,y is the left and top of the rectangle in pixel coordinates.  Many algorithms that accept this value accept -1,-1,-1,-1 as a default to specify the whole conceptual space.  The ``polygon`` shape allows for a list of x,y values.  Polygons must always have at least four points so that the vector of values cannot be confused with the default; repeat the first vertex at the end to specify a triangle.  ``multipolygon`` allow multiple polygons (or hole definitions) are specified by separating coordinates by -1,-1 (this prohibits -1,-1 from being a coordinate within a polygon).  
+- The ``region`` type has an optional ``shapes`` property that is a comma-separated list of values that can include ``default``, ``rectangle``, ``polygon``, and ``multipolygon``.  In the official schema, region is a vector of six values of the form x,y,z,rx,ry,rz, defining a rectangle based on its center and radius in each of three dimensions.  This is the ``default`` shape.  The ``rectangle`` shape allows a vector of four values defining a rectangle of the form x,y,width,height, where x,y is the left and top of the rectangle in pixel coordinates.  Many algorithms that accept this value accept -1,-1,-1,-1 as a default to specify the whole conceptual space.  The ``polygon`` shape allows for a list of x,y values.  Polygons must always have at least four points so that the vector of values cannot be confused with the default; repeat the first vertex at the end to specify a triangle.  ``multipolygon`` allow multiple polygons (or hole definitions) are specified by separating coordinates by -1,-1 (this prohibits -1,-1 from being a coordinate within a polygon).
 
 - Some input types (``image``, ``file``, ``item``, ``directory``) can have ``defaultNameMatch``, ``defaultPathMatch``, and ``defaultRelativePath`` properties.  The first two are regular expressions designed to give a UI a value to match to prepopulate default values from files or paths that match the regex.  ``defaultNameMatch`` is intended to match the final path element, whereas ``defaultPathMatch`` is used on the entire path as a combined string.  ``defaultRelativePath`` is used to find a value that has a path relative to some base.  In the Girder UI, this might be from an item.
 
@@ -84,9 +84,9 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
 - There are some special string parameters that, if unspecified or blank, are autopopulated.  String parameters with the names of ``girderApiUrl`` and ``girderToken`` are populated with the appropriate url and token so that a running job could use girder_client to communicate with Girder.
 
-- Internally, the ``ctk_cli`` module is used.  This has two differences from the Slicer Execution Schema that are technically bugs.  
+- Internally, the ``ctk_cli`` module is used.  This has two differences from the Slicer Execution Schema that are technically bugs.
 
-  - Enumerations have bare elements under the appropriate parent tag.  That is, instead of a structure like ``<string-enumeration>...<enumeration><element>Value 1</element><element>Value 2</element>...</enumeration></string-enumeration>``, the ``<enumeration>`` tag is omitted: ``<string-enumeration>...<element>Value 1</element><element>Value 2</element>...</string-enumeration>``.  
+  - Enumerations have bare elements under the appropriate parent tag.  That is, instead of a structure like ``<string-enumeration>...<enumeration><element>Value 1</element><element>Value 2</element>...</enumeration></string-enumeration>``, the ``<enumeration>`` tag is omitted: ``<string-enumeration>...<element>Value 1</element><element>Value 2</element>...</string-enumeration>``.
 
   - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presense of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it cahnges what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
 
@@ -99,11 +99,11 @@ Here is a commented example::
 
     {
       // the key is the name of the CLI
-      "Example1": {        
+      "Example1": {
         // type is typically either "python" or "cxx".  The default program
-        // either runs "python <CLI key>/<CLI key>.py" for python or 
+        // either runs "python <CLI key>/<CLI key>.py" for python or
         // "<CLI key>/<CLI key>" for cxx.
-        "type": "python"   
+        "type": "python"
       },
       "Example2": {
         "type": "python",
@@ -122,7 +122,8 @@ Here is a commented example::
         "type": "python",
         // docker-params is a dictionary of parameters passed to the docker API
         // when the docker container is created and run.  Not all possible tags
-        // are passed through.  See the docker python module for options.
+        // are passed through.  See the docker python module for options:
+        // https://docker-py.readthedocs.io/en/stable/containers.html
         "docker-params": {
           "ipc_mode": "host"
         }
