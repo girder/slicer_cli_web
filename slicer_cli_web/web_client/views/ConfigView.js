@@ -21,6 +21,9 @@ const ConfigView = View.extend({
             this._saveSettings([{
                 key: 'slicer_cli_web.task_folder',
                 value: this.$('#g-slicer-cli-web-upload-folder').val()
+            }, {
+                key: 'slicer_cli_web.worker_config_item',
+                value: this.$('#g-slicer-cli-web-worker-config-item').val()
             }]);
         },
         'submit #g-slicer-cli-web-upload-form'(event) {
@@ -31,7 +34,8 @@ const ConfigView = View.extend({
                 $('#g-slicer-cli-web-folder').val());
         },
         'click .g-open-browser': '_openBrowser',
-        'click .g-open-local-browser': '_openLocalBrowser'
+        'click .g-open-local-browser': '_openLocalBrowser',
+        'click .g-open-item-browser': '_openItemBrowser'
     },
 
     initialize() {
@@ -44,8 +48,10 @@ const ConfigView = View.extend({
                 const isValid = $.Deferred();
                 if (!model) {
                     isValid.reject('Please select a valid root.');
-                } if (model.get('_modelType') !== 'folder') {
+                } else if (model.get('_modelType') !== 'folder' && !this.showItems) {
                     isValid.reject('Please select a folder.');
+                } else if (model.get('_modelType') !== 'item' && this.showItems) {
+                    isValid.reject('Please select an item.');
                 } else {
                     isValid.resolve();
                 }
@@ -56,10 +62,10 @@ const ConfigView = View.extend({
             }
         });
         this.listenTo(this._browserWidgetView, 'g:saved', (val) => {
-            if (!this._localOnly) {
-                this.$('#g-slicer-cli-web-upload-folder').val(val.id);
+            this.$(this._destination).val(val.id);
+            if (this._altdestination) {
+                this.$(this._altdestination).val(val.id);
             }
-            this.$('#g-slicer-cli-web-folder').val(val.id);
         });
 
         ConfigView.getSettings().then((settings) => {
@@ -105,11 +111,33 @@ const ConfigView = View.extend({
     },
 
     _openBrowser() {
-        this._localOnly = false;
+        this._destination = '#g-slicer-cli-web-upload-folder';
+        this._altdestination = '#g-slicer-cli-web-folder';
+        this._browserWidgetView.titleText = 'Task Upload Folder';
+        this._browserWidgetView.helpText = 'Browse to a location to select it as the upload folder.';
+        this._browserWidgetView.submitText = 'Select Folder';
+        this._browserWidgetView.showItems = false;
+        this._browserWidgetView.selectItem = false;
         this._browserWidgetView.setElement($('#g-dialog-container')).render();
     },
     _openLocalBrowser() {
-        this._localOnly = true;
+        this._destination = '#g-slicer-cli-web-folder';
+        this._altdestination = null;
+        this._browserWidgetView.titleText = 'Task Upload Folder';
+        this._browserWidgetView.helpText = 'Browse to a location to select it as the upload folder.';
+        this._browserWidgetView.submitText = 'Select Folder';
+        this._browserWidgetView.showItems = false;
+        this._browserWidgetView.selectItem = false;
+        this._browserWidgetView.setElement($('#g-dialog-container')).render();
+    },
+    _openItemBrowser() {
+        this._destination = '#g-slicer-cli-web-worker-config-item';
+        this._altdestination = null;
+        this._browserWidgetView.titleText = 'Worker Configuration Item';
+        this._browserWidgetView.helpText = 'Select an item with a specification for worker management.';
+        this._browserWidgetView.submitText = 'Select Item';
+        this._browserWidgetView.showItems = true;
+        this._browserWidgetView.selectItem = true;
         this._browserWidgetView.setElement($('#g-dialog-container')).render();
     },
 
@@ -148,11 +176,15 @@ const ConfigView = View.extend({
             method: 'GET',
             url: 'system/setting',
             data: {
-                list: JSON.stringify(['slicer_cli_web.task_folder'])
+                list: JSON.stringify([
+                    'slicer_cli_web.task_folder',
+                    'slicer_cli_web.worker_config_item'
+                ])
             }
         }).then((resp) => {
             const settings = {
-                task_folder: resp['slicer_cli_web.task_folder']
+                task_folder: resp['slicer_cli_web.task_folder'],
+                worker_config_item: resp['slicer_cli_web.worker_config_item']
             };
 
             return settings;

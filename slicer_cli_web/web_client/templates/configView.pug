@@ -15,6 +15,17 @@ form#g-slicer-cli-web-form(role="form")
         button.g-open-browser.btn.btn-default(type="button")
           i.icon-folder-open
 
+  .form-group
+    label(for="g-slicer-cli-web-worker-config-item") Worker Management Configuration Item
+    .input-group.input-group-sm
+      input#g-slicer-cli-web-worker-config-item.form-control.input-sm(
+          value=settings.worker_config_item,
+          type="text",
+          placeholder="Existing item to manage worker configuration")
+      .input-group-btn
+        button.g-open-item-browser.btn.btn-default(type="button")
+          i.icon-folder-open
+
   p#g-slicer-cli-web-error-message.g-validation-failed-message
   input.btn.btn-sm.btn-primary(type="submit", value="Save")
 
