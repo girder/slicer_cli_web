@@ -53,7 +53,7 @@ class CommandQueue(threading.Thread):
         self.stop()
 
 
-def _loadWorkerConfig():
+def _loadWorkerConfig():  # noqa
     """
     Load and update the config file.
     """
@@ -94,7 +94,8 @@ def _loadWorkerConfig():
     if not isinstance(_workerConfig, dict):
         _workerConfig = {'active': 0, 'start': datetime.datetime.utcnow()}
         # We ask for all workers to stop when we first load a config file
-        stopAll = True
+        if config.get('initial-stop') is not False:
+            stopAll = True
     _workerConfig['file'] = file
     _workerConfig['workers'] = config['workers']
     _workerConfig['maxConcurrency'] = sum(
@@ -229,3 +230,4 @@ def start():
 
     events.bind('model.setting.save.after', 'slicer_cli_web_worker', _manageWorkersConfig)
     events.bind('model.file.save.after', 'slicer_cli_web_worker', _manageWorkersConfigFile)
+    _manageWorkers(None)

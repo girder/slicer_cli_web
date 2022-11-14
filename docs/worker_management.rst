@@ -27,5 +27,9 @@ An example file illustrates the options::
         # concurrency is the number of jobs that the worker can handle.  It is
         # optional, but must be a positive integer.  The default is 1.
         concurrency: 2
+    # If initial-stop is not False, then all workers are stopped when the main
+    # application is first started.  This ensure workers are not abandoned, but
+    # may prevent workers from finishing during a benign server restart.
+    initial-stop: True        
 
 This could be used, for instance, to start and stop EC2 instances with the appropriate commands.
