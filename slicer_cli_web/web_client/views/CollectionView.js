@@ -18,7 +18,7 @@ wrap(HierarchyWidget, 'render', function (render) {
         if (button.length === 0) {
             return;
         }
-        $('<button class="g-upload-slicer-cli-task-button btn btn-sm btn-default" title="Upload CLI Slicer Task"><i class="icon-upload"></i></button>')
+        $('<button class="g-upload-slicer-cli-task-button btn btn-sm btn-default" title="Upload CLI Slicer Task" style="height: calc(1.5em + 10px);line-height: 0.75em"><i class="icon-upload"></i><div style="font-size: 0.75em;">CLI</div></button>')
             .insertAfter(button)
             .on('click', () => {
                 new UploadImageDialog({
