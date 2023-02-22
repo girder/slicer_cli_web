@@ -111,7 +111,7 @@ jobs:
     steps:
       - checkout
       - allservices:
-          version: 3.7.12
+          version: 3.7.16
       - tox:
           env: py37
       - coverage
@@ -121,7 +121,7 @@ jobs:
     steps:
       - checkout
       - allservices:
-          version: 3.8.12
+          version: 3.8.16
       - tox:
           env: py38
       - coverage
@@ -131,7 +131,7 @@ jobs:
     steps:
       - checkout
       - allservices:
-          version: 3.9.10
+          version: 3.9.16
       - tox:
           env: py39
       - coverage
@@ -141,9 +141,19 @@ jobs:
     steps:
       - checkout
       - allservices:
-          version: 3.10.2
+          version: 3.10.9
       - tox:
           env: py310
+      - coverage
+  py311:
+    machine:
+        image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - allservices:
+          version: 3.11.1
+      - tox:
+          env: py311
       - coverage
   small-docker:
     machine:
@@ -233,6 +243,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -261,6 +278,7 @@ workflows:
             - py38
             - py39
             - py310
+            - py311
             - lint_and_docs
           filters:
             tags:

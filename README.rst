@@ -90,6 +90,11 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
   - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presense of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it cahnges what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
 
+Docker CLIs with GPU support
+----------------------------
+
+When girder_worker runs docker images, the containers are started with gpu support only if the docker image has a label saying it should use an nvidia driver (add ``LABEL com.nvidia.volumes.needed=nvidia_driver`` to the Dockerfile).
+
 --list_cli response format
 ==========================
 
