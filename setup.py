@@ -26,7 +26,7 @@ setup(
     name='girder-slicer-cli-web',
     use_scm_version={
         'local_scheme': prerelease_local_scheme,
-        'fallback_version': 'development'},
+        'fallback_version': '0.0.0'},
     setup_requires=[
         'setuptools-scm<7 ; python_version < "3.7"',
         'setuptools-scm ; python_version >= "3.7"',
@@ -51,6 +51,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     include_package_data=True,
     package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},

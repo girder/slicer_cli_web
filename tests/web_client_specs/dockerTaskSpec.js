@@ -82,7 +82,7 @@ $(function () {
                 var resp = girder.rest.restRequest({
                     url: 'resource/lookup',
                     method: 'GET',
-                    data: {path: '/user/admin/Public/girder\\/slicer_cli_web/small/Example1'},
+                    data: {path: '/user/admin/Public/girder\\-slicer_cli_web/small/Example1'},
                     async: false
                 });
                 return resp && resp.responseJSON && resp.responseJSON['_id'];

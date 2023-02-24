@@ -262,12 +262,14 @@ def girderWorker(db):
     service must be running.
     """
     broker = 'amqp://guest@127.0.0.1'
+    backend = 'rpc://guest@127.0.0.1'
     Setting().set(WorkerSettings.BROKER, broker)
-    Setting().set(WorkerSettings.BACKEND, broker)
+    Setting().set(WorkerSettings.BACKEND, backend)
     env = os.environ.copy()
     env['C_FORCE_ROOT'] = 'true'
     proc = subprocess.Popen([
-        'celery', '-A', 'girder_worker.app', 'worker', '--broker', broker, '--concurrency=1'],
+        'celery', '-A', 'girder_worker.app', '--broker', broker,
+        '--result-backend', backend, 'worker', '--concurrency=1'],
         close_fds=True, env=env)
     yield True
     proc.terminate()
