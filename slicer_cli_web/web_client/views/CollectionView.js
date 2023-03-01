@@ -29,6 +29,26 @@ wrap(HierarchyWidget, 'render', function (render) {
             });
     };
 
+    const injectReloadImageButton = (imageName, folderId) => {
+        const button = this.$('.g-upload-here-button');
+        if (button.length === 0) {
+            return;
+        }
+        $('<button class="g-reload-slicer-cli-task-button btn btn-sm btn-default">Reload CLI Image</button>').attr('title', 'Reload ' + imageName)
+            .insertAfter(button)
+            .on('click', () => restRequest({
+                method: 'PUT',
+                url: 'slicer_cli_web/docker_image',
+                data: {
+                    name: JSON.stringify(imageName),
+                    folder: folderId
+                },
+                error: null
+            }).done((job) => {
+                showJobSuccessAlert(job);
+            }));
+    };
+
     if (getCurrentUser() && getCurrentUser().get('admin')) {
         if (this.parentModel.get('_modelType') === 'folder') {
             ConfigView.getSettings().then((settings) => {
@@ -37,6 +57,13 @@ wrap(HierarchyWidget, 'render', function (render) {
                 }
                 return null;
             });
+            try {
+                if (this.parentModel.get('meta').slicerCLIType === 'tag' && this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 2].get('meta').slicerCLIType === 'image') {
+                    let imageAndTag = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 2].get('name') + ':' + this.parentModel.get('name');
+                    let folderId = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 3].id;
+                    injectReloadImageButton(imageAndTag, folderId);
+                }
+            } catch (err) {}
         }
     }
 });

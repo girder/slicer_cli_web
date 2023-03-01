@@ -189,7 +189,8 @@ class DockerResource(Resource):
         .notes('Must be a system administrator to call this.')
         .param('name', 'A name or a list of names of the docker images to be '
                'loaded', required=True)
-        .modelParam('folder', 'The base folder to upload the tasks to', 'folder', paramType='query',
+        .modelParam('folder', 'The base folder id to upload the tasks to',
+                    'folder', paramType='query',
                     level=AccessType.WRITE, required=False)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
