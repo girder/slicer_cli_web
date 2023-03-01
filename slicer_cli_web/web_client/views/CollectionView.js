@@ -34,6 +34,20 @@ wrap(HierarchyWidget, 'render', function (render) {
         if (button.length === 0) {
             return;
         }
+        $('<button class="g-repull-slicer-cli-task-button btn btn-sm btn-default">Pull Latest</button>').attr('title', 'Pull latest and reload ' + imageName)
+            .insertAfter(button)
+            .on('click', () => restRequest({
+                method: 'PUT',
+                url: 'slicer_cli_web/docker_image',
+                data: {
+                    name: JSON.stringify(imageName),
+                    folder: folderId,
+                    pull: 'true'
+                },
+                error: null
+            }).done((job) => {
+                showJobSuccessAlert(job);
+            }));
         $('<button class="g-reload-slicer-cli-task-button btn btn-sm btn-default">Reload CLI Image</button>').attr('title', 'Reload ' + imageName)
             .insertAfter(button)
             .on('click', () => restRequest({

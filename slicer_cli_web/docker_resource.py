@@ -192,6 +192,8 @@ class DockerResource(Resource):
         .modelParam('folder', 'The base folder id to upload the tasks to',
                     'folder', paramType='query',
                     level=AccessType.WRITE, required=False)
+        .param('pull', 'If True, try to repull all images', paramType='query',
+               required=False)
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
@@ -206,15 +208,16 @@ class DockerResource(Resource):
         folder = params.get('folder', PluginSettings.get_task_folder())
         if not folder:
             raise RestException('no upload folder given or defined by default')
-        return self._createPutImageJob(nameList, folder)
+        return self._createPutImageJob(nameList, folder, params.get('pull', None))
 
-    def _createPutImageJob(self, nameList, baseFolder):
+    def _createPutImageJob(self, nameList, baseFolder, pull=False):
         job = Job().createLocalJob(
             module='slicer_cli_web.image_job',
             function='jobPullAndLoad',
             kwargs={
                 'nameList': nameList,
-                'folder': baseFolder['_id'] if isinstance(baseFolder, dict) else baseFolder
+                'folder': baseFolder['_id'] if isinstance(baseFolder, dict) else baseFolder,
+                'pull': pull,
             },
             title='Pulling and caching docker images',
             type=self.jobType,
