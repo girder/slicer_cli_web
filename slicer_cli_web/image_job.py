@@ -151,7 +151,10 @@ def jobPullAndLoad(job):
             )
             raise DockerImageError('Could not create the docker client')
 
-        pullList = [name for name in loadList if not findLocalImage(docker_client, name)]
+        pullList = [
+            name for name in loadList
+            if not findLocalImage(docker_client, name) or
+            str(job['kwargs'].get('pull')).lower() == 'true']
         loadList = [name for name in loadList if name not in pullList]
 
         try:
