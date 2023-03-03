@@ -116,16 +116,13 @@ const ItemSelectorWidget = BrowserWidget.extend({
             this.$('.g-validation-failed-message').addClass('hidden');
             this.$('.g-input-element.form-group').removeClass('has-error');
 
-            this.$('.g-item-list-link').each((index, item) => {
+            this.$('.g-item-list-entry').each((index, item) => {
                 if (this.$(item)) {
-                    // Cloning to remove the Thumbnail counter text
-                    const text = this.$(item).clone()
-                        .children()
-                        .remove()
-                        .end()
-                        .text();
+                    item = this.$(item);
+                    const link = item.find('.g-item-list-link[href]').filter((idx, l) => { console.log(idx, l); return $(l).find('i.icon-doc-text-inv').length; });
+                    const text = link.text();
                     if (text.match(regEx) || reg === '') {
-                        this.$(item).parent().addClass('g-selected');
+                        this.$(item).addClass('g-selected');
                     }
                 }
             });
