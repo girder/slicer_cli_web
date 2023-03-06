@@ -5,7 +5,8 @@ from girder_worker.app import app
 from girder_worker.docker.io import FDReadStreamConnector
 from girder_worker.docker.tasks import DockerTask, _docker_run
 from girder_worker.docker.transforms import BindMountVolume, ContainerStdOut
-from girder_worker.docker.transforms.girder import GirderFileIdToVolume
+from girder_worker.docker.transforms.girder import (GirderFileIdToVolume, GirderFolderIdToVolume,
+                                                    GirderItemIdToVolume)
 from girder_worker_utils import _walk_obj
 from girder_worker_utils.transforms.girder_io import GirderClientTransform
 
@@ -44,6 +45,24 @@ class DirectGirderFileIdToVolume(GirderFileIdToVolume):
     def transform(self, **kwargs):
         if self._direct_container_path:
             return self._direct_container_path
+        return super().transform(**kwargs)
+
+
+class MountGirderFileIdToVolume(GirderFileIdToVolume):
+    def transform(self, **kwargs):
+        print('file', self, dir(self))
+        return super().transform(**kwargs)
+
+
+class MountGirderFolderIdToVolume(GirderFolderIdToVolume):
+    def transform(self, **kwargs):
+        print('folder', self, dir(self))
+        return super().transform(**kwargs)
+
+
+class MountGirderItemIdToVolume(GirderItemIdToVolume):
+    def transform(self, **kwargs):
+        print('item', self, dir(self))
         return super().transform(**kwargs)
 
 

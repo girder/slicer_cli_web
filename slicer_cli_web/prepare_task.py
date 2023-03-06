@@ -19,29 +19,29 @@ FOLDER_SUFFIX = '_folder'
 
 
 def _to_file_volume(param, model):
-    from girder_worker.docker.transforms.girder import (GirderFileIdToVolume,
-                                                        GirderFolderIdToVolume,
-                                                        GirderItemIdToVolume)
     from girder_worker.girder_plugin.constants import PluginSettings
 
-    from .girder_worker_plugin.direct_docker_run import DirectGirderFileIdToVolume
+    from .girder_worker_plugin.direct_docker_run import (DirectGirderFileIdToVolume,
+                                                         MountGirderFileIdToVolume,
+                                                         MountGirderFolderIdToVolume,
+                                                         MountGirderItemIdToVolume)
 
     girder_type = SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
 
     if girder_type == 'folder':
-        return GirderFolderIdToVolume(model['_id'], folder_name=model['name'])
+        return MountGirderFolderIdToVolume(model['_id'], folder_name=model['name'])
     elif girder_type == 'item':
-        return GirderItemIdToVolume(model['_id'])
+        return MountGirderItemIdToVolume(model['_id'])
 
     if not Setting().get(PluginSettings.DIRECT_PATH):
-        return GirderFileIdToVolume(model['_id'], filename=model['name'])
+        return MountGirderFileIdToVolume(model['_id'], filename=model['name'])
 
     try:
         path = File().getLocalFilePath(model)
         return DirectGirderFileIdToVolume(model['_id'], direct_file_path=path,
                                           filename=model['name'])
     except FilePathException:
-        return GirderFileIdToVolume(model['_id'], filename=model['name'])
+        return MountGirderFileIdToVolume(model['_id'], filename=model['name'])
 
 
 def _to_girder_api(param, value):
