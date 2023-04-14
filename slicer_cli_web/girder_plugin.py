@@ -23,7 +23,6 @@ from girder.plugin import GirderPlugin, getPlugin
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from . import worker_tools
 from .docker_resource import DockerResource
 from .models import DockerImageItem
 
@@ -79,4 +78,3 @@ class SlicerCLIWebPlugin(GirderPlugin):
                 pass
         if count:
             logger.info('Marking %d old job(s) as cancelled' % count)
-        worker_tools.start()
