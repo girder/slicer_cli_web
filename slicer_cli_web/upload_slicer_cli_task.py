@@ -10,11 +10,12 @@ from girder_client import GirderClient
 
 def upload_cli(gc: GirderClient, image_name: str, replace: bool, cli_name: str, folder_id: str):
     output = subprocess.check_output(['docker', 'run', image_name, cli_name, '--xml'])
-    gc.post(f'slicer_cli_web/task/{folder_id}', data={
-        'cli': base64.b64encode(output),
+    gc.post(f'slicer_cli_web/cli', data={
+        'folder': folder_id,
         'image': image_name,
         'name': cli_name,
         'replace': str(replace),
+        'spec': base64.b64encode(output),
     })
 
 

@@ -18,11 +18,12 @@ import datetime
 import json
 
 from girder import events, logger
-from girder.constants import AccessType
+from girder.constants import AccessType, TokenScope
 from girder.plugin import GirderPlugin, getPlugin
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
+from . import TOKEN_SCOPE_MANAGE_TASKS
 from .docker_resource import DockerResource
 from .models import DockerImageItem
 
@@ -53,6 +54,10 @@ class SlicerCLIWebPlugin(GirderPlugin):
             getPlugin('worker').load(info)
         except Exception:
             logger.info('Girder working is unavailable')
+
+        TokenScope.describeScope(
+            TOKEN_SCOPE_MANAGE_TASKS, name='Manage Slicer CLI tasks',
+            description='Create / edit Slicer CLI docker tasks', admin=True)
 
         DockerImageItem.prepare()
 
