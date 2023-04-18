@@ -221,7 +221,7 @@ class DockerResource(Resource):
         Description('Add or replace an item task.')
         .notes('Must be a system administrator to call this.')
         .modelParam('folder', 'The folder ID to upload the task to.', paramType='formData',
-                    level=AccessType.WRITE)
+                    model=Folder, level=AccessType.WRITE)
         .param('image', 'The docker image identifier.')
         .param('name', 'The name of the item to create or replace.')
         .param('replace', 'Whether to replace an existing item with this name.', dataType='boolean')
