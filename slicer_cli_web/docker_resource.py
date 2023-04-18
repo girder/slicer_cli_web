@@ -54,7 +54,7 @@ class DockerResource(Resource):
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
         self.route('PUT', ('docker_image',), self.setImages)
-        self.route('PUT', ('cli',), self.createOrReplaceCli)
+        self.route('POST', ('cli',), self.createOrReplaceCli)
         self.route('DELETE', ('docker_image',), self.deleteImage)
         self.route('GET', ('docker_image',), self.getDockerImages)
 

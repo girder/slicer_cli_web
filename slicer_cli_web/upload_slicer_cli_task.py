@@ -23,8 +23,8 @@ def upload_cli(gc: GirderClient, image_name: str, replace: bool, cli_name: str, 
 @click.argument('api_url')
 @click.argument('folder_id')
 @click.argument('image_name')
-@click.option('--cli', description='Push a single CLI with the given name', default=None)
-@click.option('--replace', is_flag=True, description='Replace existing item if it exists', default=False)
+@click.option('--cli', help='Push a single CLI with the given name', default=None)
+@click.option('--replace', is_flag=True, help='Replace existing item if it exists', default=False)
 def upload_slicer_cli_task(api_url: str, folder_id: str, image_name: str, cli: Optional[str], replace: bool):
     if 'GIRDER_API_KEY' not in os.environ:
         raise Exception('Please set GIRDER_API_KEY in your environment.')
