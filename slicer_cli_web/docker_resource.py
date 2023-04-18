@@ -234,16 +234,14 @@ class DockerResource(Resource):
         except ValueError:
             raise RestException('The CLI spec must be base64-encoded.')
 
+        item = Item().createItem(
+            name, creator=self.getCurrentUser(), folder=folder, reuseExisting=replace
+        )
         metadata = dict(
             slicerCLIType='task',
             type='Unknown',  # TODO does "type" matter behaviorally? If so get it from the client
             digest=None,  # TODO should we support this?
-            **parser._parse_xml_desc(spec)
-        )
-
-        item = Item().createItem(
-            name, creator=self.getCurrentUser(), folder=folder,
-            description='Slicer CLI generated CLI command item', reuseExisting=replace
+            **parser._parse_xml_desc(item, self.getCurrentUser(), spec)
         )
         return Item().setMetadata(item, metadata)
 
