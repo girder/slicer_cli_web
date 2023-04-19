@@ -21,7 +21,7 @@
           "default": 10
         },
         {
-          "type": "integer",
+          "type": "double",
           "name": "Sleep",
           "longflag": "sleep",
           "label": "sleep",
