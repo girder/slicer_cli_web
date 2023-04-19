@@ -230,9 +230,9 @@ class DockerResource(Resource):
     )
     def createOrReplaceCli(self, folder: dict, image: str, name: str, replace: bool, spec: str):
         try:
-            spec = b64decode(spec)
+            spec = b64decode(spec).decode()
         except ValueError:
-            raise RestException('The CLI spec must be base64-encoded.')
+            raise RestException('The CLI spec must be base64-encoded UTF-8.')
 
         item = Item().createItem(
             name, creator=self.getCurrentUser(), folder=folder, reuseExisting=replace
