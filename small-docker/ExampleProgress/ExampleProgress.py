@@ -14,14 +14,15 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--count', dest='count', type=int, default=10)
-    parser.add_argument('--sleep', dest='sleep', type=int, default=1)
+    parser.add_argument('--sleep', dest='sleep', type=float, default=1)
 
     args = parser.parse_args()
-    with ProgressHelper('Example', 'sleeping mostly') as p:
+    with ProgressHelper('Example', 'Sleeping mostly') as p:
         for i in range(args.count):
-            print('doing some complicated things...')
+            print('Sleeping...')
             if i:
                 p.message('Sleeping for %g seconds' % ((args.count - i) * args.sleep))
             p.progress(float(i) / args.count)
             time.sleep(args.sleep)
+        p.message('Done')
         p.progress(1)

@@ -33,7 +33,7 @@ class CLIProgressCLIWriter(StreamWriter):
 
     def write(self, buf):
         act = self._buf + buf
-        self.buf = b''
+        self._buf = b''
 
         if b'</filter-' not in act:
             if b'<filter-' in act:
