@@ -241,6 +241,7 @@ class DockerResource(Resource):
             slicerCLIType='task',
             type='Unknown',  # TODO does "type" matter behaviorally? If so get it from the client
             digest=None,  # TODO should we support this?
+            image=image,
             **parser._parse_xml_desc(item, self.getCurrentUser(), spec)
         )
         return Item().setMetadata(item, metadata)
