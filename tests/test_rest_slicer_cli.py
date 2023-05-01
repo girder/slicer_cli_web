@@ -211,6 +211,7 @@ def test_girderApiUrl(handlerFunc, folder, file):
     ({'gamma': '{{default}}0'}, '0.50'),
     ({'gamma': '{{env_GAMMA}}'}, '0.4'),
     ({'gamma': '{{env_NOTGAMMA|default("0.3")}}'}, '0.3'),
+    ({'gamma': '{#control:#some_control#}'}, ''),
 ])
 @pytest.mark.plugin('slicer_cli_web')
 def test_templateParams(handlerFunc, folder, file, testParams, results):

@@ -89,6 +89,10 @@ const PanelGroup = View.extend({
             if (Array.isArray(value)) {
                 params[key] = JSON.stringify(value);
             }
+            const ctlmatch = value.match(/^{#control:(.*)#}$/);
+            if (ctlmatch) {
+                params[key] = $(ctlmatch[1]).val() || $(ctlmatch[1]).text() || $(ctlmatch[1]).prop('checked');
+            }
         });
 
         // post the job to the server
