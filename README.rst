@@ -171,6 +171,9 @@ The following template values are handled identically for all parameters:
 - ``{{parameter_<name of cli parameter>}}``: any parameter that isn't templated can be referenced by its name.  For instance, in Example1 in the small-docker cli in this repo, ``{{parameter_stringChoice}}`` would get replaced by the value passed to the stringChoice parameter.
 - ``{{parameter_<name of cli parameter>_base}}`` is the same as the previous item except that if the right-most part of the parameter looks like a file extension, it is removed.  This can be used to get the base name of file parameters.
 
+The following template parameters are only handled on the web client:
+- ``{#control:<selector>#}``: If specified for the value of a parameter, use the value of the selected field from the DOM.  For instance, ``{#control:.h-zoom-value#}`` could get the current image zoom level.
+
 There are also template values specific to individual parameters:
 
 - ``{{name}}``: the name of this parameter.  This usually doesn't have any spaces in it.
