@@ -1,5 +1,6 @@
 import sys
 import time
+from xml.sax.saxutils import escape
 
 
 class ProgressHelper(object):
@@ -12,7 +13,7 @@ class ProgressHelper(object):
         print("""<filter-start>
 <filter-name>%s</filter-name>
 <filter-comment>%s</filter-comment>
-</filter-start>""" % (self.name, self.comment))
+</filter-start>""" % (escape(str(self.name)), escape(str(self.comment))))
         sys.stdout.flush()
         self.start = time.time()
         return self
@@ -23,7 +24,12 @@ class ProgressHelper(object):
 
     def message(self, comment):
         self.comment = comment
-        print("""<filter-comment>%s</filter-comment>""" % comment)
+        print("""<filter-comment>%s</filter-comment>""" % escape(str(comment)))
+        sys.stdout.flush()
+
+    def name(self, name):
+        # Leave the original name alone
+        print("""<filter-name>%s</filter-name>""" % escape(str(name)))
         sys.stdout.flush()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -32,7 +38,7 @@ class ProgressHelper(object):
         print("""<filter-end>
  <filter-name>%s</filter-name>
  <filter-time>%s</filter-time>
-</filter-end>""" % (self.name, duration))
+</filter-end>""" % (escape(str(self.name)), duration))
         sys.stdout.flush()
 
 

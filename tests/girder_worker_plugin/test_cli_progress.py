@@ -49,7 +49,7 @@ class Test:
         self.write.reset_mock()
         self.w.write(b"""<filter-progress>0.1</filter-progress>Test""")
         self.write.assert_called_once_with(b'Test')
-        self.updateProgress.assert_called_once_with(total=1, current=0.1, message='Dummy: Comment')
+        self.updateProgress.assert_called_once_with(total=1, current=0.1, message='Comment')
 
     def test_progress_only(self):
         self.w.write(b"""<filter-progress>0.1</filter-progress>Test""")
