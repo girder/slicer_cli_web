@@ -1,4 +1,5 @@
 import re
+from xml.sax.saxutils import unescape
 
 from girder_worker.docker.io import StreamWriter
 
@@ -59,13 +60,11 @@ class CLIProgressCLIWriter(StreamWriter):
         progress = self._re_progress.findall(text)
 
         if name:
-            self._last_name = name[-1].strip()
+            self._last_name = unescape(name[-1]).strip()
         if comment:
-            self._last_comment = comment[-1].strip()
+            self._last_comment = unescape(comment[-1]).strip()
 
-        msg = self._last_name
-        if self._last_comment:
-            msg = '%s: %s' % (msg, self._last_comment)
+        msg = self._last_comment if self._last_comment else self._last_name
 
         if progress:
             val = float(progress[-1])
