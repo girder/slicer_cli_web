@@ -14,10 +14,11 @@
 #  limitations under the License.
 #############################################################################
 
-
+import copy
 import json
 import os
 import re
+import time
 
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute, describeRoute
@@ -26,15 +27,17 @@ from girder.api.v1.resource import Resource, RestException
 from girder.constants import AccessType, SortDir
 from girder.exceptions import AccessException
 from girder.models.item import Item
+from girder.models.token import Token
 from girder.utility import path as path_util
 from girder.utility.model_importer import ModelImporter
 from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
+from . import rest_slicer_cli
+from .cli_utils import as_model, get_cli_parameters
 from .config import PluginSettings
 from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
 
 
 class DockerResource(Resource):
@@ -62,7 +65,35 @@ class DockerResource(Resource):
 
         self.route('GET', ('path_match', ), self.getMatchingResource)
 
-        self._generateAllItemEndPoints()
+        if os.environ.get('GIRDER_STATIC_REST_ONLY'):
+            self.route('POST', (':id', 'run'), self.runCli)
+            self.route('POST', (':id', 'rerun'), self.rerunCli)
+        else:
+            self._generateAllItemEndPoints()
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Run a Slicer CLI job.')
+        .modelParam('id', 'The slicer CLI task item', Item, level=AccessType.READ)
+    )
+    def runCli(self, item, params):
+        user = self.getCurrentUser()
+        token = Token().createToken(user=user)
+        return cliSubHandler(CLIItem(item), params, user, token).job
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Re-run a Slicer CLI job.')
+        .modelParam('id', 'The slicer CLI item task', Item, level=AccessType.READ)
+        .modelParam('jobId', 'The job to re-run', Job, level=AccessType.READ)
+    )
+    def rerunCli(self, item, job, params):
+        user = self.getCurrentUser()
+        newParams = job.get('_original_params', {})
+        newParams.update(params)
+
+        token = Token().createToken(user=user)
+        return cliSubHandler(CLIItem(item), newParams, user, token).job
 
     @access.public
     @describeRoute(
@@ -261,7 +292,9 @@ class DockerResource(Resource):
         seen = set()
         for item in items:
             # default if not seen yet
-            genRESTEndPointsForSlicerCLIsForItem(self, item, item.restPath not in seen)
+            rest_slicer_cli.genRESTEndPointsForSlicerCLIsForItem(
+                self, item, item.restPath not in seen
+            )
             seen.add(item.restPath)
 
     def addRestEndpoints(self, event):
@@ -388,3 +421,73 @@ class DockerResource(Resource):
             except (AccessException, TypeError):
                 pass
         raise RestException('No matches.')
+
+
+def cliSubHandler(cliItem, params, user, token):
+    """
+    Create a job for a Slicer CLI item and schedule it.
+
+    :param currentItem: a CLIItem model.
+    :param params: parameter dictionary passed to the endpoint.
+    :param user: user model for the current user.
+    :param token: allocated token for the job.
+    """
+    from .girder_worker_plugin.direct_docker_run import run
+
+    clim = as_model(cliItem.xml)
+    cliTitle = clim.title
+
+    original_params = copy.deepcopy(params)
+    index_params, opt_params, simple_out_params = get_cli_parameters(clim)
+
+    container_args = [cliItem.name]
+    reference = {'slicer_cli_web': {
+        'title': cliTitle,
+        'image': cliItem.image,
+        'name': cliItem.name,
+    }}
+    now = time.localtime()
+    templateParams = {
+        'title': cliTitle,  # e.g., "Detects Nuclei"
+        'task': cliItem.name,  # e.g., "NucleiDetection"
+        'image': cliItem.image,  # e.g., "dsarchive/histomicstk:latest"
+        'now': time.strftime('%Y%m%d-%H%M%S', now),
+        'yyyy': time.strftime('%Y', now),
+        'mm': time.strftime('%m', now),
+        'dd': time.strftime('%d', now),
+        'HH': time.strftime('%H', now),
+        'MM': time.strftime('%M', now),
+        'SS': time.strftime('%S', now),
+    }
+
+    has_simple_return_file = bool(simple_out_params)
+    sub_index_params, sub_opt_params = index_params, opt_params
+    args, result_hooks, primary_input_name = rest_slicer_cli.prepare_task(
+        params, user, token, sub_index_params, sub_opt_params,
+        has_simple_return_file, reference, templateParams=templateParams)
+    container_args.extend(args)
+
+    jobType = '%s#%s' % (cliItem.image, cliItem.name)
+
+    if primary_input_name:
+        jobTitle = '%s on %s' % (cliTitle, primary_input_name)
+    else:
+        jobTitle = cliTitle
+
+    job_kwargs = cliItem.item.get('meta', {}).get('docker-params', {})
+    job = run.delay(
+        girder_user=user,
+        girder_job_type=jobType,
+        girder_job_title=jobTitle,
+        girder_result_hooks=result_hooks,
+        image=cliItem.digest,
+        pull_image='if-not-present',
+        container_args=container_args,
+        **job_kwargs
+    )
+    jobRecord = Job().load(job.job['_id'], force=True)
+    job.job['_original_params'] = jobRecord['_original_params'] = original_params
+    job.job['_original_name'] = jobRecord['_original_name'] = cliItem.name
+    job.job['_original_path'] = jobRecord['_original_path'] = cliItem.restBasePath
+    Job().save(jobRecord)
+    return job
