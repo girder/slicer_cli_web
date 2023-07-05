@@ -68,6 +68,7 @@ class DockerResource(Resource):
         if os.environ.get('GIRDER_STATIC_REST_ONLY'):
             self.route('POST', ('cli', ':id', 'run'), self.runCli)
             self.route('POST', ('cli', ':id', 'rerun'), self.rerunCli)
+            self.route('POST', ('cli', ':id', 'datalist', ':key'), self.datalistHandler)
         else:
             self._generateAllItemEndPoints()
 
@@ -94,6 +95,33 @@ class DockerResource(Resource):
 
         token = Token().createToken(user=user)
         return cliSubHandler(CLIItem(item), newParams, user, token).job
+
+    @access.user
+    @describeRoute(
+        Description('Lookup a datalist parameter on a CLI task')
+        .modelParam('id', 'The slicer CLI item task', Item, level=AccessType.READ)
+        .param('key', 'The parameter name to look up')
+        .deprecated()
+    )
+    def datalistHandler(self, item, key, params):
+        # TODO we should change any client that is using this to instead poll the job rather than
+        #   waiting for it to finish in the request thread.
+        user = self.getCurrentUser()
+
+        currentItem = CLIItem(item)
+        token = Token().createToken(user=user)
+        job = cliSubHandler(currentItem, params, user, token, key).job
+        delay = 0.01
+        while job['status'] not in {JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED}:
+            time.sleep(delay)
+            delay = min(delay * 1.5, 1.0)
+            job = Job().load(id=job['_id'], force=True, includeLog=True)
+        result = ''.join(job['log']) if 'log' in job else ''
+        if '<element' in result:
+            result = result[result.index('<element'):]
+        if '</element>' in result:
+            result = result[:result.rindex('</element>') + 10]
+        return result
 
     @access.public
     @describeRoute(
@@ -423,7 +451,7 @@ class DockerResource(Resource):
         raise RestException('No matches.')
 
 
-def cliSubHandler(cliItem, params, user, token):
+def cliSubHandler(cliItem, params, user, token, datalistKey=None):
     """
     Create a job for a Slicer CLI item and schedule it.
 
@@ -431,6 +459,7 @@ def cliSubHandler(cliItem, params, user, token):
     :param params: parameter dictionary passed to the endpoint.
     :param user: user model for the current user.
     :param token: allocated token for the job.
+    :param datalistKey: if not None, a param name for this CLI that has a datalist.
     """
     from .girder_worker_plugin.direct_docker_run import run
 
@@ -439,6 +468,12 @@ def cliSubHandler(cliItem, params, user, token):
 
     original_params = copy.deepcopy(params)
     index_params, opt_params, simple_out_params = get_cli_parameters(clim)
+
+    datalistSpec = {
+        param.name: json.loads(param.datalist)
+        for param in index_params + opt_params
+        if param.channel != 'output' and param.datalist
+    }
 
     container_args = [cliItem.name]
     reference = {'slicer_cli_web': {
@@ -462,6 +497,27 @@ def cliSubHandler(cliItem, params, user, token):
 
     has_simple_return_file = bool(simple_out_params)
     sub_index_params, sub_opt_params = index_params, opt_params
+
+    if datalistKey:
+        datalist = datalistSpec[datalistKey]
+        params = params.copy()
+        params.update(datalist)
+        sub_index_params = [
+            param if param.name not in datalist or not rest_slicer_cli.is_on_girder(param)
+            else rest_slicer_cli.stringifyParam(param)
+            for param in index_params
+            if (param.name not in datalist or datalist.get(param.name) is not None) and
+            param.name not in {k + rest_slicer_cli.FOLDER_SUFFIX for k in datalist}
+        ]
+        sub_opt_params = [
+            param if param.name not in datalist or not rest_slicer_cli.is_on_girder(param)
+            else rest_slicer_cli.stringifyParam(param)
+            for param in opt_params
+            if param.channel != 'output' and (
+                param.name not in datalist or datalist.get(param.name) is not None) and
+            param.name not in {k + rest_slicer_cli.FOLDER_SUFFIX for k in datalist}
+        ]
+
     args, result_hooks, primary_input_name = rest_slicer_cli.prepare_task(
         params, user, token, sub_index_params, sub_opt_params,
         has_simple_return_file, reference, templateParams=templateParams)
