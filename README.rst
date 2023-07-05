@@ -33,7 +33,7 @@ To use Girder Worker:
 
 .. code-block:: bash
 
-  pip install girder-slicer-cli-web[worker]
+  pip install 'girder-slicer-cli-web[worker]'
   GW_DIRECT_PATHS=true girder_worker -l info -Ofair --prefetch-multiplier=1
 
 The first time you start Girder, you'll need to configure it with at least one user and one assetstore (see the Girder_ documentation).  Additionally, it is recommended that you install some dockerized tasks, such as the HistomicsTK_ algorithms.  This can be done going to the Admin Console, Plugins, Slicer CLI Web settings.  Set a default task upload folder, then import the `dsarchive/histomicstk:latest` docker image.
@@ -44,9 +44,24 @@ Girder Plugin
 Importing Docker Images
 =======================
 
-When installed in Girder, an admin user can go to the Admin Console -> Plugins -> Slicer CLI Web to add Docker images.  Select a Docker image and an existing folder and then select Import Image.  Slicer CLI Web will pull the Docker image if it is not available on the Girder machine.
+Once a docker image has been created and pushed to Docker Hub, you can register the image's CLI as a set of tasks on the server. To do so,
+use the client upload script bundled with this tool. To install it, run:
 
-For each docker image that is imported, a folder is created with the image tag.  Within this folder, a subfolder is created with the image version.  The subfolder will have one item per CLI that the Docker image reports.  These items can be moved after they have been imported, just like standard Girder items.
+.. code-block:: bash
+
+  pip install 'girder-slicer-cli-web[client]'
+
+Create an API key with the "Manage Slicer CLI tasks" scope, and set it in your environment and run a command like this example:
+
+.. code-block:: bash
+
+  GIRDER_API_KEY=my_key_vale upload-slicer-cli-task https://my-girder-host.com/api/v1 641b8578cdcf8f129805524b my-slicer-cli-image:latest
+
+The first argument of this command is the API URL of the server, the second is a Girder folder ID where the tasks will live, and the
+last argument is the docker image identifier. (If the image does not exist locally it will be pulled.) If you just want to create a
+single CLI task rather than all tasks from ``--list_cli``, you can pass ``--cli=CliName``. If you wish to replace the existing tasks
+with the latest specifications, also pass the ``--replace`` flag to the command.
+
 
 Running CLIs
 ============
@@ -198,4 +213,3 @@ If the local (server) environment has any environment variables that begin with 
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _Girder Worker: https://girder-worker.readthedocs.io/en/latest/
 .. _HistomicsTK: https://github.com/DigitalSlideArchive/HistomicsTK
-

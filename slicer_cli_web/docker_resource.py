@@ -14,6 +14,7 @@
 #  limitations under the License.
 #############################################################################
 
+from base64 import b64decode
 import copy
 import json
 import os
@@ -22,10 +23,11 @@ import time
 
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute, describeRoute
-from girder.api.rest import setRawResponse, setResponseHeader
+from girder.api.rest import setRawResponse, setResponseHeader, filtermodel
 from girder.api.v1.resource import Resource, RestException
 from girder.constants import AccessType, SortDir
 from girder.exceptions import AccessException
+from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.token import Token
 from girder.utility import path as path_util
@@ -34,7 +36,7 @@ from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from . import rest_slicer_cli
+from . import rest_slicer_cli, TOKEN_SCOPE_MANAGE_TASKS
 from .cli_utils import as_model, get_cli_parameters
 from .config import PluginSettings
 from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
@@ -54,6 +56,7 @@ class DockerResource(Resource):
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
         self.route('PUT', ('docker_image',), self.setImages)
+        self.route('POST', ('cli',), self.createOrReplaceCli)
         self.route('DELETE', ('docker_image',), self.deleteImage)
         self.route('GET', ('docker_image',), self.getDockerImages)
 
@@ -242,7 +245,7 @@ class DockerResource(Resource):
                 raise RestException('Image %s does not have a tag or digest' % img)
         return nameList
 
-    @access.admin
+    @access.admin(scope=TOKEN_SCOPE_MANAGE_TASKS)
     @describeRoute(
         Description('Add one or a list of images')
         .notes('Must be a system administrator to call this.')
@@ -268,6 +271,37 @@ class DockerResource(Resource):
         if not folder:
             raise RestException('no upload folder given or defined by default')
         return self._createPutImageJob(nameList, folder, params.get('pull', None))
+
+    @access.admin(scope=TOKEN_SCOPE_MANAGE_TASKS)
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('Add or replace an item task.')
+        .notes('Must be a system administrator to call this.')
+        .modelParam('folder', 'The folder ID to upload the task to.', paramType='formData',
+                    model=Folder, level=AccessType.WRITE)
+        .param('image', 'The docker image identifier.')
+        .param('name', 'The name of the item to create or replace.')
+        .param('replace', 'Whether to replace an existing item with this name.', dataType='boolean')
+        .param('spec', 'Base64-encoded XML spec of the CLI.')
+        .errorResponse('You are not a system administrator.', 403)
+    )
+    def createOrReplaceCli(self, folder: dict, image: str, name: str, replace: bool, spec: str):
+        try:
+            spec = b64decode(spec).decode()
+        except ValueError:
+            raise RestException('The CLI spec must be base64-encoded UTF-8.')
+
+        item = Item().createItem(
+            name, creator=self.getCurrentUser(), folder=folder, reuseExisting=replace
+        )
+        metadata = dict(
+            slicerCLIType='task',
+            type='Unknown',  # TODO does "type" matter behaviorally? If so get it from the client
+            digest=None,  # TODO should we support this?
+            image=image,
+            **parser._parse_xml_desc(item, self.getCurrentUser(), spec)
+        )
+        return Item().setMetadata(item, metadata)
 
     def _createPutImageJob(self, nameList, baseFolder, pull=False):
         job = Job().createLocalJob(
