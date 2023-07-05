@@ -14,16 +14,16 @@
 #  limitations under the License.
 #############################################################################
 
-from base64 import b64decode
 import copy
 import json
 import os
 import re
 import time
+from base64 import b64decode
 
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute, describeRoute
-from girder.api.rest import setRawResponse, setResponseHeader, filtermodel
+from girder.api.rest import filtermodel, setRawResponse, setResponseHeader
 from girder.api.v1.resource import Resource, RestException
 from girder.constants import AccessType, SortDir
 from girder.exceptions import AccessException
@@ -36,10 +36,10 @@ from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from . import rest_slicer_cli, TOKEN_SCOPE_MANAGE_TASKS
+from . import TOKEN_SCOPE_MANAGE_TASKS, rest_slicer_cli
 from .cli_utils import as_model, get_cli_parameters
 from .config import PluginSettings
-from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
+from .models import CLIItem, DockerImageItem, DockerImageNotFoundError, parser
 
 
 class DockerResource(Resource):

@@ -10,7 +10,7 @@ from girder_client import GirderClient
 
 def upload_cli(gc: GirderClient, image_name: str, replace: bool, cli_name: str, folder_id: str):
     output = subprocess.check_output(['docker', 'run', image_name, cli_name, '--xml'])
-    gc.post(f'slicer_cli_web/cli', data={
+    gc.post('slicer_cli_web/cli', data={
         'folder': folder_id,
         'image': image_name,
         'name': cli_name,
@@ -25,7 +25,9 @@ def upload_cli(gc: GirderClient, image_name: str, replace: bool, cli_name: str, 
 @click.argument('image_name')
 @click.option('--cli', help='Push a single CLI with the given name', default=None)
 @click.option('--replace', is_flag=True, help='Replace existing item if it exists', default=False)
-def upload_slicer_cli_task(api_url: str, folder_id: str, image_name: str, cli: Optional[str], replace: bool):
+def upload_slicer_cli_task(
+    api_url: str, folder_id: str, image_name: str, cli: Optional[str], replace: bool
+):
     if 'GIRDER_API_KEY' not in os.environ:
         raise Exception('Please set GIRDER_API_KEY in your environment.')
 
