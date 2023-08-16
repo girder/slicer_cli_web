@@ -381,7 +381,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
         :param user: user model for the current user.
         :param token: allocated token for the job.
         :param datalist: if not None, an object with keys that override
-            parameters.  No ouputs are used.
+            parameters.  No outputs are used.
         """
         from .girder_worker_plugin.direct_docker_run import run
 

@@ -169,7 +169,7 @@
     },
     {
       "label": "File, Directory and Image Parameters",
-      "description": "Parameters that describe files and direcories.",
+      "description": "Parameters that describe files and directories.",
       "parameters": [
         {
           "type": "file",

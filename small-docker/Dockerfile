@@ -2,7 +2,7 @@
 FROM python:3.9-alpine
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
-# Since we are using a BusyBox varient, we need to use addgroup and adduser,
+# Since we are using a BusyBox variant, we need to use addgroup and adduser,
 # rather than let girder_worker use groupadd and useradd.  Those will fail,
 # which is allowed if the worker user and group exist.
 RUN addgroup -g 1000 -S worker

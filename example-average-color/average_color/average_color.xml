@@ -38,11 +38,9 @@
     <file fileExtensions=".anot" reference="ImageFile">
       <name>outputAnnotationFile</name>
       <label>Output Annotation File</label>
-      <description>Ouput annotation file (*.anot)</description>
+      <description>Output annotation file (*.anot)</description>
       <channel>output</channel>
       <index>1</index>
     </file>
   </parameters>
 </executable>
-
-

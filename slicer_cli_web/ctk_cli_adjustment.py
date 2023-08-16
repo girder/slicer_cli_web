@@ -94,16 +94,16 @@ class CLIParameter(ctk_cli.module.CLIParameter):
                 self.constraints = ctk_cli.module.CLIConstraints.parse(n)
             elif ctk_cli.module._tag(n) == 'element':
                 if not n.text:
-                    ctk_cli.module.logger.warning("Ignoring empty <element> within <%s>" % (ctk_cli.module._tag(elementTree), ))  # noqa
+                    ctk_cli.module.logger.warning('Ignoring empty <element> within <%s>' % (ctk_cli.module._tag(elementTree), ))  # noqa
                 else:
                     elements.append(n.text)
             else:
-                ctk_cli.module.logger.warning("Element %r within %r not parsed" % (ctk_cli.module._tag(n), ctk_cli.module._tag(elementTree)))  # noqa
+                ctk_cli.module.logger.warning('Element %r within %r not parsed' % (ctk_cli.module._tag(n), ctk_cli.module._tag(elementTree)))  # noqa
 
         # Added channel and external type checks (slicer_cli_web)
         if (not self.flag and not self.longflag and self.index is None and
                 (self.channel != 'output' or self.isExternalType())):
-            ctk_cli.module.logger.warning("Parameter %s cannot be passed (missing one of flag, longflag, or index)!" % (  # noqa
+            ctk_cli.module.logger.warning('Parameter %s cannot be passed (missing one of flag, longflag, or index)!' % (  # noqa
                 self.identifier(), ))
 
         if self.flag and not self.flag.startswith('-'):
@@ -128,11 +128,11 @@ class CLIParameter(ctk_cli.module.CLIParameter):
                 ctk_cli.module.logger.warning('Problem parsing enumeration element values of <%s> (%s): %s' % (  # noqa
                     ctk_cli.module._tag(elementTree), self.name, e))
             if not elements:
-                ctk_cli.module.logger.warning("No <element>s found within <%s>" % (ctk_cli.module._tag(elementTree), ))  # noqa
+                ctk_cli.module.logger.warning('No <element>s found within <%s>' % (ctk_cli.module._tag(elementTree), ))  # noqa
         else:
             self.elements = None
             if elements:
-                ctk_cli.module.logger.warning("Ignoring <element>s within <%s>" % (ctk_cli.module._tag(elementTree), ))  # noqa
+                ctk_cli.module.logger.warning('Ignoring <element>s within <%s>' % (ctk_cli.module._tag(elementTree), ))  # noqa
 
         return self
 

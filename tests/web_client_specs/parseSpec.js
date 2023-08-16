@@ -289,7 +289,6 @@ describe('XML Schema parser', function () {
                 title: 'arg1',
                 description: 'A description',
                 channel: 'output',
-                required: false,
                 extensions: '.txt'
             });
 

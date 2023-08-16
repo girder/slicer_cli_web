@@ -122,7 +122,7 @@ parameter_groups:
     longflag: boolean3
     description: A boolean with no default, should be defaulting to false
     label: Boolean No Default
-- description: Parameters that describe files and direcories.
+- description: Parameters that describe files and directories.
   label: File, Directory and Image Parameters
   parameters:
   - type: file

@@ -166,7 +166,7 @@ describe('browser hierarchy paginated selection', function () {
             w.render();
             expect(w.$('.s-select-multifile-button').length).toBe(1);
             w.$('.s-select-multifile-button').click();
-            
+
         });
         waitsFor(function () {
             return $('.g-hierarchy-widget').length > 0 && $('.g-item-list-entry').length >0;
@@ -233,7 +233,7 @@ describe('browser hierarchy paginated selection', function () {
         runs(function () {
             expect($('.g-selected .g-item-list-link').length).toBe(21)
         }, 'Testing empty Regex value');
-        
+
         runs(function () {
             $('#g-input-element').val('\\');
             $('#g-input-element').trigger('input');
