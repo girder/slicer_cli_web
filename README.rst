@@ -36,7 +36,7 @@ To use Girder Worker:
   pip install girder-slicer-cli-web[worker]
   GW_DIRECT_PATHS=true girder_worker -l info -Ofair --prefetch-multiplier=1
 
-The first time you start Girder, you'll need to configure it with at least one user and one assetstore (see the Girder_ documentation).  Additionally, it is recommended that you install some dockerized tasks, such as the HistomicsTK_ algorithms.  This can be done going to the Admin Console, Plugins, Slicer CLI Web settings.  Set a default task upload folder, then import the `dsarchive/histomicstk:latest` docker image.
+The first time you start Girder, you'll need to configure it with at least one user and one assetstore (see the Girder_ documentation).  Additionally, it is recommended that you install some dockerized tasks, such as the HistomicsTK_ algorithms.  This can be done going to the Admin Console, Plugins, Slicer CLI Web settings.  Set a default task upload folder, then import the ``dsarchive/histomicstk:latest`` docker image.
 
 Girder Plugin
 -------------
@@ -88,7 +88,7 @@ The XML must conform to the `Slicer Execution Schema <https://www.slicer.org/w/i
 
   - Enumerations have bare elements under the appropriate parent tag.  That is, instead of a structure like ``<string-enumeration>...<enumeration><element>Value 1</element><element>Value 2</element>...</enumeration></string-enumeration>``, the ``<enumeration>`` tag is omitted: ``<string-enumeration>...<element>Value 1</element><element>Value 2</element>...</string-enumeration>``.
 
-  - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presense of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it cahnges what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
+  - Booleans specify a true or false value after the flag or long flag.  The Slicer Execution Schema states that booleans should be false by default and the presence of the flag should make them true.  The ``ctk_cli`` specifies that they take a single ``true`` or ``false`` parameter.  This doesn't change the xml; it changes what is passed to the CLI.  Instead of passing ``--longflag`` to set the flag to true, ``--longflag true`` must be passed.
 
 Docker CLIs with GPU support
 ----------------------------
@@ -158,7 +158,7 @@ When running a batch job, a parent job initiates ordinary (non-batch) jobs.  The
 Templated Inputs
 ----------------
 
-Any CLI parameter that takes a value that isn't a Girder resource identifer can be specified with a Jinja2-style template string.
+Any CLI parameter that takes a value that isn't a Girder resource identifier can be specified with a Jinja2-style template string.
 
 For instance, instead of typing an explicit output file name, one can specify something like ``{{title}}-{{reference_base}}-{{now}}{{extension}}``.  If this were being run on a task called "Radial Blur" on an image called "SampleImage.tiff", where the output image referenced the image image and had a list of file extensions starting with ".png", this would end up being converted to the value ``Radial Blur-SampleImage-20210428-084321.png``.
 
@@ -198,4 +198,3 @@ If the local (server) environment has any environment variables that begin with 
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _Girder Worker: https://girder-worker.readthedocs.io/en/latest/
 .. _HistomicsTK: https://github.com/DigitalSlideArchive/HistomicsTK
-

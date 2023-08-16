@@ -221,7 +221,7 @@ def _manageWorkersConfigFile(event):
 
 def start():
     """
-    Add event bindings and start worker managment tools.
+    Add event bindings and start worker management tools.
     """
     events.bind('jobs.cancel', 'slicer_cli_web_worker', _manageWorkers)
     events.bind('jobs.schedule', 'slicer_cli_web_worker', _manageWorkers)

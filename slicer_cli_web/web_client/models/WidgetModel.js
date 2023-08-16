@@ -226,7 +226,7 @@ const WidgetModel = Backbone.Model.extend({
      */
     _validateGirderModel(model) {
         if (!model.value || !model.value.get('name')) {
-            if (this.get('type') === 'new-file' && !this.get('required')) {
+            if (!this.get('required')) {
                 return;
             }
             return 'Empty value';
