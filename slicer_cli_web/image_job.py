@@ -331,6 +331,7 @@ def pullDockerImage(client, names):
     imgNotExistList = []
     for name in names:
         try:
+            logger.info('Pulling %s image', name)
             client.images.pull(name)
             # some invalid image names will not be pulled but the pull method
             # will not throw an exception so the only way to confirm if a pull
