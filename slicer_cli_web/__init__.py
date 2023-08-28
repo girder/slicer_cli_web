@@ -37,5 +37,6 @@ except PackageNotFoundError:
     # package is not installed
     pass
 
-
 __license__ = 'Apache 2.0'
+
+TOKEN_SCOPE_MANAGE_TASKS = 'slicer_cli_web.manage_tasks'
