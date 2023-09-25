@@ -32,6 +32,13 @@
         <step>10</step>
       </constraints>
     </double>
+    <region shapes="rectangle,polygon,polyline,point,multi,submitoff">
+      <name>region</name>
+      <label>Analysis ROI</label>
+      <longflag>region</longflag>
+      <description>Region of interest where analysis is performed.  This is either -1,-1,-1,-1 for the whole image, or a four-element vector in the format "left, top, width, height", or a list of four or more x,y vertices to specify a polygon.</description>
+      <default>-1,-1,-1,-1</default>
+    </region>
   </parameters>
   <parameters advanced="true">
     <label>Advanced Parameters</label>

@@ -51,11 +51,6 @@ def _convert_param(parent, param):
         d = SubElement(p, 'default')
         if param['type'].endswith('-vector'):
             d.text = ','.join(str(v) for v in default_value)
-        elif param['type'] == 'region':
-            center = default_value['center']
-            radius = default_value['radius']
-            d.text = '%s,%s,%s,%s,%s,%s' % (
-                center['x'], center['y'], center['z'], radius['x'], radius['y'], radius['z'])
         else:
             d.text = str(default_value)
 
