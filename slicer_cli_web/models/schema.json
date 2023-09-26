@@ -504,10 +504,7 @@
                 },
                 {
                   "type": "object",
-                  "required": [
-                    "channel"
-                  ],
-                  "description": "parameter can be used to specify rectangular ROIs. The command-line syntax is --region X_center,Y_center,Z_center,X_radius,Y_Radius,Z_Radius.",
+                  "description": "parameter can be used to specify rectangular ROIs. The format is X_center,Y_center,Z_center,X_radius,Y_Radius,Z_Radius or another comma-separated list of coordinates.",
                   "properties": {
                     "type": {
                       "type": "string",
@@ -516,19 +513,7 @@
                       ]
                     },
                     "default": {
-                      "type": "object",
-                      "required": [
-                        "center",
-                        "radius"
-                      ],
-                      "properties": {
-                        "center": {
-                          "$ref": "#/definitions/xyz"
-                        },
-                        "radius": {
-                          "$ref": "#/definitions/xyz"
-                        }
-                      }
+                      "type": "string"
                     },
                     "coordinateSystem": {
                       "$ref": "#/definitions/coordinateSystem"

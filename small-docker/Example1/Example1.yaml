@@ -30,6 +30,15 @@ parameter_groups:
       minimum: 0.0
       maximum: 1000.0
       step: 10.0
+  - type: region
+    shapes: rectangle,polygon,polyline,point,multi,submitoff
+    name: region
+    label: Analysis ROI
+    longflag: region
+    description: Region of interest where analysis is performed.  This is either -1,-1,-1,-1
+      for the whole image, or a four-element vector in the format "left, top, width,
+      height", or a list of four or more x,y vertices to specify a polygon.
+    default: -1,-1,-1,-1
 - advanced: true
   description: Parameters that are advanced
   label: Advanced Parameters

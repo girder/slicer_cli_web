@@ -61,10 +61,8 @@ const ControlWidget = View.extend({
         'click .s-select-file-button': '_selectFile',
         'click .s-select-multifile-button': '_selectMultiFile',
         'click .s-select-region-button': '_selectRegion',
-        'click .s-select-region-add-button': '_selectRegionAdd',
-        'click .s-select-region-polygon-button': '_selectRegionPolygon',
-        'click .s-select-region-polygon-add-button': '_selectRegionAddPolygon',
-        'click .s-select-region-clear-button': '_clearRegion'
+        'click .s-select-region-clear-button': '_clearRegion',
+        'click .s-select-region-submit-button': '_submitRegionToggle'
     },
 
     initialize(settings) {
@@ -158,7 +156,8 @@ const ControlWidget = View.extend({
             return this;
         }
         const params = Object.assign({
-            disableRegionSelect: this._disableRegionSelect
+            disableRegionSelect: this._disableRegionSelect,
+            previousElement: this.$el
         }, this.model.toJSON());
         this.$el.html(this.template()(params));
         this.$('.s-control-item[data-type="range"] input').slider();
@@ -459,32 +458,34 @@ const ControlWidget = View.extend({
     },
 
     /**
-     * Trigger a global event to initiate rectangle drawing mode to whoever
-     * might be listening.
+     * Trigger a global event to initiate drawing mode to any listener.
      */
-    _selectRegion() {
+    _selectRegion(evt) {
         this.$('.tooltip[role="tooltip"]').remove();
+        const target = $(evt.target).closest('.s-select-region-button');
+        const submit = target.closest('.input-group-btn').find('.s-select-region-submit-button');
+        if (target.hasClass('active')) {
+            events.trigger('s:widgetDrawRegionEvent', {model: this.model, mode: null, add: false, submitCtrl: submit, event: evt});
+            return;
+        }
+        const shape = target.attr('shape');
+        const multi = target.attr('multi') === 'true';
+        events.trigger('s:widgetDrawRegionEvent', {model: this.model, mode: shape, add: multi, submitCtrl: submit, event: evt});
         events.trigger('s:widgetDrawRegion', this.model);
     },
 
-    _selectRegionAdd() {
+    _clearRegion(evt) {
         this.$('.tooltip[role="tooltip"]').remove();
-        events.trigger('s:widgetDrawAddRegion', this.model);
-    },
-
-    _selectRegionAddPolygon() {
-        this.$('.tooltip[role="tooltip"]').remove();
-        events.trigger('s:widgetDrawAddPolygonRegion', this.model);
-    },
-
-    _selectRegionPolygon() {
-        this.$('.tooltip[role="tooltip"]').remove();
-        events.trigger('s:widgetDrawPolygonRegion', this.model);
-    },
-
-    _clearRegion() {
-        this.$('.tooltip[role="tooltip"]').remove();
+        const submit = $(evt.target).closest('.input-group-btn').find('.s-select-region-submit-button');
+        events.trigger('s:widgetDrawRegionEvent', {model: this.model, mode: null, add: false, submitCtrl: submit, event: evt});
         events.trigger('s:widgetClearRegion', this.model);
+    },
+
+    _submitRegionToggle(evt) {
+        if ($(evt.target).attr('can-toggle') === 'true') {
+            $(evt.target).toggleClass('enabled');
+            $(evt.target).toggleClass('active', $(evt.target).hasClass('enabled'));
+        }
     }
 
 });

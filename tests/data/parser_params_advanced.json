@@ -33,18 +33,7 @@
             "deprecatedalias": "ed",
             "value": "aa"
           },
-          "default": {
-            "center": {
-              "x": 0,
-              "y": 1,
-              "z": 2
-            },
-            "radius": {
-              "x": 3,
-              "y": 4,
-              "z": 5
-            }
-          },
+          "default": "0,1,2,3,4,5",
           "coordinateSystem": "lps"
         }, {
           "type": "file",
