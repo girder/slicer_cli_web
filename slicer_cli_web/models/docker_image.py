@@ -299,4 +299,3 @@ class DockerImageItem:
     @staticmethod
     def prepare():
         Item().ensureIndex(['meta.slicerCLIType', {'sparse': True}])
-        Item().ensureIndex(['meta.slicerCLIType', {'sparse': True}])

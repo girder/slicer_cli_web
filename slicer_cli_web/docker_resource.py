@@ -19,6 +19,7 @@ import json
 import os
 import re
 
+import pymongo
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute, describeRoute
 from girder.api.rest import setRawResponse, setResponseHeader
@@ -28,7 +29,6 @@ from girder.exceptions import AccessException
 from girder.models.item import Item
 from girder.utility import path as path_util
 from girder.utility.model_importer import ModelImporter
-from girder.utility.progress import setResponseTimeLimit
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
@@ -352,7 +352,6 @@ class DockerResource(Resource):
         .errorResponse('No matches.')
     )
     def getMatchingResource(self, name, path, type, relative_path, base_id, base_type):
-        setResponseTimeLimit(86400)
         user = self.getCurrentUser()
         model = ModelImporter.model(type)
         pattern = None
@@ -360,7 +359,7 @@ class DockerResource(Resource):
             pattern = re.compile(path)
         if relative_path:
             if not base_id or not base_type:
-                raise RestException('No matches.')
+                return None
             try:
                 base_model = ModelImporter.model(base_type).load(base_id, user=user)
                 base_path = path_util.getResourcePath(base_type, base_model, user=user)
@@ -370,21 +369,24 @@ class DockerResource(Resource):
                 if type == 'folder':
                     doc['_path'] = doc['_path'][:-1]
             except Exception:
-                raise RestException('No matches.')
+                return None
             if not name and not path:
                 return doc
             pattern = re.compile('(?=^' + re.escape(new_path) + ').*' + (path or ''))
-        for doc in model.findWithPermissions(
-                {'name': {'$regex': name}} if name else {},
-                sort=[('updated', SortDir.DESCENDING), ('created', SortDir.DESCENDING)],
-                user=user, level=AccessType.READ):
-            try:
-                resourcePath = path_util.getResourcePath(type, doc, user=user)
-                if not pattern or pattern.search(resourcePath):
-                    doc['_path'] = resourcePath.split('/')[2:]
-                    if type == 'folder':
-                        doc['_path'] = doc['_path'][:-1]
-                    return doc
-            except (AccessException, TypeError):
-                pass
-        raise RestException('No matches.')
+        try:
+            for doc in model.findWithPermissions(
+                    {'name': {'$regex': name}} if name else {},
+                    sort=[('updated', SortDir.DESCENDING), ('created', SortDir.DESCENDING)],
+                    user=user, level=AccessType.READ, timeout=10000):
+                try:
+                    resourcePath = path_util.getResourcePath(type, doc, user=user)
+                    if not pattern or pattern.search(resourcePath):
+                        doc['_path'] = resourcePath.split('/')[2:]
+                        if type == 'folder':
+                            doc['_path'] = doc['_path'][:-1]
+                        return doc
+                except (AccessException, TypeError):
+                    pass
+        except pymongo.errors.ExecutionTimeout:
+            return None
+        return None
