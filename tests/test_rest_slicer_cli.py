@@ -8,7 +8,7 @@ from girder.api import rest
 from girder.models.collection import Collection
 from girder.models.folder import Folder
 from girder.models.item import Item
-from pytest_girder.assertions import assertStatus, assertStatusOk
+from pytest_girder.assertions import assertStatusOk
 
 from slicer_cli_web import docker_resource, rest_slicer_cli
 from slicer_cli_web.models import CLIItem
@@ -145,7 +145,8 @@ def test_get_matching_resource(server, admin):
         'type': 'item',
         'name': 'nosuchitem',
     })
-    assertStatus(resp, 400)
+    assertStatusOk(resp)
+    assert resp.json is None
 
     resp = server.request('/slicer_cli_web/path_match', params={
         'type': 'folder',
@@ -161,7 +162,8 @@ def test_get_matching_resource(server, admin):
         'relative_path': '..',
         'base_type': 'item',
     }, user=admin)
-    assertStatus(resp, 400)
+    assertStatusOk(resp)
+    assert resp.json is None
 
     resp = server.request('/slicer_cli_web/path_match', params={
         'type': 'folder',
@@ -169,7 +171,8 @@ def test_get_matching_resource(server, admin):
         'base_type': 'item',
         'base_id': 'nosuchid'
     }, user=admin)
-    assertStatus(resp, 400)
+    assertStatusOk(resp)
+    assert resp.json is None
 
 
 @pytest.mark.plugin('slicer_cli_web')
