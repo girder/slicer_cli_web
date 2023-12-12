@@ -219,7 +219,7 @@ class ImageHelper:
                 'adding the docker image is taking longer than %d seconds' % self.TIMEOUT)
         else:
             del self.addHandler
-            job_status[0] == status, 'The status of the job should match '
+            assert job_status[0] == status, 'The status of the job should match '
 
 
 @pytest.fixture
