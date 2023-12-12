@@ -3,7 +3,7 @@ import time
 from xml.sax.saxutils import escape
 
 
-class ProgressHelper(object):
+class ProgressHelper:
     def __init__(self, name, comment=''):
         self.name = name
         self.comment = comment

@@ -6,7 +6,7 @@ from girder_worker.docker.io import StreamWriter
 
 class CLIProgressCLIWriter(StreamWriter):
     def __init__(self, job_manager):
-        super(CLIProgressCLIWriter, self).__init__()
+        super().__init__()
 
         self._job_manager = job_manager
         self._buf = b''

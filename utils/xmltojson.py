@@ -11,7 +11,7 @@ import yaml
 try:
     from lxml.etree import parse
 except ImportError:
-    from xml.etree.cElementTree import parse
+    from xml.etree.ElementTree import parse
 
 
 if __name__ == '__main__':  # noqa
