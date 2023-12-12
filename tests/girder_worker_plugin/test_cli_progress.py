@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 import pytest
 
 from slicer_cli_web.girder_worker_plugin.cli_progress import CLIProgressCLIWriter

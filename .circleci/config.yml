@@ -41,7 +41,7 @@ commands:
       - run:
           name: Upgrade pyenv
           command: |
-            rm -rf /opt/circleci/.pyenv
+            sudo rm -rf /opt/circleci/.pyenv
             curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
             pyenv install --list list
       - run:
@@ -97,65 +97,55 @@ commands:
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml,.tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  py36:
-    machine:
-        image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - allservices:
-          version: 3.6.15
-      - tox:
-          env: py36
-      - coverage
-  py37:
-    machine:
-        image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - allservices:
-          version: 3.7.16
-      - tox:
-          env: py37
-      - coverage
   py38:
     machine:
-        image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - allservices:
-          version: 3.8.16
+          version: "3.8"
       - tox:
           env: py38
       - coverage
   py39:
     machine:
-        image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - allservices:
-          version: 3.9.16
+          version: "3.9"
       - tox:
           env: py39
       - coverage
   py310:
     machine:
-        image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - allservices:
-          version: 3.10.9
+          version: "3.10"
       - tox:
           env: py310
       - coverage
   py311:
     machine:
-        image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - allservices:
-          version: 3.11.1
+          version: "3.11"
       - tox:
           env: py311
+      - coverage
+  py312:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - allservices:
+          version: "3.12"
+      - tox:
+          env: py312
       - coverage
   small-docker:
     machine:
@@ -210,20 +200,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py36:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py37:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py38:
           filters:
             tags:
@@ -246,6 +222,13 @@ workflows:
               ignore:
                 - gh-pages
       - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py312:
           filters:
             tags:
               only: /^v.*/
@@ -275,12 +258,11 @@ workflows:
                 - example-average-color
       - release:
           requires:
-            - py36
-            - py37
             - py38
             - py39
             - py310
             - py311
+            - py312
             - lint_and_docs
           filters:
             tags:
