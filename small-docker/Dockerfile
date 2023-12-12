@@ -1,5 +1,5 @@
 # Use a version of alpine that includes bash and python
-FROM python:3.9-alpine
+FROM python:3.11-alpine
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
 # Since we are using a BusyBox variant, we need to use addgroup and adduser,
