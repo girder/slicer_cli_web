@@ -69,7 +69,12 @@ class SlicerCLIWebPlugin(GirderPlugin):
 
         count = 0
         for job in Job().find({
-            'status': {'$in': [JobStatus.INACTIVE, JobStatus.QUEUED, JobStatus.RUNNING]},
+            'status': {'$in': [
+                JobStatus.INACTIVE, JobStatus.QUEUED, JobStatus.RUNNING,
+                # from girder_worker, but we don't strictly require its
+                # existence
+                820, 821, 822, 823, 824,
+            ]},
             'updated': {'$lt': datetime.datetime.utcnow() - datetime.timedelta(days=7)}
         }, force=True):
             try:
