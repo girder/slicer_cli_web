@@ -51,10 +51,10 @@ def _make_print_cli_list_spec_action(cli_list_spec_file):
     return _PrintCLIListSpecAction
 
 
-def CLIListEntrypoint(cli_list_spec_file=None):
+def CLIListEntrypoint(cli_list_spec_file=None, cwd=None):
 
     if cli_list_spec_file is None:
-        cli_list_spec_file = os.path.join(os.getcwd(), 'slicer_cli_list.json')
+        cli_list_spec_file = os.path.join(cwd or os.getcwd(), 'slicer_cli_list.json')
 
     # Parse CLI List spec
     with open(cli_list_spec_file) as f:
@@ -84,7 +84,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
 
     if cli_list_spec[args.cli]['type'] == 'python':
 
-        script_file = os.path.join(args.cli,
+        script_file = os.path.join(cwd or os.getcwd(), args.cli,
                                    os.path.basename(args.cli) + '.py')
 
         # python <cli-rel-path>/<cli-name>.py [<args>]
@@ -92,7 +92,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
 
     elif cli_list_spec[args.cli]['type'] == 'cxx':
 
-        script_file = os.path.join('.', args.cli, os.path.basename(args.cli))
+        script_file = os.path.join(cwd or os.getcwd(), args.cli, os.path.basename(args.cli))
 
         if os.path.isfile(script_file):
 

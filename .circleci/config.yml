@@ -27,8 +27,8 @@ commands:
             npm --version
             export NVM_DIR="/opt/circleci/.nvm"
             source $NVM_DIR/nvm.sh
-            nvm install v12
-            nvm alias default v12
+            nvm install v14
+            nvm alias default v14
             node --version
             npm --version
             tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
@@ -75,8 +75,8 @@ commands:
             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
             export NVM_DIR="/opt/circleci/.nvm"
             source $NVM_DIR/nvm.sh
-            nvm install v12
-            nvm alias default v12
+            nvm install v14
+            nvm alias default v14
       - run:
           name: Upgrade pip
           command: pip install -U pip
