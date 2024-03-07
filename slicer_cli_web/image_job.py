@@ -304,7 +304,7 @@ def getCliData(name, client, job):
 
         for key, info in cli_dict.items():
             desc_type = info.get('desc-type', 'xml')
-            cli_desc = getDockerOutput(name, '%s --%s' % (key, desc_type), client)
+            cli_desc = getDockerOutput(name, [key, f'--{desc_type}'], client)
 
             if isinstance(cli_desc, bytes):
                 cli_desc = cli_desc.decode('utf8')
