@@ -51,8 +51,8 @@ def adminToken(admin):
 
 
 def splitName(name):
-    if ':' in name:
-        imageAndTag = name.split(':')
+    if ':' in name.split('/')[-1]:
+        imageAndTag = name.rsplit(':', 1)
     else:
         imageAndTag = name.split('@')
     return imageAndTag[0], imageAndTag[1]

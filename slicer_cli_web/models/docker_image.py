@@ -27,9 +27,9 @@ def _split(name):
     :param name: image name
     :type name: string
     """
-    if ':' in name:
-        return name.split(':')
-    return name.split('@')
+    if ':' in name.split('/')[-1]:
+        return name.rsplit(':', 1)
+    return name.rsplit('@', 1)
 
 
 class CLIItem:
