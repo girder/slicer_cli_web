@@ -380,8 +380,15 @@ const ControlWidget = View.extend({
     completeInitialization(settings) {
         const modal = new ItemSelectorWidget(settings);
         modal.once('g:saved', () => {
+            this.model.unset('revertType');
             modal.$el.modal('hide');
         }).render();
+        modal.$el.on('hidden.bs.modal', () => {
+            if (this.model.get('revertType')) {
+                this.model.set('type', this.model.get('revertType'));
+                this.model.unset('revertType');
+            }
+        });
     },
     _selectMultiFile() {
         // Store the current type in case it is opened again
@@ -389,7 +396,8 @@ const ControlWidget = View.extend({
         if (t !== 'multi') {
             this.model.set({
                 type: 'multi',
-                defaultType: t
+                defaultType: t,
+                revertType: t
             });
         }
 
