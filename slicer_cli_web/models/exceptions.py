@@ -10,7 +10,7 @@ class DockerImageError(Exception):
         if isinstance(self.imageName, list):
             return self.message + ' (image names [' + ','.join(self.imageName) + '])'
         elif isinstance(self.imageName, str):
-            return self.message + ' (image name: ' + self.imageName + ' )'
+            return self.message + ' (image name: ' + self.imageName + ')'
         else:
             return self.message
 
