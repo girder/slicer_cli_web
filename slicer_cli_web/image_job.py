@@ -298,10 +298,15 @@ def getCliData(name, client, job):
         cli_dict = getDockerOutput(name, '--list_cli', client)
         # contains nested dict
         # {<cliname>:{type:<type>}}
-        if isinstance(cli_dict, bytes):
-            cli_dict = cli_dict.decode('utf8')
-        cli_dict = json.loads(cli_dict)
-
+        try:
+            if isinstance(cli_dict, bytes):
+                cli_dict = cli_dict.decode('utf8')
+            cli_dict = json.loads(cli_dict)
+        except Exception:
+            job = Job().updateJob(
+                job,
+                log='Failed to parse cli list.  Output of list_cli was\n%r\n' % cli_dict)
+            raise
         for key, info in cli_dict.items():
             desc_type = info.get('desc-type', 'xml')
             cli_desc = getDockerOutput(name, [key, f'--{desc_type}'], client)
