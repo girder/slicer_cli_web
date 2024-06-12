@@ -10,6 +10,7 @@ from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.setting import Setting
 from girder.utility.model_importer import ModelImporter
+from girder_worker_utils.transforms.contrib import girder_io
 
 from .cli_utils import (SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_girder_api, is_on_girder,
                         return_parameter_file_name)
@@ -224,8 +225,12 @@ def _add_indexed_output_param(param, args, user, result_hooks, reference, templa
     path = VolumePath(value)
     ref = reference.copy()
     ref['identifier'] = param.identifier()
-    result_hooks.append(GirderUploadVolumePathToFolder(
-        path, folder, upload_kwargs={'reference': json.dumps(ref)}))
+    if param.name.endswith('AnnotationFile'):
+        result_hooks.append(girder_io.GirderLargeImageAnnotation(
+            path, folder, upload_kwargs={'itemId': ref['itemId']}))
+    else:
+        result_hooks.append(GirderUploadVolumePathToFolder(
+            path, folder, upload_kwargs={'reference': json.dumps(ref)}))
     return path
 
 
