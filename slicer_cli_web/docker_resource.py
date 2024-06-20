@@ -14,27 +14,32 @@
 #  limitations under the License.
 #############################################################################
 
-
+import copy
 import json
 import os
 import re
+import time
+from base64 import b64decode
 
 import pymongo
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute, describeRoute
-from girder.api.rest import setRawResponse, setResponseHeader
+from girder.api.rest import filtermodel, setRawResponse, setResponseHeader
 from girder.api.v1.resource import Resource, RestException
 from girder.constants import AccessType, SortDir
 from girder.exceptions import AccessException
+from girder.models.folder import Folder
 from girder.models.item import Item
+from girder.models.token import Token
 from girder.utility import path as path_util
 from girder.utility.model_importer import ModelImporter
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
+from . import TOKEN_SCOPE_MANAGE_TASKS, rest_slicer_cli
+from .cli_utils import as_model, get_cli_parameters
 from .config import PluginSettings
-from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
+from .models import CLIItem, DockerImageItem, DockerImageNotFoundError, parser
 
 
 class DockerResource(Resource):
@@ -51,6 +56,7 @@ class DockerResource(Resource):
         self.resourceName = name
         self.jobType = 'slicer_cli_web_job'
         self.route('PUT', ('docker_image',), self.setImages)
+        self.route('POST', ('cli',), self.createOrReplaceCli)
         self.route('DELETE', ('docker_image',), self.deleteImage)
         self.route('GET', ('docker_image',), self.getDockerImages)
 
@@ -62,7 +68,63 @@ class DockerResource(Resource):
 
         self.route('GET', ('path_match', ), self.getMatchingResource)
 
-        self._generateAllItemEndPoints()
+        if os.environ.get('GIRDER_STATIC_REST_ONLY'):
+            self.route('POST', ('cli', ':id', 'run'), self.runCli)
+            self.route('POST', ('cli', ':id', 'rerun'), self.rerunCli)
+            self.route('POST', ('cli', ':id', 'datalist', ':key'), self.datalistHandler)
+        else:
+            self._generateAllItemEndPoints()
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Run a Slicer CLI job.')
+        .modelParam('id', 'The slicer CLI task item', Item, level=AccessType.READ)
+    )
+    def runCli(self, item, params):
+        user = self.getCurrentUser()
+        token = Token().createToken(user=user)
+        return cliSubHandler(CLIItem(item), params, user, token).job
+
+    @access.user
+    @autoDescribeRoute(
+        Description('Re-run a Slicer CLI job.')
+        .modelParam('id', 'The slicer CLI item task', Item, level=AccessType.READ)
+        .modelParam('jobId', 'The job to re-run', Job, level=AccessType.READ)
+    )
+    def rerunCli(self, item, job, params):
+        user = self.getCurrentUser()
+        newParams = job.get('_original_params', {})
+        newParams.update(params)
+
+        token = Token().createToken(user=user)
+        return cliSubHandler(CLIItem(item), newParams, user, token).job
+
+    @access.user
+    @describeRoute(
+        Description('Lookup a datalist parameter on a CLI task')
+        .modelParam('id', 'The slicer CLI item task', Item, level=AccessType.READ)
+        .param('key', 'The parameter name to look up')
+        .deprecated()
+    )
+    def datalistHandler(self, item, key, params):
+        # TODO we should change any client that is using this to instead poll the job rather than
+        #   waiting for it to finish in the request thread.
+        user = self.getCurrentUser()
+
+        currentItem = CLIItem(item)
+        token = Token().createToken(user=user)
+        job = cliSubHandler(currentItem, params, user, token, key).job
+        delay = 0.01
+        while job['status'] not in {JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED}:
+            time.sleep(delay)
+            delay = min(delay * 1.5, 1.0)
+            job = Job().load(id=job['_id'], force=True, includeLog=True)
+        result = ''.join(job['log']) if 'log' in job else ''
+        if '<element' in result:
+            result = result[result.index('<element'):]
+        if '</element>' in result:
+            result = result[:result.rindex('</element>') + 10]
+        return result
 
     @access.public
     @describeRoute(
@@ -183,7 +245,7 @@ class DockerResource(Resource):
                 raise RestException('Image %s does not have a tag or digest' % img)
         return nameList
 
-    @access.admin
+    @access.admin(scope=TOKEN_SCOPE_MANAGE_TASKS)
     @describeRoute(
         Description('Add one or a list of images')
         .notes('Must be a system administrator to call this.')
@@ -209,6 +271,37 @@ class DockerResource(Resource):
         if not folder:
             raise RestException('no upload folder given or defined by default')
         return self._createPutImageJob(nameList, folder, params.get('pull', None))
+
+    @access.admin(scope=TOKEN_SCOPE_MANAGE_TASKS)
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('Add or replace an item task.')
+        .notes('Must be a system administrator to call this.')
+        .modelParam('folder', 'The folder ID to upload the task to.', paramType='formData',
+                    model=Folder, level=AccessType.WRITE)
+        .param('image', 'The docker image identifier.')
+        .param('name', 'The name of the item to create or replace.')
+        .param('replace', 'Whether to replace an existing item with this name.', dataType='boolean')
+        .param('spec', 'Base64-encoded XML spec of the CLI.')
+        .errorResponse('You are not a system administrator.', 403)
+    )
+    def createOrReplaceCli(self, folder: dict, image: str, name: str, replace: bool, spec: str):
+        try:
+            spec = b64decode(spec).decode()
+        except ValueError:
+            raise RestException('The CLI spec must be base64-encoded UTF-8.')
+
+        item = Item().createItem(
+            name, creator=self.getCurrentUser(), folder=folder, reuseExisting=replace
+        )
+        metadata = dict(
+            slicerCLIType='task',
+            type='Unknown',  # TODO does "type" matter behaviorally? If so get it from the client
+            digest=None,  # TODO should we support this?
+            image=image,
+            **parser._parse_xml_desc(item, self.getCurrentUser(), spec)
+        )
+        return Item().setMetadata(item, metadata)
 
     def _createPutImageJob(self, nameList, baseFolder, pull=False):
         job = Job().createLocalJob(
@@ -261,7 +354,9 @@ class DockerResource(Resource):
         seen = set()
         for item in items:
             # default if not seen yet
-            genRESTEndPointsForSlicerCLIsForItem(self, item, item.restPath not in seen)
+            rest_slicer_cli.genRESTEndPointsForSlicerCLIsForItem(
+                self, item, item.restPath not in seen
+            )
             seen.add(item.restPath)
 
     def addRestEndpoints(self, event):
@@ -390,3 +485,101 @@ class DockerResource(Resource):
         except pymongo.errors.ExecutionTimeout:
             return None
         return None
+
+
+def cliSubHandler(cliItem, params, user, token, datalistKey=None):
+    """
+    Create a job for a Slicer CLI item and schedule it.
+
+    :param currentItem: a CLIItem model.
+    :param params: parameter dictionary passed to the endpoint.
+    :param user: user model for the current user.
+    :param token: allocated token for the job.
+    :param datalistKey: if not None, a param name for this CLI that has a datalist.
+    """
+    from .girder_worker_plugin.direct_docker_run import run
+
+    clim = as_model(cliItem.xml)
+    cliTitle = clim.title
+
+    original_params = copy.deepcopy(params)
+    index_params, opt_params, simple_out_params = get_cli_parameters(clim)
+
+    datalistSpec = {
+        param.name: json.loads(param.datalist)
+        for param in index_params + opt_params
+        if param.channel != 'output' and param.datalist
+    }
+
+    container_args = [cliItem.name]
+    reference = {'slicer_cli_web': {
+        'title': cliTitle,
+        'image': cliItem.image,
+        'name': cliItem.name,
+    }}
+    now = time.localtime()
+    templateParams = {
+        'title': cliTitle,  # e.g., "Detects Nuclei"
+        'task': cliItem.name,  # e.g., "NucleiDetection"
+        'image': cliItem.image,  # e.g., "dsarchive/histomicstk:latest"
+        'now': time.strftime('%Y%m%d-%H%M%S', now),
+        'yyyy': time.strftime('%Y', now),
+        'mm': time.strftime('%m', now),
+        'dd': time.strftime('%d', now),
+        'HH': time.strftime('%H', now),
+        'MM': time.strftime('%M', now),
+        'SS': time.strftime('%S', now),
+    }
+
+    has_simple_return_file = bool(simple_out_params)
+    sub_index_params, sub_opt_params = index_params, opt_params
+
+    if datalistKey:
+        datalist = datalistSpec[datalistKey]
+        params = params.copy()
+        params.update(datalist)
+        sub_index_params = [
+            param if param.name not in datalist or not rest_slicer_cli.is_on_girder(param)
+            else rest_slicer_cli.stringifyParam(param)
+            for param in index_params
+            if (param.name not in datalist or datalist.get(param.name) is not None) and
+            param.name not in {k + rest_slicer_cli.FOLDER_SUFFIX for k in datalist}
+        ]
+        sub_opt_params = [
+            param if param.name not in datalist or not rest_slicer_cli.is_on_girder(param)
+            else rest_slicer_cli.stringifyParam(param)
+            for param in opt_params
+            if param.channel != 'output' and (
+                param.name not in datalist or datalist.get(param.name) is not None) and
+            param.name not in {k + rest_slicer_cli.FOLDER_SUFFIX for k in datalist}
+        ]
+
+    args, result_hooks, primary_input_name = rest_slicer_cli.prepare_task(
+        params, user, token, sub_index_params, sub_opt_params,
+        has_simple_return_file, reference, templateParams=templateParams)
+    container_args.extend(args)
+
+    jobType = '%s#%s' % (cliItem.image, cliItem.name)
+
+    if primary_input_name:
+        jobTitle = '%s on %s' % (cliTitle, primary_input_name)
+    else:
+        jobTitle = cliTitle
+
+    job_kwargs = cliItem.item.get('meta', {}).get('docker-params', {})
+    job = run.delay(
+        girder_user=user,
+        girder_job_type=jobType,
+        girder_job_title=jobTitle,
+        girder_result_hooks=result_hooks,
+        image=cliItem.digest,
+        pull_image='if-not-present',
+        container_args=container_args,
+        **job_kwargs
+    )
+    jobRecord = Job().load(job.job['_id'], force=True)
+    job.job['_original_params'] = jobRecord['_original_params'] = original_params
+    job.job['_original_name'] = jobRecord['_original_name'] = cliItem.name
+    job.job['_original_path'] = jobRecord['_original_path'] = cliItem.restBasePath
+    Job().save(jobRecord)
+    return job
