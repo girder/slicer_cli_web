@@ -1,11 +1,10 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
-import { getCurrentUser } from '@girder/core/auth';
-import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
-import FileModel from '@girder/core/models/FileModel';
-import ItemModel from '@girder/core/models/ItemModel';
-import { restRequest } from '@girder/core/rest';
+const $ = girder.$;
+const _ = girder._;
+const BrowserWidget = girder.views.widgets.BrowserWidget;
+const FileModel = girder.models.FileModel;
+const ItemModel = girder.models.ItemModel;
+const { restRequest } = girder.rest;
+const { getCurrentUser } = girder.auth;
 
 const ItemSelectorWidget = BrowserWidget.extend({
     initialize(settings) {

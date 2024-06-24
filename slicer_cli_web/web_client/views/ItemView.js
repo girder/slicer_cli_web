@@ -1,11 +1,3 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
-import { wrap } from '@girder/core/utilities/PluginUtils';
-import { restRequest } from '@girder/core/rest';
-import View from '@girder/core/views/View';
-import ItemView from '@girder/core/views/body/ItemView';
-
 import WidgetCollection from '../collections/WidgetCollection';
 import ControlsPanel from './ControlsPanel';
 import PanelGroup from './PanelGroup';
@@ -14,6 +6,13 @@ import slicerUI from '../templates/slicerUI.pug';
 import '../stylesheets/slicerUI.styl';
 import { showJobSuccessAlert } from './utils';
 import utils from '../utils';
+
+const $ = girder.$;
+const _ = girder._;
+const View = girder.views.View;
+const {wrap} = girder.utilities.PluginUtils;
+const {restRequest} = girder.rest;
+const ItemView = girder.views.body.ItemView;
 
 wrap(ItemView, 'render', function (render) {
     this.once('g:rendered', () => {

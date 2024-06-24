@@ -1,19 +1,3 @@
-import $ from 'jquery';
-import _ from 'underscore';
-import moment from 'moment';
-
-import View from '@girder/core/views/View';
-import events from '@girder/core/events';
-import { getCurrentUser } from '@girder/core/auth';
-import FolderCollection from '@girder/core/collections/FolderCollection';
-import ItemModel from '@girder/core/models/ItemModel';
-import FileModel from '@girder/core/models/FileModel';
-import FolderModel from '@girder/core/models/FolderModel';
-import UserModel from '@girder/core/models/UserModel';
-import CollectionModel from '@girder/core/models/CollectionModel';
-
-import { restRequest } from '@girder/core/rest';
-
 import ItemSelectorWidget from './ItemSelectorWidget';
 
 import booleanWidget from '../templates/booleanWidget.pug';
@@ -25,34 +9,25 @@ import regionWidget from '../templates/regionWidget.pug';
 import widget from '../templates/widget.pug';
 
 import '../stylesheets/controlWidget.styl';
-import 'bootstrap-colorpicker/dist/js/bootstrap-colorpicker';
+import 'bootstrap-colorpicker';
 import 'bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css';
 import 'bootstrap-slider/dist/bootstrap-slider';
 import 'bootstrap-slider/dist/css/bootstrap-slider.css';
 
-// parse #RGBA and #RRGGBBAA colors
-if ($.colorpicker.Color.prototype.stringParsers.length === 8) {
-    $.colorpicker.Color.prototype.stringParsers.splice(6, 0, {
-        re: /#?([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/,
-        format: 'rgba',
-        parse: (execResult) => [
-            parseInt(execResult[1], 16),
-            parseInt(execResult[2], 16),
-            parseInt(execResult[3], 16),
-            +((parseInt(execResult[4], 16) / 255).toFixed(3))
-        ]
-    });
-    $.colorpicker.Color.prototype.stringParsers.splice(8, 0, {
-        re: /#?([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/,
-        format: 'rgba',
-        parse: (execResult) => [
-            parseInt(execResult[1], 16) * 17,
-            parseInt(execResult[2], 16) * 17,
-            parseInt(execResult[3], 16) * 17,
-            +((parseInt(execResult[4], 16) / 15).toFixed(3))
-        ]
-    });
-}
+const $ = girder.$;
+const _ = girder._;
+const moment = girder.moment;
+
+const View = girder.views.View;
+const { getCurrentUser } = girder.auth;
+const events = girder.events;
+const ItemModel = girder.models.ItemModel;
+const FolderModel = girder.models.FolderModel;
+const FolderCollection = girder.collections.FolderCollection;
+const FileModel = girder.models.FileModel;
+const UserModel = girder.models.UserModel;
+const CollectionModel = girder.models.CollectionModel;
+const { restRequest } = girder.rest;
 
 const ControlWidget = View.extend({
     events: {
@@ -160,8 +135,6 @@ const ControlWidget = View.extend({
             previousElement: this.$el
         }, this.model.toJSON());
         this.$el.html(this.template()(params));
-        this.$('.s-control-item[data-type="range"] input').slider();
-        this.$('.s-control-item[data-type="color"] .input-group').colorpicker({});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         if (params.datalist) {
             this.$('.s-control-item input').addClass('has-datalist');

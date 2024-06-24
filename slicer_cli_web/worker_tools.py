@@ -1,11 +1,12 @@
 import datetime
+import logging
 import queue
 import subprocess
 import threading
 import time
 
 import yaml
-from girder import events, logger
+from girder import events
 from girder.models.file import File
 from girder.models.item import Item
 from girder_jobs.constants import JobStatus
@@ -15,6 +16,7 @@ from .config import PluginSettings
 
 _workerConfig = None
 _commandQueue = None
+logger = logging.getLogger(__name__)
 
 
 class CommandQueue(threading.Thread):

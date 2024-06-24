@@ -1,7 +1,6 @@
-import $ from 'jquery';
-import _ from 'underscore';
-import { restRequest } from '@girder/core/rest';
-
+const $ = girder.$;
+const _ = girder._;
+const { restRequest } = girder.rest;
 const utils = {};
 
 utils.handleDatalist = function (elem, basePath, getParams) {

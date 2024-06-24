@@ -1,8 +1,8 @@
 import json
+import logging
 import os
 
 import jinja2
-from girder import logger
 from girder.api.rest import RestException
 from girder.constants import AccessType
 from girder.exceptions import FilePathException
@@ -16,6 +16,8 @@ from .cli_utils import (SLICER_TYPE_TO_GIRDER_MODEL_MAP, is_girder_api, is_on_gi
 
 OPENAPI_DIRECT_TYPES = {'boolean', 'integer', 'float', 'double', 'string'}
 FOLDER_SUFFIX = '_folder'
+
+logger = logging.getLogger(__name__)
 
 
 def _to_file_volume(param, model):

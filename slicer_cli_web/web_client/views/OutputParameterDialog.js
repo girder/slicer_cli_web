@@ -1,7 +1,7 @@
-import View from '@girder/core/views/View';
-
 import outputParameterDialog from '../templates/outputParameterDialog.pug';
 import '../stylesheets/outputParameterDialog.styl';
+
+const View = girder.views.View;
 
 const OutputParameterDialog = View.extend({
     initialize(settings) {

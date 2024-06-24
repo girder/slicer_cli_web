@@ -2,6 +2,6 @@ extends ./widget.pug
 
 block input
   .input-group
-    +input(title, type, id, value)
+    input(name=title, id=id, type="color", value=value || "#000000")
     .input-group-addon
       i
