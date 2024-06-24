@@ -68,12 +68,9 @@ class DockerResource(Resource):
 
         self.route('GET', ('path_match', ), self.getMatchingResource)
 
-        if os.environ.get('GIRDER_STATIC_REST_ONLY'):
-            self.route('POST', ('cli', ':id', 'run'), self.runCli)
-            self.route('POST', ('cli', ':id', 'rerun'), self.rerunCli)
-            self.route('POST', ('cli', ':id', 'datalist', ':key'), self.datalistHandler)
-        else:
-            self._generateAllItemEndPoints()
+        self.route('POST', ('cli', ':id', 'run'), self.runCli)
+        self.route('POST', ('cli', ':id', 'rerun'), self.rerunCli)
+        self.route('POST', ('cli', ':id', 'datalist', ':key'), self.datalistHandler)
 
     @access.user
     @autoDescribeRoute(

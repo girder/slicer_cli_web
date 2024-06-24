@@ -17,7 +17,6 @@
 import datetime
 import json
 import logging
-import os
 from pathlib import Path
 
 from girder import events
@@ -79,9 +78,6 @@ class SlicerCLIWebPlugin(GirderPlugin):
 
         Job().exposeFields(level=AccessType.READ, fields={'slicerCLIBindings'})
 
-        if not os.environ.get('GIRDER_STATIC_REST_ONLY'):
-            events.bind('jobs.job.update.after', resource.resourceName,
-                        resource.addRestEndpoints)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
 
         count = 0
