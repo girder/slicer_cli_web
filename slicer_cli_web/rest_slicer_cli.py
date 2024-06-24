@@ -1,12 +1,12 @@
 import copy
 import itertools
 import json
+import logging
 import threading
 import time
 
 import cherrypy
 from bson.objectid import ObjectId
-from girder import logger
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.api.rest import Resource, RestException, boundHandler, getApiUrl, getCurrentToken
@@ -29,6 +29,8 @@ Filename in which to write simple return parameters (integer, float,
 integer-vector, etc.) as opposed to bulk return parameters (image, file,
 directory, geometry, transform, measurement, table).
 """
+
+logger = logging.getLogger(__name__)
 
 
 def stringifyParam(param):

@@ -1,8 +1,8 @@
-import $ from 'jquery';
-import View from '@girder/core/views/View';
-
 import panel from '../templates/panel.pug';
 import '../stylesheets/panel.styl';
+
+const $ = girder.$;
+const View = girder.views.View;
 
 const Panel = View.extend({
     events: {

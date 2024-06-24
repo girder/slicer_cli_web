@@ -1,11 +1,3 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
-import View from '@girder/core/views/View';
-import girderEvents from '@girder/core/events';
-import { restRequest } from '@girder/core/rest';
-import { confirm } from '@girder/core/dialog';
-
 import { parse } from '../parser';
 import WidgetCollection from '../collections/WidgetCollection';
 import events from '../events';
@@ -15,6 +7,13 @@ import utils from '../utils';
 
 import panelGroup from '../templates/panelGroup.pug';
 import '../stylesheets/panelGroup.styl';
+
+const $ = girder.$;
+const _ = girder._;
+const View = girder.views.View;
+const girderEvents = girder.events;
+const restRequest = girder.rest.restRequest;
+const confirm = girder.dialog.confirm;
 
 const PanelGroup = View.extend({
     events: {

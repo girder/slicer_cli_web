@@ -1,6 +1,7 @@
-import _ from 'underscore';
-import Backbone from 'backbone';
 import tinycolor from 'tinycolor2';
+
+const _ = girder._;
+const Backbone = girder.Backbone;
 
 /**
  * A backbone model controlling the behavior and rendering of widgets.

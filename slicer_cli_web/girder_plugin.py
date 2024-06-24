@@ -16,17 +16,21 @@
 
 import datetime
 import json
+import logging
 import os
+from pathlib import Path
 
-from girder import events, logger
+from girder import events
 from girder.constants import AccessType, TokenScope
-from girder.plugin import GirderPlugin, getPlugin
+from girder.plugin import GirderPlugin, getPlugin, registerPluginStaticContent
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
 from . import TOKEN_SCOPE_MANAGE_TASKS
 from .docker_resource import DockerResource
 from .models import DockerImageItem
+
+logger = logging.getLogger(__name__)
 
 
 def _onUpload(event):
@@ -48,13 +52,20 @@ def _onUpload(event):
 
 class SlicerCLIWebPlugin(GirderPlugin):
     DISPLAY_NAME = 'Slicer CLI Web'
-    CLIENT_SOURCE_PATH = 'web_client'
 
     def load(self, info):
         try:
             getPlugin('worker').load(info)
         except Exception:
-            logger.info('Girder working is unavailable')
+            logger.info('Girder worker is unavailable')
+
+        registerPluginStaticContent(
+            'slicer_cli_web',
+            css=['/style.css'],
+            js=['/girder-plugin-slicer-cli-web.umd.cjs'],
+            staticDir=Path(__file__).parent / 'web_client' / 'dist',
+            tree=info['serverRoot'],
+        )
 
         TokenScope.describeScope(
             TOKEN_SCOPE_MANAGE_TASKS, name='Manage Slicer CLI tasks',

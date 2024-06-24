@@ -11,21 +11,11 @@
     "url": "https://github.com/girder/slicer_cli_web.git"
   },
   "main": "./index.js",
+  "type": "module",
   "dependencies": {
-    "bootstrap-colorpicker": "^2.5.3",
+    "bootstrap-colorpicker": "^3.4.0",
     "bootstrap-slider": "^10.6.2",
     "tinycolor2": "~1.4.1"
-  },
-  "peerDependencies": {
-    "@girder/core": "*",
-    "@girder/jobs": "*"
-  },
-  "girderPlugin": {
-    "name": "slicer_cli_web",
-    "main": "./main.js",
-    "dependencies": [
-      "jobs"
-    ]
   },
   "eslintConfig": {
     "extends": "@girder",
@@ -44,10 +34,14 @@
       "promise/no-return-in-finally": "error",
       "promise/no-return-wrap": "error"
     },
-    "root": true
+    "root": true,
+    "globals": {
+      "girder": "writable"
+    }
   },
   "eslintIgnore": [
-    "**/node_modules/"
+    "**/node_modules/",
+    "**/dist/"
   ],
   "pugLintConfig": {
     "extends": "@girder/pug-lint-config",
@@ -176,10 +170,14 @@
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "pug": "^3.0.3",
     "pug-lint": "^2.6.0",
-    "stylint": "^2.0.0"
+    "stylint": "^2.0.0",
+    "stylus": "^0.63.0",
+    "vite": "^5.3.1"
   },
   "scripts": {
+    "build": "vite build",
     "lint": "eslint --cache --fix . && pug-lint . && stylint"
   }
 }

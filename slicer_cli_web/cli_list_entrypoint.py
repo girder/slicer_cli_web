@@ -1,14 +1,12 @@
 import argparse
 import json
+import logging
 import os
 import subprocess
 import sys
 import textwrap as _textwrap
 
-try:
-    from girder import logger
-except ImportError:
-    import logging as logger
+logger = logging.getLogger(__name__)
 
 
 class _MultilineHelpFormatter(argparse.HelpFormatter):

@@ -1,8 +1,8 @@
-import _ from 'underscore';
-
 import events from '../events';
 import Panel from './Panel';
 import JobsListWidget from './JobsListWidget';
+
+const _ = girder._;
 
 const JobsPanel = Panel.extend({
     events: _.extend(Panel.prototype.events, {

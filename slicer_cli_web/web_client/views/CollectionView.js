@@ -1,14 +1,13 @@
-import $ from 'jquery';
-import { wrap } from '@girder/core/utilities/PluginUtils';
-import { restRequest } from '@girder/core/rest';
-import View from '@girder/core/views/View';
-import HierarchyWidget from '@girder/core/views/widgets/HierarchyWidget';
-import { getCurrentUser } from '@girder/core/auth';
-
 import UploadImageDialogTemplate from '../templates/uploadImageDialog.pug';
 import { showJobSuccessAlert } from './utils';
 import ConfigView from './ConfigView';
-import '@girder/core/utilities/jquery/girderModal';
+
+const $ = girder.$;
+const View = girder.views.View;
+const restRequest = girder.rest.restRequest;
+const HierarchyWidget = girder.views.widgets.HierarchyWidget;
+const { wrap } = girder.utilities.PluginUtils;
+const { getCurrentUser } = girder.auth;
 
 wrap(HierarchyWidget, 'render', function (render) {
     render.call(this);
@@ -73,8 +72,8 @@ wrap(HierarchyWidget, 'render', function (render) {
             });
             try {
                 if (this.parentModel.get('meta').slicerCLIType === 'tag' && this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 2].get('meta').slicerCLIType === 'image') {
-                    let imageAndTag = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 2].get('name') + ':' + this.parentModel.get('name');
-                    let folderId = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 3].id;
+                    const imageAndTag = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 2].get('name') + ':' + this.parentModel.get('name');
+                    const folderId = this.parentView.hierarchyWidget.breadcrumbs[this.parentView.hierarchyWidget.breadcrumbs.length - 3].id;
                     injectReloadImageButton(imageAndTag, folderId);
                 }
             } catch (err) {}

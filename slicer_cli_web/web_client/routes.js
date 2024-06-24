@@ -1,8 +1,8 @@
-import events from '@girder/core/events';
-import router from '@girder/core/router';
-import { exposePluginConfig } from '@girder/core/utilities/PluginUtils';
-
 import ConfigView from './views/ConfigView';
+
+const events = girder.events;
+const router = girder.router;
+const { exposePluginConfig } = girder.utilities.PluginUtils;
 
 exposePluginConfig('slicer_cli_web', 'plugins/slicer_cli_web/config');
 

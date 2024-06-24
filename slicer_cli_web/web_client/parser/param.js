@@ -1,10 +1,10 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
 import widget from './widget';
 import convert from './convert';
 import defaultValue from './defaultValue';
 import constraints from './constraints';
+
+const $ = girder.$;
+const _ = girder._;
 
 /**
  * Parse a parameter spec.

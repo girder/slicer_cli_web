@@ -1,7 +1,7 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
 import group from './group';
+
+const $ = girder.$;
+const _ = girder._;
 
 /**
  * Parse a <parameters> tag into a "panel" object.

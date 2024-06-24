@@ -1,17 +1,13 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
-import View from '@girder/core/views/View';
-import { SORT_DESC } from '@girder/core/constants';
-import eventStream from '@girder/core/utilities/EventStream';
-import { restRequest } from '@girder/core/rest';
-
-import JobCollection from '@girder/jobs/collections/JobCollection';
-import JobStatus from '@girder/jobs/JobStatus';
-
 import OutputParameterDialog from './OutputParameterDialog';
 
 import jobListWidget from '../templates/jobsListWidget.pug';
+
+const $ = girder.$;
+const _ = girder._;
+const View = girder.views.View;
+const { SORT_DESC } = girder.constants;
+const eventStream = girder.eventStream;
+const restRequest = girder.rest.restRequest;
 
 // cache parameter file models
 const paramFiles = {};
@@ -23,7 +19,7 @@ const JobsListWidget = View.extend({
 
     initialize() {
         if (!this.collection) {
-            this.collection = new JobCollection();
+            this.collection = new girder.plugins.jobs.JobCollection();
 
             // We want to display 10 jobs, but we are filtering
             // them on the client, so we fetch extra jobs here.
@@ -63,7 +59,7 @@ const JobsListWidget = View.extend({
 
         this.$el.html(jobListWidget({
             jobs,
-            JobStatus,
+            JobStatus: girder.plugins.jobs.JobStatus,
             rootLink: root
         }));
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});

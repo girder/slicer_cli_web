@@ -1,7 +1,7 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
 import panel from './panel';
+
+const $ = girder.$;
+const _ = girder._;
 
 /**
  * This is a parser for Slicer's GUI Schema:
