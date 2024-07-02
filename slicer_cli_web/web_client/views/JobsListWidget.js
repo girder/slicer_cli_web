@@ -19,7 +19,7 @@ const JobsListWidget = View.extend({
 
     initialize() {
         if (!this.collection) {
-            this.collection = new girder.plugins.jobs.JobCollection();
+            this.collection = new girder.plugins.jobs.collections.JobCollection();
 
             // We want to display 10 jobs, but we are filtering
             // them on the client, so we fetch extra jobs here.
