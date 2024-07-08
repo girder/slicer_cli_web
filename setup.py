@@ -65,11 +65,13 @@ setup(
         'girder': [
             'girder>=5.0.0a2',
             'girder-jobs>=5.0.0a2',
-            'girder-worker[girder]>=5',
+            # TODO restore this when girder-worker is released
+            #'girder-worker[girder]>=5',
         ],
         'worker': [
             'docker>=2.6.0',
-            'girder-worker[worker]>=5',
+            # TODO restore this when girder-worker is released
+            #'girder-worker[worker]>=5',
         ],
         'client': [
             'click',
