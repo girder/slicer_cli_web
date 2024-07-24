@@ -1,4 +1,4 @@
-import $ from 'jquery';
+const $ = girder.$;
 
 export function showJobSuccessAlert(job) {
     let root = '/static/built';

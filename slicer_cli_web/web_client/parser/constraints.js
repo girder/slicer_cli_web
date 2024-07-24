@@ -1,6 +1,6 @@
-import $ from 'jquery';
-
 import convert from './convert';
+
+const $ = girder.$;
 
 /**
  * Parse a `contraints` tag.

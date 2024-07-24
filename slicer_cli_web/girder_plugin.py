@@ -16,16 +16,20 @@
 
 import datetime
 import json
+import logging
+from pathlib import Path
 
-from girder import events, logger
-from girder.constants import AccessType
-from girder.plugin import GirderPlugin, getPlugin
+from girder import events
+from girder.constants import AccessType, TokenScope
+from girder.plugin import GirderPlugin, getPlugin, registerPluginStaticContent
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from . import worker_tools
+from . import TOKEN_SCOPE_MANAGE_TASKS
 from .docker_resource import DockerResource
 from .models import DockerImageItem
+
+logger = logging.getLogger(__name__)
 
 
 def _onUpload(event):
@@ -47,13 +51,24 @@ def _onUpload(event):
 
 class SlicerCLIWebPlugin(GirderPlugin):
     DISPLAY_NAME = 'Slicer CLI Web'
-    CLIENT_SOURCE_PATH = 'web_client'
 
     def load(self, info):
         try:
             getPlugin('worker').load(info)
         except Exception:
-            logger.info('Girder working is unavailable')
+            logger.info('Girder worker is unavailable')
+
+        registerPluginStaticContent(
+            'slicer_cli_web',
+            css=['/style.css'],
+            js=['/girder-plugin-slicer-cli-web.umd.cjs'],
+            staticDir=Path(__file__).parent / 'web_client' / 'dist',
+            tree=info['serverRoot'],
+        )
+
+        TokenScope.describeScope(
+            TOKEN_SCOPE_MANAGE_TASKS, name='Manage Slicer CLI tasks',
+            description='Create / edit Slicer CLI docker tasks', admin=True)
 
         DockerImageItem.prepare()
 
@@ -63,8 +78,6 @@ class SlicerCLIWebPlugin(GirderPlugin):
 
         Job().exposeFields(level=AccessType.READ, fields={'slicerCLIBindings'})
 
-        events.bind('jobs.job.update.after', resource.resourceName,
-                    resource.addRestEndpoints)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
 
         count = 0
@@ -84,4 +97,3 @@ class SlicerCLIWebPlugin(GirderPlugin):
                 pass
         if count:
             logger.info('Marking %d old job(s) as cancelled' % count)
-        worker_tools.start()
