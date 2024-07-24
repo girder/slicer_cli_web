@@ -178,6 +178,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "watch": "vite build --watch",
     "lint": "eslint --cache --fix . && pug-lint . && stylint"
   }
 }
