@@ -5,6 +5,7 @@ import threading
 import time
 
 import cherrypy
+import pymongo
 from bson.objectid import ObjectId
 from girder import logger
 from girder.api import access
@@ -246,8 +247,9 @@ def batchCLITaskProcess(job):  # noqa C901
         }
         if param.typ == 'image':
             q['largeImage.fileId'] = {'$exists': True}
-        cursor = Item().findWithPermissions(q, sort=[('lowerName', SortDir.ASCENDING)], user=user)
-        batchCursors.append(cursor)
+        curparams = {'query': q, 'sort': [('lowerName', SortDir.ASCENDING)], 'user': user}
+        cursor = Item().findWithPermissions(**curparams)
+        batchCursors.append([cursor, curparams])
         if count is None:
             count = cursor.count()
         elif cursor.count() != count:
@@ -273,7 +275,18 @@ def batchCLITaskProcess(job):  # noqa C901
                 paramText = []
                 for idx, param in enumerate(batchParams):
                     try:
-                        item = batchCursors[idx].next()  # noqa B305
+                        item = batchCursors[idx][0].next()  # noqa B305
+                    except pymongo.errors.CursorNotFound:
+                        # If the process takes long enough, the cursor is
+                        # removed.  In this case, redo the query and keep
+                        # going.
+                        logger.info('Requerying batch after cursor timeout')
+                        batchCursors[idx][0] = Item().findWithPermissions(
+                            offset=scheduled, **batchCursors[idx][1])
+                        try:
+                            item = batchCursors[idx][0].next()  # noqa B305
+                        except StopIteration:
+                            item = None
                     except StopIteration:
                         item = None
                     if item is None:
