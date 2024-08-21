@@ -14,7 +14,7 @@ RUN chmod a+x /usr/local/bin/groupadd
 RUN touch /usr/local/bin/useradd
 RUN chmod a+x /usr/local/bin/useradd
 
-RUN pip install girder-slicer-cli-web
+RUN pip install --no-cache-dir girder-slicer-cli-web
 COPY . $PWD
 
 ENTRYPOINT ["python", "./cli_list.py"]
