@@ -6,8 +6,8 @@ from girder import logger
 from girder_jobs.models.job import Job
 
 from slicer_cli_web.models import DockerImageError, DockerImageNotFoundError
-from .commands import SingularityCommands
-from .utils import generate_image_name_for_singularity, switch_to_sif_image_folder
+from .commands import SingularityCommands, run_command
+from .utils import generate_image_name_for_singularity, switch_to_sif_image_folder, sanitize_and_return_json
 
 
 def is_valid_path(path):
@@ -169,6 +169,20 @@ def get_cli_data_for_singularity(name, job):
     except Exception as err:
         logger.exception('Error getting %s cli data from image', name)
         raise DockerImageError('Error getting %s cli data from image ' % (name) + str(err))
+
+
+def _is_nvidia_img(imageName):
+    switch_to_sif_image_folder()
+    inspect_labels_cmd = SingularityCommands.singularity_inspect(imageName)
+    try:
+        res = run_command(inspect_labels_cmd)
+        res = sanitize_and_return_json(res)
+        nvidia = res.get('com.nvidia.volumes.needed',None)
+        if not nvidia:
+            return False
+        return True
+    except Exception as e:
+        raise Exception(f'Error occured {e.stderr.decode()}')
 
 
 def _get_last_workdir(imageName):

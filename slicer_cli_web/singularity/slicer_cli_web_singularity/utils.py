@@ -1,4 +1,27 @@
 import os
+import json
+
+
+def sanitize_and_return_json(res: str):
+    '''
+    This function tries to parse the given str as json in couple different ways. If the output is still not json or a python dictionary, it raises an error.
+    '''
+    try:
+        res = json.loads(res)
+        # This is the form in which we get data back if we use the --json label in
+        # singularity inspect
+        return res['data']['attributes']['labels']
+    except json.decoder.JSONDecodeError as e:
+        # If the json label was excluded, we can still parse the labels manually
+        # and create a dictionary
+        labels = [line for line in res.split('\n')]
+        res_dict = {}
+        for label in labels:
+            key, value = label.split(': ')
+            res_dict[key] = value
+        return res_dict
+    except Exception as e:
+        raise Exception(f'Error occured when parsing labels as json {e}')
 
 
 def is_valid_image_name_format(image_str: str):
