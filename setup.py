@@ -63,7 +63,6 @@ setup(
     ],
     extras_require={
         'girder': [
-            'docker>=2.6.0',
             'girder>=3.0.4',
             'girder-jobs>=3.0.3',
             'girder-worker[girder]>=0.6.0',
@@ -71,6 +70,10 @@ setup(
         'worker': [
             'docker>=2.6.0',
             'girder-worker[worker]>=0.6.0',
+        ],
+        'client': [
+            'click',
+            'girder-client',
         ]
     },
     entry_points={
@@ -79,6 +82,9 @@ setup(
         ],
         'girder_worker_plugins': [
             'slicer_cli_web = slicer_cli_web.girder_worker_plugin:SlicerCLIWebWorkerPlugin'
+        ],
+        'console_scripts': [
+            'upload-slicer-cli-task = slicer_cli_web.upload_slicer_cli_task:upload_slicer_cli_task'
         ]
     },
     python_requires='>=3.8',
