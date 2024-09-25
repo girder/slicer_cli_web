@@ -6,9 +6,10 @@ from girder_worker.app import app
 from girder_worker.docker.io import FDReadStreamConnector
 from girder_worker_singularity.tasks import SingularityTask, singularity_run
 
-from ..job import _get_last_workdir, generate_image_name_for_singularity, _is_nvidia_img
 from slicer_cli_web.girder_worker_plugin.cli_progress import CLIProgressCLIWriter
 from slicer_cli_web.girder_worker_plugin.direct_docker_run import _resolve_direct_file_paths
+
+from ..job import _get_last_workdir, _is_nvidia_img, generate_image_name_for_singularity
 
 
 class DirectSingularityTask(SingularityTask):
@@ -52,7 +53,7 @@ def run(task, **kwargs):
     # Cahnge to reflect JOBID for logs later
     random_file_name = str(uuid4()) + 'logs.log'
     log_file_name = os.path.join(logs_dir, random_file_name)
-    kwargs["log_file"] = log_file_name
+    kwargs['log_file'] = log_file_name
     # Create file since it doesn't exist
     if not os.path.exists(log_file_name):
         with open(log_file_name, 'x'):

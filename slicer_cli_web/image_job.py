@@ -29,15 +29,20 @@ from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
 from .models import DockerImageError, DockerImageItem, DockerImageNotFoundError
+
 try:
-    from slicer_cli_web_singularity.job import (find_and_remove_local_sif_files, is_singularity_installed,
-                                load_meta_data_for_singularity, pull_image_and_convert_to_sif)
-    from slicer_cli_web_singularity.utils import generate_image_name_for_singularity, switch_to_sif_image_folder
+    from slicer_cli_web_singularity.job import (find_and_remove_local_sif_files,
+                                                is_singularity_installed,
+                                                load_meta_data_for_singularity,
+                                                pull_image_and_convert_to_sif)
     from slicer_cli_web_singularity.singularity_image import SingularityImage, SingularityImageItem
-    USE_SINGULARITY = True # TODO: do this better
+    from slicer_cli_web_singularity.utils import (generate_image_name_for_singularity,
+                                                  switch_to_sif_image_folder)
+    USE_SINGULARITY = True  # TODO: do this better
 except ImportError as e:
     USE_SINGULARITY = False
     logger.info(f'Failed to import singularity modules: {e}')
+
 
 def deleteImage(job):
     """
@@ -60,7 +65,7 @@ def deleteImage(job):
         error = False
 
         if USE_SINGULARITY:
-            sif_folder = os.getenv("SIF_IMAGE_PATH")
+            sif_folder = os.getenv('SIF_IMAGE_PATH')
         else:
             try:
                 docker_client = docker.from_env(version='auto')
@@ -156,7 +161,7 @@ def jobPullAndLoad(job):
             job['kwargs']['folder'], user=user, level=AccessType.WRITE, exc=True)
         logger.info(f"names = {job['kwargs']['nameList']}")
         loadList = job['kwargs']['nameList']
-        logger.info(f"loadList = {loadList}")
+        logger.info(f'loadList = {loadList}')
         job = Job().updateJob(
             job,
             log=f'loadList = {loadList}\n',
@@ -173,8 +178,9 @@ def jobPullAndLoad(job):
         if USE_SINGULARITY:
             is_singularity_installed()
 
-            # Singularity doesn't use layers and uses caching so if we have a new version of the image with the same tag, it will not be pulled
-            # but instead the same is used from singularity cache. Therefore, we need to remove local images if new version with
+            # Singularity doesn't use layers and uses caching so if we have a new version of the
+            # image with the same tag, it will not be pulled but instead the same is used from
+            # singularity cache. Therefore, we need to remove local images if new version with
             # same tag has to be pulled.
             # MAKE SURE YOU'RE' NOT CONSTANTLY PULLING THE SAME VERSION OF THE IMAGE
             # UNTIL THE ACTUAL IMAGE IS UPDATED
@@ -202,7 +208,6 @@ def jobPullAndLoad(job):
                 str(job['kwargs'].get('pull')).lower() == 'true']
             loadList = [name for name in loadList if name not in pullList]
 
-
         try:
             stage = 'pulling'
             if USE_SINGULARITY:
@@ -222,7 +227,7 @@ def jobPullAndLoad(job):
 
         if USE_SINGULARITY:
             images, loadingError = load_meta_data_for_singularity(job, pullList,
-                                                                loadList, notExistSet)
+                                                                  loadList, notExistSet)
             for name, cli_dict in images:
                 singularity_image_object = SingularityImage(name)
                 stage = 'parsing'

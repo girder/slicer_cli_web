@@ -8,14 +8,14 @@ from .utils import generate_image_name_for_singularity
 class SingularityCommands:
     @staticmethod
     def singularity_version():
-        '''
+        """
         This method is used to check whether apptainer is currently installed on the system.
-        '''
+        """
         return ['apptainer', '--version']
 
     @staticmethod
     def singularity_pull(name: str, uri: str = 'docker'):
-        '''
+        """
         This method is used to generate the command for the singualrity pull function for pulling images from online.
         Args:
         name(str.required) - Takes in a string that should specify the image name and tag as a single string '<image_name>:<tag>'
@@ -23,7 +23,7 @@ class SingularityCommands:
 
         Returns:
         A list of strings formatted to be supplied to the subprocess module of python that handles  pull.
-        '''
+        """
         sif_name = generate_image_name_for_singularity(name)
         return ['apptainer', 'pull', '--force', sif_name, f'{uri}://{name}']
 
@@ -53,10 +53,10 @@ class SingularityCommands:
 
     @staticmethod
     def singularity_inspect(imageName, option='-l', json_format=True):
-        '''
+        """
         This function is used to get the apptainer command for inspecting the sif file. By default, it inspects the labels in a json format,
         but you can you any option allowed by apptainer by setting the option flag appropriately and also the json flag is set to True by default.
-        '''
+        """
         sif_name = generate_image_name_for_singularity(imageName)
         cmd = ['apptainer', 'inspect']
         if json_format:

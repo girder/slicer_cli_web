@@ -1,10 +1,9 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 setup(
     name='slicer-cli-web-singularity',
     version='0.0.0',
-    description='', # TODO
+    description='A girder plugin adding singularity support to slicer-cli-web',
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
     license='Apache Software License 2.0',

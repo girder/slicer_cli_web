@@ -6,8 +6,10 @@ from girder import logger
 from girder_jobs.models.job import Job
 
 from slicer_cli_web.models import DockerImageError, DockerImageNotFoundError
+
 from .commands import SingularityCommands, run_command
-from .utils import generate_image_name_for_singularity, switch_to_sif_image_folder, sanitize_and_return_json
+from .utils import (generate_image_name_for_singularity, sanitize_and_return_json,
+                    switch_to_sif_image_folder)
 
 
 def is_valid_path(path):
@@ -44,14 +46,14 @@ def is_singularity_installed(path=None):
         )
     try:
         subprocess.run(SingularityCommands.singularity_version(), check=True)
-        logger.info(f"Singularity env available")
+        logger.info('Singularity env available')
     except Exception as e:
-        logger.info(f"Exception {e} occured")
+        logger.info(f'Exception {e} occured')
         raise e
 
 
 def find_local_singularity_image(name: str, path=''):
-    '''
+    """
     Check if the image is present locally on the system in a specified path. For our usecase, we insall the images to a specific path on /blue directory, which can be modified
     via the argument to the function
 
@@ -61,7 +63,7 @@ def find_local_singularity_image(name: str, path=''):
     Returns:
     bool: True if the singularity image is avaialble on the given path on the local host system. False otherwise.
 
-    '''
+    """
     try:
         sif_name = generate_image_name_for_singularity(name)
     except Exception:
@@ -78,21 +80,22 @@ def find_local_singularity_image(name: str, path=''):
 
 
 def pull_image_and_convert_to_sif(names):
-    '''
+    """
     This is the function similar to the pullDockerImage function that pulls the image from Dockerhub or other instances if it's supported in the future
     Args:
     names(List(str), required) -> The list of image names of the format <img>:<tag> provided as a string
 
     Raises:
     If pulling of any of the images fails, the function raises an error with the list of images that failed.
-    '''
+    """
     failedImageList = []
     for name in names:
         try:
-            logger.info(f"Starting to pull image {name}")
+            logger.info(f'Starting to pull image {name}')
             pull_cmd = SingularityCommands.singularity_pull(name)
             subprocess.run(pull_cmd, check=True)
-        except BaseException:
+        except Exception as e:
+            logger.info(f'Failed to pull image {name}: {e}')
             failedImageList.append(name)
     if len(failedImageList) != 0:
         raise DockerImageNotFoundError('Could not find multiple images ',
@@ -177,7 +180,7 @@ def _is_nvidia_img(imageName):
     try:
         res = run_command(inspect_labels_cmd)
         res = sanitize_and_return_json(res)
-        nvidia = res.get('com.nvidia.volumes.needed',None)
+        nvidia = res.get('com.nvidia.volumes.needed', None)
         if not nvidia:
             return False
         return True
@@ -211,8 +214,8 @@ def get_local_singularity_output(imgName, cmdArg: str):
     try:
         pwd = _get_last_workdir(imgName)
         if not pwd:
-            logger.exception(f'Please set the entry_path env variable on the Docker Image')
-            raise Exception(f'Please set the entry_path env variable on the Docker Image')
+            logger.exception('Please set the entry_path env variable on the Docker Image')
+            raise Exception('Please set the entry_path env variable on the Docker Image')
         run_parameters = f'--pwd {pwd}'
         cmd = SingularityCommands.singualrity_run(
             imgName, run_parameters=run_parameters, container_args=cmdArg)

@@ -19,11 +19,11 @@ from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
 
-from .utils import sanitize_and_return_json
-from .commands import SingularityCommands, run_command
-from slicer_cli_web.models.parser import parse_json_desc, parse_xml_desc, parse_yaml_desc
 from slicer_cli_web.models.docker_image import CLIItem
+from slicer_cli_web.models.parser import parse_json_desc, parse_xml_desc, parse_yaml_desc
 
+from .commands import SingularityCommands, run_command
+from .utils import sanitize_and_return_json
 
 
 def _split(name):
@@ -37,10 +37,10 @@ def _split(name):
 
 
 class SingularityImage:
-    '''
+    """
     This class is used to produce the Singularity equivalent of the Docker Image object as part of the Python SDK. This helps us to
     reuse all the functions where Docker is not not directly involved rather the snapshort of the Docker Image object should suffice to perform the necessaray operations
-    '''
+    """
 
     def __init__(self, local_sif_file: str):
         self.id = None
@@ -60,7 +60,7 @@ class SingularityImage:
             self.tags = res.get('tags', '')
             self.short_id = res.get('short_id', '')
         except Exception as e:
-            raise Exception(f"Failed to add metadata from Singularity Image \n {e} \n")
+            raise Exception(f'Failed to add metadata from Singularity Image \n {e} \n')
 
     # A get method to retrieve any label necessary or None, in order to avoid
     # errors in certain portions of the code and better emulate Docker Image
