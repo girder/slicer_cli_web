@@ -26,11 +26,14 @@ def is_valid_path(path):
 
 
 def is_singularity_installed(path=None):
-    """This function is used to check whether singularity is availble on the target system.
-    This function is useful to make sure that singularity is accessible from a SLURM job submitted to HiperGator
+    """
+    This function is used to check whether singularity is availble on the target system.
+    This function is useful to make sure that singularity is accessible from a SLURM job submitted
+    to HiperGator
 
     Args:
-        path (str, optional): If the user wants to provide a specific path where singularity is installed, you can provide that path. Defaults to None.
+        path (str, optional): If the user wants to provide a specific path where singularity is
+                              installed, you can provide that path. Defaults to None.
 
     Returns:
     bool: True if singualrity is successfully accessible on the target system. False otherwise
@@ -54,14 +57,16 @@ def is_singularity_installed(path=None):
 
 def find_local_singularity_image(name: str, path=''):
     """
-    Check if the image is present locally on the system in a specified path. For our usecase, we insall the images to a specific path on /blue directory, which can be modified
-    via the argument to the function
+    Check if the image is present locally on the system in a specified path. For our usecase, we
+    insall the images to a specific path on /blue directory, which can be modified via the argument
+    to the function
 
     Args:
         name(str, required) - The name of the docker image with the tag <image>:<tag>.
-        path(str, optional) - This path refers to the path on the local file system designated for placing singularity images after they are pulled from the interweb.
+        path(str, optional) - This path refers to the path on the local file system designated for
+                              placing singularity images after they are pulled from the interweb.
     Returns:
-    bool: True if the singularity image is avaialble on the given path on the local host system. False otherwise.
+    bool: True if singularity image is avaialble on the given path on host system. False otherwise.
 
     """
     try:
@@ -73,20 +78,24 @@ def find_local_singularity_image(name: str, path=''):
         path = os.getenv('SIF_IMAGE_PATH', '')
         if not is_valid_path(path):
             logger.exception(
-                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and ensure the path has appropriate access')
+                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and'
+                'ensure the path has appropriate access')
             raise Exception(
-                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and ensure the path has appropriate access')
+                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and'
+                'ensure the path has appropriate access')
     return os.path.exists(path + sif_name)
 
 
 def pull_image_and_convert_to_sif(names):
     """
-    This is the function similar to the pullDockerImage function that pulls the image from Dockerhub or other instances if it's supported in the future
+    This is the function similar to the pullDockerImage function that pulls the image from
+    Dockerhub or other instances if it's supported in the future
     Args:
-    names(List(str), required) -> The list of image names of the format <img>:<tag> provided as a string
+    names(List(str), required) -> The list of image names of the format <img>:<tag>
 
     Raises:
-    If pulling of any of the images fails, the function raises an error with the list of images that failed.
+    If pulling of any of the images fails, the function raises an error with the list of images
+    that failed.
     """
     failedImageList = []
     for name in names:
@@ -209,7 +218,9 @@ def _get_last_workdir(imageName):
 
 def get_local_singularity_output(imgName, cmdArg: str):
     """
-    This function is used to run the singularity command locally for non-resource intensive tasks such as getting schema, environment variables and so on and return that output to the calling function
+    This function is used to run the singularity command locally for non-resource intensive tasks
+    such as getting schema, environment variables and so on and return that output to the calling
+    function
     """
     try:
         pwd = _get_last_workdir(imgName)
@@ -235,9 +246,11 @@ def find_and_remove_local_sif_files(name: str, path=None):
         path = os.getenv('SIF_IMAGE_PATH', '')
         if not is_valid_path(path):
             logger.exception(
-                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and ensure the path has appropriate access')
+                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and'
+                'ensure the path has appropriate access')
             raise Exception(
-                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and ensure the path has appropriate access')
+                'Please provide a valid path or set the environment variable "SIF_IMAGE_PATH" and'
+                'ensure the path has appropriate access')
         filename = os.path.join(path, sif_name)
         if os.path.exists(filename):
             os.remove(filename)

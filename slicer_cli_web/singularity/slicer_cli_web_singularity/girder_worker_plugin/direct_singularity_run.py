@@ -28,7 +28,8 @@ class DirectSingularityTask(SingularityTask):
 
 def check_local_sif_image(image):
     """
-    Pulls the specified Plugin image (Ususally a docker image) onto the singularity container if the image is not present
+    Pulls the specified Plugin image (Ususally a docker image) onto the singularity container
+    if the image is not present
     """
     # Image path - Image path has to be present in tmp/images folder
     if not image:

@@ -38,8 +38,10 @@ def _split(name):
 
 class SingularityImage:
     """
-    This class is used to produce the Singularity equivalent of the Docker Image object as part of the Python SDK. This helps us to
-    reuse all the functions where Docker is not not directly involved rather the snapshort of the Docker Image object should suffice to perform the necessaray operations
+    This class is used to produce the Singularity equivalent of the Docker Image object as part
+    of the Python SDK. This helps us to reuse all the functions where Docker is not not directly
+    involved rather the snapshort of the Docker Image object should suffice to perform the
+    necessaray operations
     """
 
     def __init__(self, local_sif_file: str):
@@ -182,7 +184,10 @@ class SingularityImageItem:
                                        creator=user, reuseExisting=True)
 
         # add docker image labels as meta data
-        labels = {} if not singularity_image_object.labels else singularity_image_object.labels.copy()
+        labels = {}
+        if singularity_image_object.labels:
+            labels = singularity_image_object.labels.copy()
+
         if 'description' in labels:
             tag['description'] = labels['description']
             del labels['description']

@@ -4,7 +4,8 @@ import os
 
 def sanitize_and_return_json(res: str):
     """
-    This function tries to parse the given str as json in couple different ways. If the output is still not json or a python dictionary, it raises an error.
+    This function tries to parse the given str as json in couple different ways. If the output is
+    still not json or a python dictionary, it raises an error.
     """
     try:
         res = json.loads(res)
@@ -26,7 +27,8 @@ def sanitize_and_return_json(res: str):
 
 def is_valid_image_name_format(image_str: str):
     """
-    This function is used to validate whether the user supplied a valid string <img>:<tag> as an argument for functions like singularity pull
+    This function is used to validate whether the user supplied a valid string <img>:<tag> as an
+    argument for functions like singularity pull
 
     Args:
     image_str(str, required) - The string that needs to be validated.
@@ -41,7 +43,8 @@ def is_valid_image_name_format(image_str: str):
 
 def generate_image_name_for_singularity(image_str: str):
     """
-    We need to generate the image name for storing the .sif files on the filesystem so that it is standardized, so it can be referenced in future calls.
+    We need to generate the image name for storing the .sif files on the filesystem so that it is
+    standardized, so it can be referenced in future calls.
 
     Args:
     image_str (str,required) - the image_name in the format <img>:<tag>
@@ -58,11 +61,14 @@ def generate_image_name_for_singularity(image_str: str):
 
 def switch_to_sif_image_folder(image_path: str = ''):
     """
-    This function is used to handle Issues that is occuring when Singularity switches directory when running a plugin and not having the context of where the SIF IMAGES are located for subsequent image pulls.
+    This function is used to handle Issues that is occuring when Singularity switches directory
+    when running a plugin and not having the context of where the SIF IMAGES are located for
+    subsequent image pulls.
     This function ensures that Singularity always looks for the plugins in the proper location
 
     Args:
-    image_path (str, optional) - This parameter is highly optional and is not recommended unless a specific use-case arises in the future
+    image_path (str, optional) - This parameter is highly optional and is not recommended unless a
+    specific use-case arises in the future
 
     Returns:
     None
