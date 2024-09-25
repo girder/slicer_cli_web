@@ -33,8 +33,13 @@ from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
 from .config import PluginSettings
-from .models import CLIItem, DockerImageItem, DockerImageNotFoundError
+from .models import CLIItem, DockerImageNotFoundError
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsForItem
+
+try:
+    from slicer_cli_web_singularity.singularity_image import SingularityImageItem as ImageItem
+except ImportError:
+    from .models import DockerImageItem as ImageItem
 
 
 class DockerResource(Resource):
@@ -72,7 +77,7 @@ class DockerResource(Resource):
     def getDockerImages(self, params):
         data = {}
         if self.getCurrentUser():
-            for image in DockerImageItem.findAllImages(self.getCurrentUser()):
+            for image in ImageItem.findAllImages(self.getCurrentUser()):
                 imgData = {}
                 for cli in image.getCLIs():
                     basePath = '/%s/cli/%s' % (self.resourceName, cli._id)
@@ -119,7 +124,7 @@ class DockerResource(Resource):
             docker rmi -f <image> )
         :type name: boolean
         """
-        removed = DockerImageItem.removeImages(names, self.getCurrentUser())
+        removed = ImageItem.removeImages(names, self.getCurrentUser())
         if removed != names:
             rest = [name for name in names if name not in removed]
             raise RestException('Some docker images could not be removed. %s' % (rest))

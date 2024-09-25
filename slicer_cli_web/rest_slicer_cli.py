@@ -396,7 +396,10 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
         :param datalist: if not None, an object with keys that override
             parameters.  No outputs are used.
         """
-        from .girder_worker_plugin.direct_docker_run import run
+        try:
+            from slicer_cli_web_singularity.girder_worker_plugin.direct_singularity_run import run
+        except ImportError:
+            from .girder_worker_plugin.direct_docker_run import run
 
         original_params = copy.deepcopy(params)
         if hasattr(getCurrentToken, 'set'):
@@ -461,7 +464,7 @@ def genHandlerToRunDockerCLI(cliItem):  # noqa C901
             girder_job_type=jobType,
             girder_job_title=jobTitle,
             girder_result_hooks=result_hooks,
-            image=cliItem.digest,
+            image=cliItem.image,  # TODO: check this shouldnt be .digest for Docker
             pull_image='if-not-present',
             container_args=container_args,
             **job_kwargs
