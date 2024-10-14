@@ -50,6 +50,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     include_package_data=True,
     package_dir={'girder_slicer_cli_web': 'slicer_cli_web'},
