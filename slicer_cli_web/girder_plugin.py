@@ -18,12 +18,12 @@ import datetime
 import json
 
 from girder import events, logger
-from girder.constants import AccessType
+from girder.constants import AccessType, TokenScope
 from girder.plugin import GirderPlugin, getPlugin
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
-from . import worker_tools
+from . import TOKEN_SCOPE_MANAGE_TASKS
 from .docker_resource import DockerResource
 from .models import DockerImageItem
 
@@ -55,6 +55,10 @@ class SlicerCLIWebPlugin(GirderPlugin):
         except Exception:
             logger.info('Girder working is unavailable')
 
+        TokenScope.describeScope(
+            TOKEN_SCOPE_MANAGE_TASKS, name='Manage Slicer CLI tasks',
+            description='Create / edit Slicer CLI docker tasks', admin=True)
+
         DockerImageItem.prepare()
 
         # resource name must match the attribute added to info[apiroot]
@@ -84,4 +88,3 @@ class SlicerCLIWebPlugin(GirderPlugin):
                 pass
         if count:
             logger.info('Marking %d old job(s) as cancelled' % count)
-        worker_tools.start()
