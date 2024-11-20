@@ -1,14 +1,13 @@
-import $ from 'jquery';
-import View from '@girder/core/views/View';
-
-import BrowserWidget from '@girder/core/views/widgets/BrowserWidget';
-import PluginConfigBreadcrumbWidget from '@girder/core/views/widgets/PluginConfigBreadcrumbWidget';
-import { restRequest } from '@girder/core/rest';
-import events from '@girder/core/events';
-
 import ConfigViewTemplate from '../templates/configView.pug';
 import '../stylesheets/configView.styl';
 import { showJobSuccessAlert } from './utils';
+
+const $ = girder.$;
+const View = girder.views.View;
+const events = girder.events;
+const restRequest = girder.rest.restRequest;
+const BrowserWidget = girder.views.widgets.BrowserWidget;
+const PluginConfigBreadcrumbWidget = girder.views.widgets.PluginConfigBreadcrumbWidget;
 
 /**
  * Show the default quota settings for users and collections.

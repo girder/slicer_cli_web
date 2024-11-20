@@ -1,7 +1,7 @@
-import $ from 'jquery';
-import _ from 'underscore';
-
 import param from './param';
+
+const $ = girder.$;
+const _ = girder._;
 
 /**
  * Parse a parameter group (deliminated by <label> tags) within a

@@ -1,6 +1,6 @@
-import Backbone from 'backbone';
-
 import WidgetModel from '../models/WidgetModel';
+
+const Backbone = girder.Backbone;
 
 const WidgetCollection = Backbone.Collection.extend({
     model: WidgetModel,

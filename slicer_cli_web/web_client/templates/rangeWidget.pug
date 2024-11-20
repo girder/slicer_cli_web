@@ -1,4 +1,4 @@
 extends ./widget.pug
 
 block input
-  +input(title, type, id, value)(data-slider-min=min || 0, data-slider-max=max || 1, data-slider-step=step || 1, data-slider-value=value || min || 0)
+  input(name=title, id=id, type="range", min=min || 0, max=max || 1, step=step || 1, value=value || min || 0)
