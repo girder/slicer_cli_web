@@ -197,25 +197,6 @@ def _is_nvidia_img(imageName):
         raise Exception(f'Error occured {e.stderr.decode()}')
 
 
-def _get_last_workdir(imageName):
-    run_parameters = '--no-mount /cmsuf'
-    switch_to_sif_image_folder()
-    cmd = SingularityCommands.singularity_get_env(image=imageName, run_parameters=run_parameters)
-    try:
-        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        res = res.stdout
-        if isinstance(res, bytes):
-            res = res.decode('utf-8').strip()
-        entry_path_line = next((line for line in res.split('\n') if 'entry_path' in line), None)
-        pwd = ''
-        if entry_path_line:
-            # Extract the value after '='
-            pwd = entry_path_line.split('=')[1].strip()
-        return pwd
-    except Exception as e:
-        raise Exception(f'Error occured {e.stderr.decode()}')
-
-
 def get_local_singularity_output(imgName, cmdArg: str):
     """
     This function is used to run the singularity command locally for non-resource intensive tasks
@@ -223,11 +204,12 @@ def get_local_singularity_output(imgName, cmdArg: str):
     function
     """
     try:
-        pwd = _get_last_workdir(imgName)
-        if not pwd:
+        switch_to_sif_image_folder()
+        cwd = SingularityCommands.get_entry_path(imgName)
+        if not cwd:
             logger.exception('Please set the entry_path env variable on the Docker Image')
             raise Exception('Please set the entry_path env variable on the Docker Image')
-        run_parameters = f'--pwd {pwd}'
+        run_parameters = f'--cwd {cwd}'
         cmd = SingularityCommands.singualrity_run(
             imgName, run_parameters=run_parameters, container_args=cmdArg)
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)

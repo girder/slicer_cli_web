@@ -1,3 +1,4 @@
+import json
 import subprocess
 
 from girder import logger
@@ -27,6 +28,14 @@ class SingularityCommands:
         """
         sif_name = generate_image_name_for_singularity(name)
         return ['apptainer', 'pull', '--force', sif_name, f'{uri}://{name}']
+
+    @staticmethod
+    def get_entry_path(imageName: str):
+        sif_name = generate_image_name_for_singularity(imageName)
+        cmd = ['apptainer', 'exec', '--cleanenv', sif_name, 'cat', '/.singularity.d/labels.json']
+        label_json = run_command(cmd)
+        labels = json.loads(label_json)
+        return labels.get('entry_path')
 
     @staticmethod
     def singualrity_run(imageName: str, run_parameters=None, container_args=None):
