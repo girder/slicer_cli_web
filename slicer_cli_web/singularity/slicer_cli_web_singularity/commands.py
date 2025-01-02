@@ -3,7 +3,7 @@ import subprocess
 
 from girder import logger
 
-from .utils import generate_image_name_for_singularity
+from .utils import generate_image_name_for_singularity, switch_to_sif_image_folder
 
 
 class SingularityCommands:
@@ -31,6 +31,7 @@ class SingularityCommands:
 
     @staticmethod
     def get_entry_path(imageName: str):
+        switch_to_sif_image_folder()
         sif_name = generate_image_name_for_singularity(imageName)
         cmd = ['apptainer', 'exec', '--cleanenv', sif_name, 'cat', '/.singularity.d/labels.json']
         label_json = run_command(cmd)
