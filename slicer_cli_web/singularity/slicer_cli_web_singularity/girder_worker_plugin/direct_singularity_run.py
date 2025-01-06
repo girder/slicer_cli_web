@@ -9,8 +9,9 @@ from girder_worker_singularity.tasks import SingularityTask, singularity_run
 from slicer_cli_web.girder_worker_plugin.cli_progress import CLIProgressCLIWriter
 from slicer_cli_web.girder_worker_plugin.direct_docker_run import _resolve_direct_file_paths
 
-from ..job import _get_last_workdir, _is_nvidia_img, generate_image_name_for_singularity
 from ..commands import SingularityCommands
+from ..job import _is_nvidia_img, generate_image_name_for_singularity
+
 
 class DirectSingularityTask(SingularityTask):
     def __call__(self, *args, **kwargs):

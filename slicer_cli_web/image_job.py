@@ -17,8 +17,8 @@
 ###############################################################################
 
 import json
-import time
 import os
+import time
 
 import docker
 from girder import logger
