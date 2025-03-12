@@ -204,7 +204,7 @@ def get_local_singularity_output(imgName, cmdArg: str):
     function
     """
     try:
-        cwd = SingularityCommands.get_entry_path(imgName)
+        cwd = SingularityCommands.get_work_dir(imgName)
         if not cwd:
             logger.exception('Please set the entry_path env variable on the Docker Image')
             raise Exception('Please set the entry_path env variable on the Docker Image')

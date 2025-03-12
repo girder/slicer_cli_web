@@ -27,39 +27,28 @@ class DirectSingularityTask(SingularityTask):
         super().__call__(*args, **kwargs)
 
 
-def check_local_sif_image(image):
-    """
-    Pulls the specified Plugin image (Ususally a docker image) onto the singularity container
-    if the image is not present
-    """
-    # Image path - Image path has to be present in tmp/images folder
-    if not image:
-        logger.write('Image name cannot be empty')
-        return False
-    # Just for testing. Change it later...
-    return False
-
-
 @app.task(base=DirectSingularityTask, bind=True)
 def run(task, **kwargs):
     """Wraps singularity_run to support running singularity containers"""
     image = kwargs['image']
     kwargs['image'] = generate_image_name_for_singularity(image)
-    try:
-        pwd = SingularityCommands.get_entry_path(image)
-        kwargs['pwd'] = pwd
-    except Exception as e:
-        raise e
+
+    pwd = SingularityCommands.get_work_dir(image)
+    kwargs['pwd'] = pwd
+
     logs_dir = os.getenv('LOGS')
     kwargs['nvidia'] = _is_nvidia_img(image)
+
     # Cahnge to reflect JOBID for logs later
     random_file_name = str(uuid4()) + 'logs.log'
     log_file_name = os.path.join(logs_dir, random_file_name)
     kwargs['log_file'] = log_file_name
+
     # Create file since it doesn't exist
     if not os.path.exists(log_file_name):
         with open(log_file_name, 'x'):
             pass
+
     file_obj = open(log_file_name, 'rb')
     if hasattr(task, 'job_manager'):
         stream_connectors = kwargs.setdefault('stream_connectors', [])

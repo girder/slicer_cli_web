@@ -30,13 +30,13 @@ class SingularityCommands:
         return ['apptainer', 'pull', '--force', sif_name, f'{uri}://{name}']
 
     @staticmethod
-    def get_entry_path(imageName: str):
+    def get_work_dir(imageName: str):
         switch_to_sif_image_folder()
         sif_name = generate_image_name_for_singularity(imageName)
-        cmd = ['apptainer', 'exec', '--cleanenv', sif_name, 'cat', '/.singularity.d/labels.json']
+        cmd = ['apptainer', 'sif', 'dump', '3', sif_name]
         label_json = run_command(cmd)
         labels = json.loads(label_json)
-        return labels.get('entry_path')
+        return labels.get('WorkingDir')
 
     @staticmethod
     def singualrity_run(imageName: str, run_parameters=None, container_args=None):

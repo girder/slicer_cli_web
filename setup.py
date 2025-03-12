@@ -24,10 +24,9 @@ with open('README.rst') as f:
 # perform the install
 setup(
     name='girder-slicer-cli-web',
-    # use_scm_version={
-    #    'local_scheme': prerelease_local_scheme,
-    #    'fallback_version': '0.0.0'},
-    version='1.5.5',
+    use_scm_version={
+       'local_scheme': prerelease_local_scheme,
+       'fallback_version': '0.0.0'},
     setup_requires=[
         'setuptools-scm',
     ],
