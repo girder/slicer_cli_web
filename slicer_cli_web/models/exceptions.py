@@ -1,5 +1,5 @@
 class DockerImageError(Exception):
-    def __init__(self, message, image_name='None'):
+    def __init__(self, message, image_name='None'):  # noqa
 
         self.message = message
         # can be a string or list
@@ -16,7 +16,7 @@ class DockerImageError(Exception):
 
 
 class DockerImageNotFoundError(DockerImageError):
-    def __init__(self, message, image_name, locations=None):
+    def __init__(self, message, image_name, locations=None):  # noqa
         super().__init__(message, image_name)
         # list of registries tried(local dockerhub etc )
         self.locations = locations or []

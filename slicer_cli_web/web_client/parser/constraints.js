@@ -3,7 +3,7 @@ import $ from 'jquery';
 import convert from './convert';
 
 /**
- * Parse a `contraints` tag.
+ * Parse a `constraints` tag.
  */
 export default function constraints(type, constraintsTag) {
     const $c = $(constraintsTag);

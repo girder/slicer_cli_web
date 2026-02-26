@@ -9,6 +9,9 @@ if info
     .s-panel-content
       .s-info-panel-description.well
         | #{info.description}
+        if info['documentation-url'] && info['documentation-url'].startsWith('https://')
+          .s-info-panel-documentation-url
+            a(href=info['documentation-url'])= info['documentation-url']
       .s-info-panel-buttons
         button.btn.btn-default.s-info-panel-reload Reload
         button.btn.btn-primary.s-info-panel-submit Submit
