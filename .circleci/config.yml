@@ -7,7 +7,7 @@ executors:
       - image: girder/tox-and-node
       - image: mongo:5.0
         command: bash -c "mkdir /dev/shm/mongo && mongod --nojournal --dbpath=/dev/shm/mongo --noauth --bind_ip_all"
-      - image: rabbitmq
+      - image: rabbitmq:4.2
 commands:
   tox:
     description: "Run tox"
@@ -68,7 +68,7 @@ commands:
       - run:
           name: start rabbitmq
           command: |
-            docker run --rm -d -p 5672:5672 rabbitmq
+            docker run --rm -d -p 5672:5672 rabbitmq:4.2
       - run:
           name: install nodejs
           command: |
@@ -97,26 +97,6 @@ commands:
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml,.tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  py38:
-    machine:
-      image: ubuntu-2204:current
-    steps:
-      - checkout
-      - allservices:
-          version: "3.8"
-      - tox:
-          env: py38
-      - coverage
-  py39:
-    machine:
-      image: ubuntu-2204:current
-    steps:
-      - checkout
-      - allservices:
-          version: "3.9"
-      - tox:
-          env: py39
-      - coverage
   py310:
     machine:
       image: ubuntu-2204:current
@@ -156,6 +136,16 @@ jobs:
           version: "3.13"
       - tox:
           env: py313
+      - coverage
+  py314:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - allservices:
+          version: "3.14"
+      - tox:
+          env: py314
       - coverage
   small-docker:
     machine:
@@ -210,20 +200,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py38:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py39:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py310:
           filters:
             tags:
@@ -246,6 +222,13 @@ workflows:
               ignore:
                 - gh-pages
       - py313:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py314:
           filters:
             tags:
               only: /^v.*/
@@ -275,12 +258,11 @@ workflows:
                 - example-average-color
       - release:
           requires:
-            - py38
-            - py39
             - py310
             - py311
             - py312
             - py313
+            - py314
             - lint_and_docs
           filters:
             tags:
