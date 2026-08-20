@@ -19,11 +19,14 @@ import json
 
 from girder import events, logger
 from girder.constants import AccessType
+from girder.models.file import File
+from girder.models.item import Item
 from girder.plugin import GirderPlugin, getPlugin
 from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 
 from . import worker_tools
+from .config import PluginSettings
 from .docker_resource import DockerResource
 from .models import DockerImageItem
 
@@ -43,6 +46,45 @@ def _onUpload(event):
         Job().updateJob(job, otherFields={
             'slicerCLIBindings.outputs.parameters': file['_id']
         })
+
+
+def _onJobFinished(event):
+    job = event.info['job']
+    if job['status'] not in {JobStatus.SUCCESS, JobStatus.ERROR}:
+        return
+    if not PluginSettings.store_task_metadata():
+        return
+    original_params = job.get('_original_params')
+    if not original_params:
+        return
+
+    values = list(original_params.values())
+
+    job_status = 'Success' if job['status'] is JobStatus.SUCCESS else 'Error'
+    job_data = {
+        'title': job['title'],
+        'finished': job['updated'],
+        'status': job_status
+    }
+    for value in values:
+        for name, model in (('item', Item()), ('file', File())):
+            doc = model.load(value, force=True)
+            if doc is not None:
+                if name == 'file':
+                    item = Item().load(doc['itemId'], force=True)
+                    if item is not None:
+                        tasks = item['meta'].get('Tasks Run', [])
+                        if len(tasks) == 500:
+                            tasks.pop(0)
+                        tasks.append(job_data)
+                        Item().setMetadata(item, {'Tasks Run': tasks})
+                    else:
+                        tasks = doc['meta'].get('Tasks Run', [])
+                        if len(tasks) == 500:
+                            tasks.pop(0)
+                        tasks.append(job_data)
+                        Item().setMetadata(doc, {'Tasks Run': job_data})
+                return
 
 
 class SlicerCLIWebPlugin(GirderPlugin):
@@ -65,6 +107,7 @@ class SlicerCLIWebPlugin(GirderPlugin):
 
         events.bind('jobs.job.update.after', resource.resourceName,
                     resource.addRestEndpoints)
+        events.bind('jobs.job.update.after', 'slicer_cli_web.metadata', _onJobFinished)
         events.bind('data.process', 'slicer_cli_web', _onUpload)
 
         count = 0
