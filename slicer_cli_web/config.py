@@ -98,5 +98,5 @@ def validateStoreMetadata(doc):
 SettingDefault.defaults.update({
     PluginSettings.SLICER_CLI_WEB_TASK_FOLDER: None,
     PluginSettings.SLICER_CLI_WEB_WORKER_CONFIG_ITEM: None,
-    PluginSettings.SLICER_CLI_TASK_STORE_METADATA: True
+    PluginSettings.SLICER_CLI_TASK_STORE_METADATA: False
 })
