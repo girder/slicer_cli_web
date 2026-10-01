@@ -134,7 +134,7 @@ def jobPullAndLoad(job):
             log='Started to Load Docker images\n',
             status=JobStatus.RUNNING,
         )
-        user = User().load(job['userId'], level=AccessType.READ)
+        user = User().load(job['userId'], level=AccessType.READ, user=job['userId'])
         baseFolder = Folder().load(
             job['kwargs']['folder'], user=user, level=AccessType.WRITE, exc=True)
 
