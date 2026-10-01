@@ -116,7 +116,20 @@ def _resolve_direct_file_paths(args, kwargs):
     return extra_volumes
 
 
+def _cancel_latched(task):
+    return getattr(task.request, '_slicer_cli_web_canceled', False)
+
+
 class DirectDockerTask(DockerTask):
+    @property
+    def canceled(self):
+        # Latch the first observed cancel: the base property re-inspects the
+        # broker on every read, so a later inspection that times out to False
+        # must not un-cancel a task the docker loop already stopped.
+        if not _cancel_latched(self):
+            self.request._slicer_cli_web_canceled = super().canceled
+        return self.request._slicer_cli_web_canceled
+
     def __call__(self, *args, **kwargs):
         extra_volumes = _resolve_direct_file_paths(args, kwargs)
         if extra_volumes:
@@ -128,7 +141,7 @@ class DirectDockerTask(DockerTask):
                 for extra_volume in extra_volumes:
                     volumes.update(extra_volume._repr_json_())
 
-        super().__call__(*args, **kwargs)
+        return super().__call__(*args, **kwargs)
 
 
 def _has_image(image):
@@ -164,4 +177,9 @@ def run(task, **kwargs):
             output=CLIProgressCLIWriter(task.job_manager)
         ))
 
-    return _docker_run(task, **kwargs)
+    results = _docker_run(task, **kwargs)
+    # Drop a canceled run's results so the upload hooks are skipped: the stopped
+    # container never wrote its outputs, and uploading nothing would fail the
+    # job as an error instead of a cancel.  Read the latch, not the broker, to
+    # keep successful runs free of an extra round-trip.
+    return () if _cancel_latched(task) else results
